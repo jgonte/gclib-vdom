@@ -1,15 +1,28 @@
 {
   "name": "gclib-vdom",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "Virtual DOM library",
-  "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
+  "main": "dist/gclib-vdom.umd.js",
+  "module": "dist/gclib-vdom.es5.js",
+  "typings": "dist/types/gclib-vdom.d.ts",
   "files": [
-    "lib"
+    "dist"
   ],
   "scripts": {
-    "build": "tsc",
-    "test": "jest"
+    "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
+    "prebuild": "rimraf dist",
+    "build": "tsc --module commonjs && rollup -c rollup.config.ts && typedoc --out docs --target es6 --theme minimal --mode file src",
+    "start": "rollup -c rollup.config.ts -w",
+    "test": "jest --coverage",
+    "test:watch": "jest --coverage --watch",
+    "test:prod": "npm run lint && npm run test -- --no-cache",
+    "deploy-docs": "ts-node tools/gh-pages-publish",
+    "report-coverage": "cat ./coverage/lcov.info | coveralls",
+    "commit": "git-cz",
+    "semantic-release": "semantic-release",
+    "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
+    "precommit": "lint-staged",
+    "travis-deploy-once": "travis-deploy-once"
   },
   "jest": {
     "transform": {
@@ -36,13 +49,22 @@
   },
   "homepage": "https://github.com/jgonte/gclib-vdom#readme",
   "devDependencies": {
+    "rimraf": "^2.6.2",
+    "rollup": "^0.67.0",
+    "rollup-plugin-commonjs": "^9.1.8",
+    "rollup-plugin-json": "^3.1.0",
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "rollup-plugin-typescript2": "^0.27.1",
     "@types/jest": "^26.0.8",
     "jest": "^26.2.2",
     "ts-jest": "^26.1.4",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.7",
+    "typedoc": "^0.18.0"
   },
   "directories": {
     "lib": "lib",
     "test": "test"
-  }
+  },
+  "dependencies": {}
 }
