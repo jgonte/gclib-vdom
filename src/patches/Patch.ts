@@ -1,9 +1,9 @@
-import PatchingContext from "../PatchingContext";
+import PatchingContext from "../helpers/PatchingContext";
 
 export abstract class Patch {
 
     /** 
-     * Executes the patch on the element
+     * Executes the patch on the node
      */
-    abstract apply(element: HTMLElement, context: PatchingContext) : void;
+    abstract apply(node: ChildNode, context: PatchingContext) : void;
 }

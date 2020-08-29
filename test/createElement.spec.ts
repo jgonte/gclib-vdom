@@ -1,6 +1,6 @@
 import createElement from '../src/createElement';
-import VirtualNode from '../src/VirtualNode';
-import VirtualText from '../src/VirtualText';
+import VirtualNode from '../src/nodes/VirtualNode';
+import VirtualText from '../src/nodes/VirtualText';
 
 describe("createElement tests", () => {
 
@@ -12,7 +12,7 @@ describe("createElement tests", () => {
 
         expect(node.attributes).toEqual(null);
 
-        expect(node.children).toEqual(null);
+        expect(node.children).toEqual([null]);
     });
 
     it("creates a virtual node with the name of the element and attributes", () => {
@@ -20,7 +20,7 @@ describe("createElement tests", () => {
         const node = createElement('div', {
             id: 'myElement'
         },
-        null);
+            null);
 
         expect(node.name).toEqual('div');
 
@@ -28,22 +28,19 @@ describe("createElement tests", () => {
             id: 'myElement'
         });
 
-        expect(node.children).toEqual(null);
+        expect(node.children).toEqual([null]);
     });
 
     it("creates a virtual node with the name of the element and children", () => {
 
         const node = createElement('div', null,
-        [
             createElement('img', {
                 src: 'http://images/image.gif'
-            },
-            null),
-
-            createElement('div', null, [
+            }, null),
+            createElement('div', null,
                 createElement('span', null, 'Some text')
-            ])
-        ]);
+            )
+        );
 
         expect(node.name).toEqual('div');
 
@@ -59,7 +56,7 @@ describe("createElement tests", () => {
             src: 'http://images/image.gif'
         });
 
-        expect(child.children).toEqual(null);
+        expect(child.children).toEqual([null]);
 
         child = (node.children as VirtualNode[])![1];
 
@@ -75,23 +72,21 @@ describe("createElement tests", () => {
 
         expect(grandChild.attributes).toEqual(null);
 
-        expect(grandChild.children).toEqual({"text": "Some text"});
+        expect(grandChild.children).toEqual([{ "text": "Some text" }]);
     });
 
     it("creates a virtual node with the name of the element, attributes and children", () => {
 
-        const node = createElement('div', 
-        {
-            id: 'myElement'
-        },
-        [
+        const node = createElement('div',
+            {
+                id: 'myElement'
+            },
             createElement('img', {
                 src: 'http://images/image.gif'
-            },
-            null),
+            }, null),
 
             createElement('span', null, 'Some text')
-        ]);
+        );
 
         expect(node.name).toEqual('div');
 
@@ -109,7 +104,7 @@ describe("createElement tests", () => {
             src: 'http://images/image.gif'
         });
 
-        expect(child.children).toEqual(null);
+        expect(child.children).toEqual([null]);
 
         child = (node.children as VirtualNode[])![1];
 
@@ -117,6 +112,45 @@ describe("createElement tests", () => {
 
         expect(child.attributes).toEqual(null);
 
-        expect(child.children).toEqual({"text": "Some text"});
+        expect(child.children).toEqual([{ "text": "Some text" }]);
+    });
+
+    it("creates a virtual node with the name of the element, attributes and children", () => {
+
+        let count: number = 5;
+
+        const increment = () => ++count;
+
+        const node = createElement("div", null,
+            createElement("h4", null, "Counter"),
+            count,
+            createElement("button", { click: increment }, "Increment")
+        );
+
+        expect(node.name).toEqual('div');
+
+        expect(node.attributes).toEqual(null);
+
+        expect((node.children as VirtualNode[])!.length).toEqual(3);
+
+        let child: any = (node.children as VirtualNode[])![0];
+
+        expect(child.name).toEqual('h4');
+
+        expect(child.attributes).toEqual(null);
+
+        expect(child.children).toEqual([{ "text": "Counter" }]);
+
+        child = (node.children as VirtualText[])![1];
+
+        expect(child).toEqual(new VirtualText(5));
+
+        child = (node.children as VirtualNode[])![2];
+
+        expect(child.name).toEqual('button');
+
+        expect(child.attributes).toEqual({ click: increment });
+
+        expect(child.children).toEqual([{ "text": "Increment" }]);
     });
 });

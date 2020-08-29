@@ -15,16 +15,18 @@ export default class VirtualNode {
         /**
          * The attributes of the element
          */
-        public attributes?: any | null,
+        public attributes: any | null,
 
         /**
          * The children of the element or the text
          */
-        public children?: VirtualNode[] | VirtualText | null
+        public children: (VirtualNode | VirtualText)[]
 
     ) { }
 
-    get key() : string {
+    isVirtualNode: boolean = true;
+
+    get key(): string {
 
         return this.attributes ? this.attributes.key : undefined;
     }
@@ -38,7 +40,8 @@ export default class VirtualNode {
             for (const [k, v] of Object.entries(this.attributes)) {
 
                 if (typeof v === 'string' ||
-                    typeof v === 'number') {
+                    typeof v === 'number' ||
+                    typeof v === 'function') {
 
                     element.setAttribute(k, v.toString());
                 }
@@ -49,18 +52,11 @@ export default class VirtualNode {
             }
         }
 
-        if (this.children) {
+        for (const child of this.children) {
 
-            if (Array.isArray(this.children)) {
+            if (child) { // It might be null
 
-                for (const child of this.children) {
-
-                    element.appendChild(child.render());
-                }
-            }
-            else { // VirtualText
-
-                element.appendChild(this.children.render());
+                element.appendChild(child.render());
             }
         }
 

@@ -1,23 +1,25 @@
-import VirtualNode from "./VirtualNode";
-import VirtualText from "./VirtualText";
-import ElementPatches from "./ElementPatches";
-import ChildElementPatches from "./ChildElementPatches";
+import VirtualNode from "./nodes/VirtualNode";
+import VirtualText from "./nodes/VirtualText";
+import ElementPatches from "./patches/ElementPatches";
+import ChildElementPatches from "./patches/ChildElementPatches";
 import { Patch } from "./patches/Patch";
 import AddAttributePatch from "./patches/attributes/AddAttributePatch";
 import RemoveAttributePatch from "./patches/attributes/RemoveAttributePatch";
 import SetAttributePatch from "./patches/attributes/SetAttributePatch";
 import SetTextPatch from "./patches/text/SetTextPatch";
 import RemoveTextPatch from "./patches/text/RemoveTextPatch";
+import ReplaceTextPatch from "./patches/text/ReplaceTextPatch";
 
-import RemoveElementPatch from "./patches/RemoveElementPatch";
-import ReplaceElementPatch from "./patches/ReplaceElementPatch";
+// import RemoveElementPatch from "./patches/RemoveElementPatch";
+// import ReplaceElementPatch from "./patches/ReplaceElementPatch";
 
 import RemoveChildrenPatch from "./patches/children/RemoveChildrenPatch";
 import SetChildPatch from "./patches/children/SetChildPatch";
 import AddChildrenPatch from "./patches/children/AddChildrenPatch";
 import MoveChildPatch from "./patches/children/MoveChildPatch";
 import RemoveChildrenRangePatch from "./patches/children/RemoveChildrenRangePatch";
-import OffsetManager from "./OffsetManager";
+import OffsetManager from "./helpers/OffsetManager";
+
 
 function diffAttributes(oldAttributes?: any | null, newAttributes?: any | null): Patch[] {
 
@@ -63,13 +65,15 @@ function diffAttributes(oldAttributes?: any | null, newAttributes?: any | null):
     return patches;
 }
 
-function haveKeys(children: VirtualNode[]): boolean {
+function haveKeys(children: any[]): boolean {
 
     let keys: any = {};
 
     let missingFirstKey: boolean = false;
 
-    children.forEach((child, i) => {
+    let i: number = 0;
+
+    for (const child of children) {
 
         const key = child.key;
 
@@ -97,20 +101,19 @@ function haveKeys(children: VirtualNode[]): boolean {
 
                 throw new Error(`Missing key at index: [${i}] in children collection.`);
             }
-
         }
 
-    });
+        ++i;
+    }
 
     return Object.keys(keys).length > 0;
 }
 
-
 function diffChildren(oldNode: VirtualNode, newNode: VirtualNode): ElementPatches {
 
-    const oldChildren: VirtualNode[] = (oldNode.children as VirtualNode[])!;
+    const oldChildren: any[] = (oldNode.children as VirtualNode[])!;
 
-    const newChildren: VirtualNode[] = (newNode.children as VirtualNode[])!;
+    const newChildren: any[] = (newNode.children as VirtualNode[])!;
 
     if (haveKeys(newChildren)) {
 
@@ -142,7 +145,7 @@ function diffChildren(oldNode: VirtualNode, newNode: VirtualNode): ElementPatche
 
                         // Offset the empty slots caused by moving children out
                         const fromOffset: number = offsetManager.getOffset(oldChildByKeyIndex);
- 
+
                         setOrMovedChildrenPatches.push(
                             new MoveChildPatch(oldChildByKeyIndex, newChildIndex, fromOffset) // Move it to the new index
                         );
@@ -275,14 +278,56 @@ function diffChildren(oldNode: VirtualNode, newNode: VirtualNode): ElementPatche
         // Create the patches based on the new children
         newChildren!.forEach((newChild, i) => {
 
-            childrenPatches.push(
-                new ChildElementPatches(
-                    /*index*/
-                    i,
-                    /*patches*/
-                    diff(oldChildren[i], newChild)
-                )
-            );
+            if (newChild.isVirtualNode) {
+
+                const childPatches = diff(oldChildren[i], newChild);
+
+                if (childPatches.hasPatches()) {
+
+                    childrenPatches.push(
+                        new ChildElementPatches(
+                            /*index*/
+                            i,
+                            /*patches*/
+                            childPatches
+                        )
+                    );
+                }
+
+            }
+            else { // New child is virtual text
+
+                if (!oldChildren[i].isVirtualNode) {
+
+                    const oldText = oldChildren[i] as VirtualText;
+
+                    const newText = newChild as VirtualText;
+
+                    if (oldText.text !== newText.text) {
+
+                        const childPatches = new ElementPatches(
+                            /*patches*/
+                            [new ReplaceTextPatch(newText)],
+                            /*childrenPatches*/
+                            []
+                        );
+
+                        childrenPatches.push(
+                            new ChildElementPatches(
+                                /*index*/
+                                i,
+                                /*patches*/
+                                childPatches
+                            )
+                        );
+                    }
+
+                }
+                else {
+
+                    throw Error('Not implemented');
+                }
+            }
 
         });
 
@@ -310,177 +355,196 @@ function diffChildren(oldNode: VirtualNode, newNode: VirtualNode): ElementPatche
     }
 }
 
-export default function diff(oldNode: VirtualNode, newNode: VirtualNode): ElementPatches {
+function isNull(children: any[]): boolean {
 
-    if (!newNode) {
+    return children.length === 1 && !children[0];
+}
 
-        return new ElementPatches(
+function isVirtualText(children: any[]): boolean {
 
-            /*patches*/
-            [new RemoveElementPatch()],
+    return children.length === 1 && !children[0].isVirtualNode;
+}
 
-            /*childrenPatches*/
-            []
-        );
-    }
+export default function diff(oldNode: VirtualNode | VirtualText, newNode: VirtualNode | VirtualText): ElementPatches {
 
-    if (oldNode.name !== newNode.name) {
+    // if (!newNode) {
 
-        return new ElementPatches(
+    //     return new ElementPatches(
+    //         /*patches*/
+    //         [new RemoveElementPatch()],
+    //         /*childrenPatches*/
+    //         []
+    //     );
+    // }
 
-            /*patches*/
-            [new ReplaceElementPatch(newNode)],
+    // if (oldNode.name !== newNode.name) {
 
-            /*childrenPatches*/
-            []
-        );
-    }
+    //     return new ElementPatches(
+    //         /*patches*/
+    //         [new ReplaceElementPatch(newNode)],
+    //         /*childrenPatches*/
+    //         []
+    //     );
+    // }
 
-    // Handle the children nodes
-    if (newNode.children) { // The newNode has either virtual nodes or a virtual text
+    // if (!(oldNode as VirtualNode).isVirtualNode &&
+    //     !(newNode as VirtualNode).isVirtualNode) { // oldNode and newNode are virtual texts
 
-        if (Array.isArray(newNode.children)) { // The children of newNode is an array the virtual nodes
+    //     const oldText = oldNode as VirtualText;
 
-            if (oldNode.children) { // The oldNode has either virtual nodes or a virtual text
+    //     const newText = newNode as VirtualText;
 
-                if (Array.isArray(oldNode.children)) { // The children of oldNode is an array the virtual nodes
+    //     if (oldText.text !== newText.text) {
 
-                    return diffChildren(oldNode, newNode);
-                }
-                else { // The child of oldNode is a virtual text
+    //         return new ElementPatches(
+    //             /*patches*/
+    //             [
+    //                 new SetTextPatch(newText)
+    //             ],
+    //             /*childrenPatches*/
+    //             []
+    //         );
+    //     }
+    //     else {
 
-                    return new ElementPatches(
+    //         // Nothing to patch
+    //         return new ElementPatches(
+    //             /*patches*/
+    //             [],
+    //             /*childrenPatches*/
+    //             []
+    //         );
+    //     }
+    // }
 
-                        /*patches*/
-                        [
-                            ...diffAttributes(oldNode.attributes, newNode.attributes),
-                            new RemoveTextPatch(), // Remove the text child
-                            new AddChildrenPatch((newNode.children as VirtualNode[])!) // Add the new children
-                        ],
+    const oldAttributes = (oldNode as VirtualNode).attributes;
 
-                        /*childrenPatches*/
-                        []
-                    );
-                }
-            }
-            else { // oldNode has no children
+    const oldChildren = (oldNode as VirtualNode).children;
 
-                return new ElementPatches(
+    const newAttributes = (newNode as VirtualNode).attributes;
 
-                    /*patches*/
-                    [
-                        ...diffAttributes(oldNode.attributes, newNode.attributes),
-                        new AddChildrenPatch((newNode.children as VirtualNode[])!) // Add the new children
-                    ],
+    const newChildren = (newNode as VirtualNode).children;
 
-                    /*childrenPatches*/
-                    []
-                );
-            }
+    if (isNull(newChildren)) {
+
+        if (isNull(oldChildren)) {
+
+            // Nothing to patch
+            return new ElementPatches(
+                /*patches*/
+                [...diffAttributes(oldAttributes, newAttributes)],
+                /*childrenPatches*/
+                []
+            );
         }
-        else { // The child of newNode is a virtual text
-
-            if (oldNode.children) { // The oldNode has either virtual nodes or a virtual text
-
-                if (Array.isArray(oldNode.children)) { // The children of oldNode is an array the virtual nodes
-
-                    return new ElementPatches(
-
-                        /*patches*/
-                        [
-                            ...diffAttributes(oldNode.attributes, newNode.attributes),
-                            new RemoveChildrenPatch(),
-                            new SetTextPatch(newNode.children)
-                        ],
-
-                        /*childrenPatches*/
-                        []
-                    );
-                }
-                else { // The child of oldNode is a virtual text
-
-                    const oldText: VirtualText = oldNode.children;
-
-                    const newText: VirtualText = newNode.children;
-
-                    if (oldText.text !== newText.text) { // Replace text
-
-                        return new ElementPatches(
-
-                            /*patches*/
-                            [
-                                ...diffAttributes(oldNode.attributes, newNode.attributes),
-                                new SetTextPatch(newText)
-                            ],
-
-                            /*childrenPatches*/
-                            []
-                        );
-                    }
-                    else { // Texts are equal, no need to replace them
-
-                        return new ElementPatches(
-
-                            /*patches*/
-                            [
-                                ...diffAttributes(oldNode.attributes, newNode.attributes)
-                            ],
-
-                            /*childrenPatches*/
-                            []
-                        );
-                    }
-
-                }
-            }
-            else { // oldNode has no children
-
-                return new ElementPatches(
-
-                    /*patches*/
-                    [
-                        ...diffAttributes(oldNode.attributes, newNode.attributes),
-                        new SetChildPatch(0, newNode.children)
-                    ],
-
-                    /*childrenPatches*/
-                    []
-                );
-            }
-        }
-    }
-    else { // newNode has no children
-
-        if (oldNode.children) { // The oldNode has either virtual nodes or a virtual text
+        else if (isVirtualText(oldChildren)) {
 
             return new ElementPatches(
-
                 /*patches*/
                 [
-                    ...diffAttributes(oldNode.attributes, newNode.attributes),
-                    new RemoveChildrenPatch() // Remove all the children
+                    ...diffAttributes(oldAttributes, newAttributes),
+                    new RemoveTextPatch() // Remove the text child
                 ],
-
                 /*childrenPatches*/
                 []
             );
-
         }
-        else { // oldNode has no children either
+        else { // oldChildren is a collection of virtual nodes
 
-            return new ElementPatches( // Diff the node only
-
+            return new ElementPatches(
                 /*patches*/
                 [
-                    ...diffAttributes(oldNode.attributes, newNode.attributes)
+                    ...diffAttributes(oldAttributes, newAttributes),
+                    new RemoveChildrenPatch()
                 ],
-
                 /*childrenPatches*/
                 []
             );
-
         }
     }
+    else if (isVirtualText(newChildren)) {
 
+        const newText = newChildren[0] as VirtualText;
 
+        if (isNull(oldChildren)) {
+
+            return new ElementPatches(
+                /*patches*/
+                [
+                    ...diffAttributes(oldAttributes, newAttributes),
+                    new SetTextPatch(newText)
+                ],
+                /*childrenPatches*/
+                []
+            );
+        }
+        else if (isVirtualText(oldChildren)) {
+
+            const oldText = oldChildren[0] as VirtualText;
+
+            if (oldText.text !== newText.text) { // Replace text
+
+                return new ElementPatches(
+                    /*patches*/
+                    [new ReplaceTextPatch(newText)],
+                    /*childrenPatches*/
+                    []
+                );
+            }
+            else { // Texts are equal, no need to replace them
+
+                return new ElementPatches(
+                    /*patches*/
+                    [],
+                    /*childrenPatches*/
+                    []
+                );
+            }
+        }
+        else { // oldChildren is a collection of virtual nodes
+
+            return new ElementPatches(
+                /*patches*/
+                [
+                    new RemoveChildrenPatch(),
+                    new SetTextPatch(newText)
+                ],
+                /*childrenPatches*/
+                []
+            );
+        }
+    }
+    else { // newChildren is a collection of virtual nodes
+
+        if (isNull(oldChildren)) {
+
+            return new ElementPatches(
+                /*patches*/
+                [
+                    ...diffAttributes(oldAttributes, newAttributes),
+                    new AddChildrenPatch((newChildren as VirtualNode[])!) // Add the new children
+                ],
+                /*childrenPatches*/
+                []
+            );
+        }
+        else if (isVirtualText(oldChildren)) {
+
+            return new ElementPatches(
+                /*patches*/
+                [
+                    ...diffAttributes(oldAttributes, newAttributes),
+                    new RemoveTextPatch(), // Remove the text child
+                    new AddChildrenPatch((newChildren as VirtualNode[])!) // Add the new children
+                ],
+                /*childrenPatches*/
+                []
+            );
+        }
+        else { // oldChildren is a collection of virtual nodes
+
+            // Handle the children nodes
+            return diffChildren(oldNode as VirtualNode, newNode as VirtualNode);
+        }
+    }
 }

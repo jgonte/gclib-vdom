@@ -1,5 +1,5 @@
 import { Patch } from "../Patch";
-import VirtualText from "../../VirtualText";
+import VirtualText from "../../nodes/VirtualText";
 
 /**
  * Patch to replace a text in the DOM element
@@ -19,7 +19,9 @@ export default class SetTextPatch extends Patch {
 
     apply(element: HTMLElement): void {
 
-        element.textContent = this.value.text.toString();      
+        const textNode = document.createTextNode(this.value.text.toString());
+
+        element.appendChild(textNode);      
     }
 
 }

@@ -17,8 +17,7 @@ describe("render tests", () => {
             id: 'myElement',
             class: "class1 class2",
             style: "color: red;"
-        },
-        null);
+        }, null);
 
         const element = node.render();
 
@@ -28,16 +27,14 @@ describe("render tests", () => {
     it("creates an HTMLElement from a virtual node with the name of the element and children", () => {
 
         const node = createElement('div', null,
-        [
             createElement('img', {
                 src: 'http://images/image.gif'
-            },
-            null),
+            }, null),
 
-            createElement('div', null, [
+            createElement('div', null,
                 createElement('span', null, 'Some text')
-            ])
-        ]);
+            )
+        );
 
         const element = node.render();
 
@@ -46,18 +43,14 @@ describe("render tests", () => {
 
     it("creates an HTMLElement from a virtual node with the name of the element, attributes and children", () => {
 
-        const node = createElement('div', 
-        {
-            id: 'myElement'
-        },
-        [
+        const node = createElement('div', { id: 'myElement' },
+
             createElement('img', {
                 src: 'http://images/image.gif'
-            },
-            null),
+            }, null),
 
             createElement('span', null, 'Some text')
-        ]);
+        );
 
         const element = node.render();
 

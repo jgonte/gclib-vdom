@@ -1,7 +1,7 @@
 import { Patch } from "../Patch";
-import VirtualNode from "../../VirtualNode";
-import VirtualText from "../../VirtualText";
-import PatchingContext from "../../PatchingContext";
+import VirtualNode from "../../nodes/VirtualNode";
+import VirtualText from "../../nodes/VirtualText";
+import PatchingContext from "../../helpers/PatchingContext";
 
 /**
  * Patch to set a new child at a given index

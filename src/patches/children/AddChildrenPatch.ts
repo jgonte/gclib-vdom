@@ -1,5 +1,5 @@
 import { Patch } from "../Patch";
-import VirtualNode from "../../VirtualNode";
+import VirtualNode from "../../nodes/VirtualNode";
 
 /**
  * Patch to add an attribute to the DOM element
@@ -16,16 +16,12 @@ export default class AddChildrenPatch extends Patch {
         super();
     }
 
-    apply(element: HTMLElement): void {
+    apply(node: ChildNode): void {
 
         this.children.forEach(child => {
 
-            const newElement = child.render();
-
-            element.appendChild(newElement);
-
+            node.appendChild(child.render());
         });
-
     }
 
 }

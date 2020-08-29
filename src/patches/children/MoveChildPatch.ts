@@ -1,5 +1,5 @@
 import { Patch } from "../Patch";
-import PatchingContext from "../../PatchingContext";
+import PatchingContext from "../../helpers/PatchingContext";
 
 /**
  * Patch to remove an attribute from the DOM element

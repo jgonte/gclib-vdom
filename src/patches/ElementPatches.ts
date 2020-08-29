@@ -1,6 +1,6 @@
-import { Patch } from "./patches/Patch";
+import { Patch } from "./Patch";
 import ChildElementPatches from "./ChildElementPatches";
-import PatchingContext from "./PatchingContext";
+import PatchingContext from "../helpers/PatchingContext";
 
 /**
  * Contains the patches that are applied to an element and its children
@@ -24,17 +24,17 @@ export default class ElementPatches {
 
     /**
      * 
-     * @param element Applies the patches to the given element
+     * @param node Applies the patches to the given element
      */
-    apply(element: HTMLElement): void {
+    apply(node: ChildNode): void {
 
-        this.patches.forEach(patch => patch.apply(element, this._context));
+        this.patches.forEach(patch => patch.apply(node, this._context));
 
         this.childrenPatches.forEach(patch => {
 
-            const child = element.children[patch.index];
+            const childNode: ChildNode = node.childNodes[patch.index];
 
-            patch.patches.apply((child as HTMLElement));
+            patch.patches.apply(childNode);
         });
     }
 

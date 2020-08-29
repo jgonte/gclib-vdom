@@ -1,5 +1,5 @@
-import VirtualNode from "./VirtualNode"
-import VirtualText from "./VirtualText";
+import VirtualNode from "./nodes/VirtualNode"
+import VirtualText from "./nodes/VirtualText";
 
 /**
  * Creates a virtual node
@@ -8,16 +8,31 @@ import VirtualText from "./VirtualText";
  * @param children Children of the element
  */
 export default function createElement(
-    name: string, attributes: any | null, 
-    children: VirtualNode[] | string | number | boolean | null): VirtualNode {
+    name: string,
+    attributes: any | null,
+    ...children: any[]): VirtualNode {
 
-    return new VirtualNode(
-        name,
-        attributes,
-        children ?
-            Array.isArray(children) ? 
-                children as VirtualNode[] : 
-                new VirtualText(children) :
-            null
-    );
+    const childrenNodes: any[] = [];
+
+    children.forEach(child => {
+
+        if (!child) {
+
+            childrenNodes.push(null);
+        }
+        else if (child.isVirtualNode) {
+
+            childrenNodes.push(child);
+        }
+        else if (typeof child === 'object') {
+
+            throw new Error('Invalid object');
+        }
+        else {
+
+            childrenNodes.push(new VirtualText(child));
+        }
+    });
+
+    return new VirtualNode(name, attributes, childrenNodes);
 }

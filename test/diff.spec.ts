@@ -1,7 +1,7 @@
 import createElement from "../src/createElement";
 import diff from "../src/diff";
 import displayObject from "../src/utils/displayObject";
-import ElementPatches from "../src/ElementPatches";
+import ElementPatches from "../src/patches/ElementPatches";
 
 function comparePatches(patches: ElementPatches, expected: string): void {
 
@@ -111,7 +111,7 @@ describe("diff tests", () => {
         (ElementPatches) {
             patches:
             [
-                (SetTextPatch) {
+                (ReplaceTextPatch) {
                     value:
                     (VirtualText) {
                         text: 'Some other text'
@@ -131,16 +131,14 @@ describe("diff tests", () => {
     it("diff a node with changed child image url and span text", () => {
 
         const oldNode = createElement('div', null,
-            [
-                createElement('img', {
-                    src: 'http://images/image.gif'
-                },
-                    null),
+            createElement('img', {
+                src: 'http://images/image.gif'
+            }, null),
 
-                createElement('div', null, [
-                    createElement('span', null, 'Some text')
-                ])
-            ]);
+            createElement('div', null,
+                createElement('span', null, 'Some text')
+            )
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
@@ -148,16 +146,14 @@ describe("diff tests", () => {
         expect(element.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"><div><span>Some text</span></div></div>');
 
         const newNode = createElement('div', null,
-            [
-                createElement('img', {
-                    src: 'http://images/newImage.gif' // changed
-                },
-                    null),
+            createElement('img', {
+                src: 'http://images/newImage.gif' // changed
+            }, null),
 
-                createElement('div', null, [
-                    createElement('span', null, 'Some other text') // changed
-                ])
-            ]);
+            createElement('div', null,
+                createElement('span', null, 'Some other text') // changed
+            )
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -197,7 +193,7 @@ describe("diff tests", () => {
                                 (ElementPatches) {
                                     patches:
                                     [
-                                        (SetTextPatch) {
+                                        (ReplaceTextPatch) {
                                             value:
                                             (VirtualText) {
                                                 text: 'Some other text'
@@ -225,16 +221,14 @@ describe("diff tests", () => {
     it("diff a node with changed child image url and replace span child with text", () => {
 
         const oldNode = createElement('div', null,
-            [
-                createElement('img', {
-                    src: 'http://images/image.gif'
-                },
-                    null),
+            createElement('img', {
+                src: 'http://images/image.gif'
+            }, null),
 
-                createElement('div', null, [
-                    createElement('span', null, 'Some text')
-                ])
-            ]);
+            createElement('div', null,
+                createElement('span', null, 'Some text')
+            )
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
@@ -242,14 +236,12 @@ describe("diff tests", () => {
         expect(element.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"><div><span>Some text</span></div></div>');
 
         const newNode = createElement('div', null,
-            [
-                createElement('img', {
-                    src: 'http://images/newImage.gif' // changed
-                },
-                    null),
+            createElement('img', {
+                src: 'http://images/newImage.gif' // changed
+            }, null),
 
-                createElement('div', null, 'Some other text') // replaced 'span' child with text
-            ]);
+            createElement('div', null, 'Some other text') // replaced 'span' child with text
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -306,16 +298,14 @@ describe("diff tests", () => {
     it("diff a node with children components replaced with text", () => {
 
         const oldNode = createElement('div', null,
-            [
-                createElement('img', {
-                    src: 'http://images/image.gif'
-                },
-                    null),
+            createElement('img', {
+                src: 'http://images/image.gif'
+            }, null),
 
-                createElement('div', null, [
-                    createElement('span', null, 'Some text')
-                ])
-            ]);
+            createElement('div', null,
+                createElement('span', null, 'Some text')
+            )
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
@@ -358,16 +348,15 @@ describe("diff tests", () => {
         expect(element.outerHTML).toEqual('<div>Some text</div>');
 
         const newNode = createElement('div', null,
-            [
-                createElement('img', {
-                    src: 'http://images/image.gif'
-                },
-                    null),
 
-                createElement('div', null, [
-                    createElement('span', null, 'Some text')
-                ])
-            ]);
+            createElement('img', {
+                src: 'http://images/image.gif'
+            }, null),
+
+            createElement('div', null,
+                createElement('span', null, 'Some text')
+            )
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -385,7 +374,11 @@ describe("diff tests", () => {
                             {
                                 src: 'http://images/image.gif'
                             },
-                            children: null
+                            children:
+                            [
+                                null
+                            ],
+                            isVirtualNode: true
                         },
                         (VirtualNode) {
                             name: 'div',
@@ -396,18 +389,26 @@ describe("diff tests", () => {
                                     name: 'span',
                                     attributes: null,
                                     children:
-                                    (VirtualText) {
-                                        text: 'Some text'
-                                    }
+                                    [
+                                        (VirtualText) {
+                                            text: 'Some text'
+                                        }
+                                    ],
+                                    isVirtualNode: true
                                 }
-                            ]
+                            ],
+                            isVirtualNode: true
                         }
                     ]
                 }
             ],
             childrenPatches:
             [],
-            _context:(PatchingContext) {_original:{}}
+            _context:
+            (PatchingContext) {
+                _original:
+                {}
+            }
         }`);
 
         patches.apply(element);
@@ -417,21 +418,21 @@ describe("diff tests", () => {
 
     it("diff a node with children components modify children no key", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', null, 'Text 1'),
             createElement('li', null, 'Text 2'),
             createElement('li', null, 'Text 3')
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li>Text 1</li><li>Text 2</li><li>Text 3</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             createElement('li', null, 'Text 4'),
             createElement('li', null, 'Text 5')
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -452,7 +453,7 @@ describe("diff tests", () => {
                     (ElementPatches) {
                         patches:
                         [
-                            (SetTextPatch) {
+                            (ReplaceTextPatch) {
                                 value:
                                 (VirtualText) {
                                     text: 'Text 4'
@@ -473,7 +474,7 @@ describe("diff tests", () => {
                     (ElementPatches) {
                         patches:
                         [
-                            (SetTextPatch) {
+                            (ReplaceTextPatch) {
                                 value:
                                 (VirtualText) {
                                     text: 'Text 5'
@@ -509,9 +510,9 @@ describe("diff tests", () => {
 
         expect(element.outerHTML).toEqual('<ul></ul>');
 
-        const newNode = createElement('ul', null, [
-            createElement('li', { key: 1 }, 'Text 1'), // insert new 
-        ]);
+        const newNode = createElement('ul', null,
+            createElement('li', { key: 1 }, 'Text 1'), // insert new
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -529,16 +530,23 @@ describe("diff tests", () => {
                                 key: 1
                             },
                             children:
-                            (VirtualText) {
-                                text: 'Text 1'
-                            }
+                            [
+                                (VirtualText) {
+                                    text: 'Text 1'
+                                }
+                            ],
+                            isVirtualNode: true
                         }
                     ]
                 }
             ],
             childrenPatches:
             [],
-            _context:(PatchingContext) {_original:{}}
+            _context:
+            (PatchingContext) {
+                _original:
+                {}
+            }
         }`);
 
         patches.apply(element);
@@ -548,19 +556,19 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Prepend a child to existing children change text in old one", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1')
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             createElement('li', { key: '3' }, 'Text 3'), // insert new 
             createElement('li', { key: '1' }, 'Text 11') // change text
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -578,9 +586,12 @@ describe("diff tests", () => {
                             key: '3'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 3'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 3'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 },
                 (MoveElementPatch) {
@@ -597,7 +608,7 @@ describe("diff tests", () => {
                     (ElementPatches) {
                         patches:
                         [
-                            (SetTextPatch) {
+                            (ReplaceTextPatch) {
                                 value:
                                 (VirtualText) {
                                     text: 'Text 11'
@@ -628,19 +639,19 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Append a child to existing children change text in old one", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1')
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 11'), // change text
             createElement('li', { key: '3' }, 'Text 3') // append new 
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -658,9 +669,12 @@ describe("diff tests", () => {
                             key: '3'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 3'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 3'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 }
             ],
@@ -672,7 +686,7 @@ describe("diff tests", () => {
                     (ElementPatches) {
                         patches:
                         [
-                            (SetTextPatch) {
+                            (ReplaceTextPatch) {
                                 value:
                                 (VirtualText) {
                                     text: 'Text 11'
@@ -703,23 +717,23 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Insert at the beginning, in the middle and at the end", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '2' }, 'Text 2'),
             createElement('li', { key: '4' }, 'Text 4'),
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"2\">Text 2</li><li key=\"4\">Text 4</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'), // insert at the beginning
             createElement('li', { key: '2' }, 'Text 2'),
             createElement('li', { key: '3' }, 'Text 3'), // insert in the middle 
             createElement('li', { key: '4' }, 'Text 4'),
             createElement('li', { key: '5' }, 'Text 5') // insert at the end
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -737,9 +751,12 @@ describe("diff tests", () => {
                             key: '1'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 1'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 1'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 },
                 (MoveElementPatch) {
@@ -757,9 +774,12 @@ describe("diff tests", () => {
                             key: '3'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 3'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 3'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 },
                 (MoveElementPatch) {
@@ -777,9 +797,12 @@ describe("diff tests", () => {
                             key: '5'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 5'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 5'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 }
             ],
@@ -799,19 +822,19 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Insert two children at the beginning, two in the middle and two at the end", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '3' }, 'Text 3'),
             createElement('li', { key: '4' }, 'Text 4'),
             createElement('li', { key: '7' }, 'Text 7'),
             createElement('li', { key: '8' }, 'Text 8'),
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"3\">Text 3</li><li key=\"4\">Text 4</li><li key=\"7\">Text 7</li><li key=\"8\">Text 8</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'), // insert at the beginning
             createElement('li', { key: '2' }, 'Text 2'), // insert at the beginning
             createElement('li', { key: '3' }, 'Text 3'),
@@ -822,7 +845,7 @@ describe("diff tests", () => {
             createElement('li', { key: '8' }, 'Text 8'),
             createElement('li', { key: '9' }, 'Text 9'), // insert at the end
             createElement('li', { key: '10' }, 'Text 10') // insert at the end
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -840,9 +863,12 @@ describe("diff tests", () => {
                             key: '1'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 1'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 1'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 },
                 (SetChildPatch) {
@@ -855,9 +881,12 @@ describe("diff tests", () => {
                             key: '2'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 2'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 2'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 },
                 (MoveElementPatch) {
@@ -880,9 +909,12 @@ describe("diff tests", () => {
                             key: '5'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 5'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 5'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 },
                 (SetChildPatch) {
@@ -895,9 +927,12 @@ describe("diff tests", () => {
                             key: '6'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 6'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 6'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 },
                 (MoveElementPatch) {
@@ -920,9 +955,12 @@ describe("diff tests", () => {
                             key: '9'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 9'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 9'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 },
                 (SetChildPatch) {
@@ -935,9 +973,12 @@ describe("diff tests", () => {
                             key: '10'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 10'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 10'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 }
             ],
@@ -957,20 +998,20 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Remove first node", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'),
             createElement('li', { key: '2' }, 'Text 2')
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             //createElement('li', { key: '1' }, 'Text 1'), First node removed
             createElement('li', { key: '2' }, 'Text 2')
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -1004,20 +1045,20 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Remove last node", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'),
             createElement('li', { key: '2' }, 'Text 2')
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'),
             //createElement('li', { key: '2' }, 'Text 2') Last node removed
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -1046,22 +1087,22 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Remove middle node", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'),
             createElement('li', { key: '2' }, 'Text 2'),
             createElement('li', { key: '3' }, 'Text 3')
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'),
             //createElement('li', { key: '2' }, 'Text 2') Middle node removed
             createElement('li', { key: '3' }, 'Text 3'),
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -1095,26 +1136,26 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Remove from the beginning, the middle and the end", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'),
             createElement('li', { key: '2' }, 'Text 2'),
             createElement('li', { key: '3' }, 'Text 3'),
             createElement('li', { key: '4' }, 'Text 4'),
             createElement('li', { key: '5' }, 'Text 5')
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li><li key=\"4\">Text 4</li><li key=\"5\">Text 5</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             //createElement('li', { key: '1' }, 'Text 1'), // Remove from the beginning
             createElement('li', { key: '2' }, 'Text 2'),
             //createElement('li', { key: '3' }, 'Text 3'), // Remove from the middle 
             createElement('li', { key: '4' }, 'Text 4'),
             //createElement('li', { key: '5' }, 'Text 5') // Remove from the end
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -1153,7 +1194,7 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Remove two children from the beginning, two from the middle and two from the end", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'), // remove from the beginning
             createElement('li', { key: '2' }, 'Text 2'), // remove from the beginning
             createElement('li', { key: '3' }, 'Text 3'),
@@ -1164,19 +1205,19 @@ describe("diff tests", () => {
             createElement('li', { key: '8' }, 'Text 8'),
             createElement('li', { key: '9' }, 'Text 9'), // remove from the end
             createElement('li', { key: '10' }, 'Text 10') // remove from the end
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li><li key=\"4\">Text 4</li><li key=\"5\">Text 5</li><li key=\"6\">Text 6</li><li key=\"7\">Text 7</li><li key=\"8\">Text 8</li><li key=\"9\">Text 9</li><li key=\"10\">Text 10</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             createElement('li', { key: '3' }, 'Text 3'),
             createElement('li', { key: '4' }, 'Text 4'),
             createElement('li', { key: '7' }, 'Text 7'),
             createElement('li', { key: '8' }, 'Text 8'),
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -1225,21 +1266,20 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Swap children", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'),
             createElement('li', { key: '2' }, 'Text 2')
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             createElement('li', { key: '2' }, 'Text 2'),
             createElement('li', { key: '1' }, 'Text 1')
-
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -1272,24 +1312,23 @@ describe("diff tests", () => {
         expect(element.outerHTML).toEqual('<ul><li key=\"2\">Text 2</li><li key=\"1\">Text 1</li></ul>');
     });
 
-    it("diff a node with keyed children. Add at the beginning, remove at the end", () => {
+    it("diff a node with keyed children. Add at the beginning, remove from the end", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '2' }, 'Text 2'),
             createElement('li', { key: '3' }, 'Text 3'),
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'),
             createElement('li', { key: '2' }, 'Text 2'),
             //createElement('li', { key: '3' }, 'Text 3') removed
-
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -1307,9 +1346,12 @@ describe("diff tests", () => {
                             key: '1'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 1'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 1'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 },
                 (MoveElementPatch) {
@@ -1334,21 +1376,21 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Add at the end, remove from the beginning", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '3' }, 'Text 3'),
             createElement('li', { key: '1' }, 'Text 1'),
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"3\">Text 3</li><li key=\"1\">Text 1</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             //createElement('li', { key: '3' }, 'Text 3') removed
             createElement('li', { key: '1' }, 'Text 1'),
             createElement('li', { key: '2' }, 'Text 2'),
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -1371,9 +1413,12 @@ describe("diff tests", () => {
                             key: '2'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 2'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 2'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 }
             ],
@@ -1393,22 +1438,21 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Swap children and add one in the middle", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'),
             createElement('li', { key: '2' }, 'Text 2')
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             createElement('li', { key: '2' }, 'Text 2'),
             createElement('li', { key: '3' }, 'Text 3'),
             createElement('li', { key: '1' }, 'Text 1')
-
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -1431,9 +1475,12 @@ describe("diff tests", () => {
                             key: '3'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 3'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 3'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 },
                 (MoveElementPatch) {
@@ -1458,23 +1505,22 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Swap children and remove one from the middle", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'),
             createElement('li', { key: '2' }, 'Text 2'),
             createElement('li', { key: '3' }, 'Text 3'),
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             createElement('li', { key: '3' }, 'Text 3'),
             //createElement('li', { key: '2' }, 'Text 2'), // remove from the middle
             createElement('li', { key: '1' }, 'Text 1')
-
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -1513,27 +1559,27 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Reverse children", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'),
             createElement('li', { key: '2' }, 'Text 2'),
             createElement('li', { key: '3' }, 'Text 3'),
             createElement('li', { key: '4' }, 'Text 4'),
             createElement('li', { key: '5' }, 'Text 5'),
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li><li key=\"4\">Text 4</li><li key=\"5\">Text 5</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             createElement('li', { key: '5' }, 'Text 5'),
             createElement('li', { key: '4' }, 'Text 4'),
             createElement('li', { key: '3' }, 'Text 3'),
             createElement('li', { key: '2' }, 'Text 2'),
             createElement('li', { key: '1' }, 'Text 1')
 
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -1578,25 +1624,24 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Combination of all the above v1", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'),
             createElement('li', { key: '2' }, 'Text 2'),
             createElement('li', { key: '3' }, 'Text 3'),
             createElement('li', { key: '4' }, 'Text 4')
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li><li key=\"4\">Text 4</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             createElement('li', { key: '4' }, 'Text 4'), // swap with 1
             createElement('li', { key: '5' }, 'Text 5'), // insert middle
             // createElement('li', { key: '3' }, 'Text 3'), // remove
             createElement('li', { key: '1' }, 'Text 1'), // append
-           
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -1619,9 +1664,12 @@ describe("diff tests", () => {
                             key: '5'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 5'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 5'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 },
                 (MoveElementPatch) {
@@ -1650,7 +1698,7 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Combination of all the above", () => {
 
-        const oldNode = createElement('ul', null, [
+        const oldNode = createElement('ul', null,
             createElement('li', { key: '1' }, 'Text 1'),
             createElement('li', { key: '2' }, 'Text 2'),
             createElement('li', { key: '3' }, 'Text 3'),
@@ -1660,14 +1708,14 @@ describe("diff tests", () => {
             createElement('li', { key: '7' }, 'Text 7'),
             createElement('li', { key: '8' }, 'Text 8'),
             createElement('li', { key: '9' }, 'Text 9')
-        ]);
+        );
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li><li key=\"4\">Text 4</li><li key=\"5\">Text 5</li><li key=\"6\">Text 6</li><li key=\"7\">Text 7</li><li key=\"8\">Text 8</li><li key=\"9\">Text 9</li></ul>');
 
-        const newNode = createElement('ul', null, [
+        const newNode = createElement('ul', null,
             createElement('li', { key: '11' }, 'Text 11'), // preppend
             createElement('li', { key: '8' }, 'Text 8'), // swap with 3
             createElement('li', { key: '4' }, 'Text 4'),
@@ -1675,7 +1723,7 @@ describe("diff tests", () => {
             createElement('li', { key: '7' }, 'Text 7'),
             createElement('li', { key: '3' }, 'Text 3'), // swap with 8
             createElement('li', { key: '13' }, 'Text 13'), // insert at the end
-        ]);
+        );
 
         const patches = diff(oldNode, newNode);
 
@@ -1693,9 +1741,12 @@ describe("diff tests", () => {
                             key: '11'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 11'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 11'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 },
                 (MoveElementPatch) {
@@ -1718,9 +1769,12 @@ describe("diff tests", () => {
                             key: '12'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 12'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 12'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 },
                 (MoveElementPatch) {
@@ -1743,9 +1797,12 @@ describe("diff tests", () => {
                             key: '13'
                         },
                         children:
-                        (VirtualText) {
-                            text: 'Text 13'
-                        }
+                        [
+                            (VirtualText) {
+                                text: 'Text 13'
+                            }
+                        ],
+                        isVirtualNode: true
                     }
                 },
                 (RemoveChildrenRangePatch) {
@@ -1765,6 +1822,74 @@ describe("diff tests", () => {
         patches.apply(element);
 
         expect(element.outerHTML).toEqual('<ul><li key=\"11\">Text 11</li><li key=\"8\">Text 8</li><li key=\"4\">Text 4</li><li key=\"12\">Text 12</li><li key=\"7\">Text 7</li><li key=\"3\">Text 3</li><li key=\"13\">Text 13</li></ul>');
+    });
+
+    it("diff a node with non-keyed children. Counter", () => {
+
+        let count: number = 5;
+
+        const increment = () => ++count;
+
+        const oldNode = createElement("div", null,
+            createElement("h4", null, "Counter"),
+            count,
+            createElement("button", { click: increment }, "Increment")
+        );
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.outerHTML).toEqual('<div><h4>Counter</h4>5<button click=\"function () { return ++count; }\">Increment</button></div>');
+
+        increment();
+
+        const newNode = createElement("div", null,
+            createElement("h4", null, "Counter"),
+            count,
+            createElement("button", { click: increment }, "Increment")
+        );
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [],
+            childrenPatches:
+            [
+                (ChildElementPatches) {
+                    index: 1,
+                    patches:
+                    (ElementPatches) {
+                        patches:
+                        [
+                            (ReplaceTextPatch) {
+                                value:
+                                (VirtualText) {
+                                    text: 6
+                                }
+                            }
+                        ],
+                        childrenPatches:
+                        [],
+                        _context:
+                        (PatchingContext) {
+                            _original:
+                            {}
+                        }
+                    }
+                }
+            ],
+            _context:
+            (PatchingContext) {
+                _original:
+                {}
+            }
+        }`);
+
+        patches.apply(element);
+
+        expect(element.outerHTML).toEqual('<div><h4>Counter</h4>6<button click=\"function () { return ++count; }\">Increment</button></div>');
     });
 
 });
