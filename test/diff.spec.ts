@@ -1833,20 +1833,20 @@ describe("diff tests", () => {
         const oldNode = createElement("div", null,
             createElement("h4", null, "Counter"),
             count,
-            createElement("button", { click: increment }, "Increment")
+            createElement("button", { onClick: increment }, "Increment")
         );
 
         // Get the element to get patched
         const element = oldNode.render();
 
-        expect(element.outerHTML).toEqual('<div><h4>Counter</h4>5<button click=\"function () { return ++count; }\">Increment</button></div>');
+        expect(element.outerHTML).toEqual('<div><h4>Counter</h4>5<button>Increment</button></div>');
 
         increment();
 
         const newNode = createElement("div", null,
             createElement("h4", null, "Counter"),
             count,
-            createElement("button", { click: increment }, "Increment")
+            createElement("button", { onClick: increment }, "Increment")
         );
 
         const patches = diff(oldNode, newNode);
@@ -1889,7 +1889,7 @@ describe("diff tests", () => {
 
         patches.apply(element);
 
-        expect(element.outerHTML).toEqual('<div><h4>Counter</h4>6<button click=\"function () { return ++count; }\">Increment</button></div>');
+        expect(element.outerHTML).toEqual('<div><h4>Counter</h4>6<button>Increment</button></div>');
     });
 
 });

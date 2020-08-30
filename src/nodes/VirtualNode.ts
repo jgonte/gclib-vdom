@@ -40,10 +40,24 @@ export default class VirtualNode {
             for (const [k, v] of Object.entries(this.attributes)) {
 
                 if (typeof v === 'string' ||
-                    typeof v === 'number' ||
-                    typeof v === 'function') {
+                    typeof v === 'number') {
 
                     element.setAttribute(k, v.toString());
+                }
+                else if (typeof v === 'function') {
+
+                    const functionName: string = k;
+
+                    if (/^on/.test(functionName)) {
+
+                        const eventName: string = functionName.slice(2).toLowerCase();
+
+                        element.addEventListener(eventName, (event) => v);
+                    }
+                    else {
+
+                        throw Error(`Invalid event name: ${functionName}. It must start with on...`);
+                    }
                 }
                 else { // object, Array
 
