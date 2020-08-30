@@ -9,8 +9,7 @@ import SetAttributePatch from "./patches/attributes/SetAttributePatch";
 import SetTextPatch from "./patches/text/SetTextPatch";
 import RemoveTextPatch from "./patches/text/RemoveTextPatch";
 import ReplaceTextPatch from "./patches/text/ReplaceTextPatch";
-
-// import RemoveElementPatch from "./patches/RemoveElementPatch";
+import RemoveElementPatch from "./patches/element/RemoveElementPatch";
 // import ReplaceElementPatch from "./patches/ReplaceElementPatch";
 
 import RemoveChildrenPatch from "./patches/children/RemoveChildrenPatch";
@@ -365,17 +364,17 @@ function isVirtualText(children: any[]): boolean {
     return children.length === 1 && !children[0].isVirtualNode;
 }
 
-export default function diff(oldNode: VirtualNode | VirtualText, newNode: VirtualNode | VirtualText): ElementPatches {
+export default function diff(oldNode: VirtualNode | VirtualText, newNode: VirtualNode | VirtualText | null): ElementPatches {
 
-    // if (!newNode) {
+    if (!newNode) {
 
-    //     return new ElementPatches(
-    //         /*patches*/
-    //         [new RemoveElementPatch()],
-    //         /*childrenPatches*/
-    //         []
-    //     );
-    // }
+        return new ElementPatches(
+            /*patches*/
+            [new RemoveElementPatch()],
+            /*childrenPatches*/
+            []
+        );
+    }
 
     // if (oldNode.name !== newNode.name) {
 

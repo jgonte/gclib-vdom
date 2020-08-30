@@ -52,7 +52,7 @@ export default class VirtualNode {
 
                         const eventName: string = functionName.slice(2).toLowerCase();
 
-                        element.addEventListener(eventName, (event) => v);
+                        element.addEventListener(eventName, v as () => void);
                     }
                     else {
 

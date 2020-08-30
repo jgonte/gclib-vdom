@@ -2,6 +2,8 @@ import createElement from "../src/createElement";
 import diff from "../src/diff";
 import displayObject from "../src/utils/displayObject";
 import ElementPatches from "../src/patches/ElementPatches";
+import VirtualNode from "../src/nodes/VirtualNode";
+import VirtualText from "../src/nodes/VirtualText";
 
 function comparePatches(patches: ElementPatches, expected: string): void {
 
@@ -18,6 +20,79 @@ function comparePatches(patches: ElementPatches, expected: string): void {
 }
 
 describe("diff tests", () => {
+
+    // CustomElement bypasses diffing when the old node is nil
+    // so we don't test that
+
+    it("virtual text to null", () => {
+
+        // CustomElement's render converts literals to virtual texts
+        const oldNode = new VirtualText('someText');
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.textContent).toEqual('someText');
+
+        const newNode = null;
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (RemoveElementPatch) {}
+            ],
+            childrenPatches:
+            [],
+            _context:
+            (PatchingContext) {
+                _original:
+                {}
+            }
+        }`);
+
+        patches.apply(element);
+
+        // Element should be removed
+        expect(element.parentElement).toEqual(null);
+    });
+
+    it("virtual node to null", () => {
+
+        // CustomElement's render converts literals to virtual texts
+        const oldNode = createElement('div', null, null);
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.outerHTML).toEqual('<div></div>');
+
+        const newNode = null;
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (RemoveElementPatch) {}
+            ],
+            childrenPatches:
+            [],
+            _context:
+            (PatchingContext) {
+                _original:
+                {}
+            }
+        }`);
+
+        patches.apply(element);
+
+        // Element should be removed
+        expect(element.parentElement).toEqual(null);
+    });
 
     it("diff same node type", () => {
 
@@ -45,6 +120,7 @@ describe("diff tests", () => {
         // Nothing changed
         expect(element.outerHTML).toEqual('<div></div>');
     });
+
 
     it("diff same node type with different attributes", () => {
 
