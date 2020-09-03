@@ -356,7 +356,8 @@ function diffChildren(oldNode: VirtualNode, newNode: VirtualNode): ElementPatche
 
 function isNull(children: any[]): boolean {
 
-    return children.length === 1 && !children[0];
+    return !children ||
+        (children.length === 1 && !children[0]);
 }
 
 function isVirtualText(children: any[]): boolean {
