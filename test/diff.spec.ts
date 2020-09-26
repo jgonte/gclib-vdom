@@ -21,12 +21,31 @@ function comparePatches(patches: ElementPatches, expected: string): void {
 
 describe("diff tests", () => {
 
-    // CustomElement bypasses diffing when the old node is nil
-    // so we don't test that
+    it("diff null to null", () => {
 
-    it("virtual text to null", () => {
+        const oldNode = null;
 
-        // CustomElement's render converts literals to virtual texts
+        const newNode = null;
+
+        const patches = diff(oldNode as unknown as VirtualNode, newNode as unknown as VirtualNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [],
+            childrenPatches:
+            [],
+            _context:
+            (PatchingContext) {
+                _original:
+                {},
+                _newNode: undefined
+            }
+        }`);
+    });
+
+    it("diff virtual text to undefined", () => {
+
         const oldNode = new VirtualText('someText');
 
         // Get the element to get patched
@@ -34,7 +53,7 @@ describe("diff tests", () => {
 
         expect(element.textContent).toEqual('someText');
 
-        const newNode = null;
+        const newNode = undefined;
 
         const patches = diff(oldNode, newNode);
 
@@ -48,8 +67,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -59,17 +78,50 @@ describe("diff tests", () => {
         expect(element.parentElement).toEqual(null);
     });
 
-    it("virtual node to null", () => {
+    it("diff undefined to virtual text", () => {
 
-        // CustomElement's render converts literals to virtual texts
-        const oldNode = createElement('div', null, null);
+        const oldNode = undefined;
+
+        const newNode = new VirtualText('someText');
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (SetElementPatch) {
+                    newNode:
+                    (VirtualText) {
+                        text: 'someText'
+                    }
+                }
+            ],
+            childrenPatches:
+            [],
+            _context:
+            (PatchingContext) {
+                _original:
+                {},
+                _newNode: undefined
+            }
+        }`);
+
+        const element = patches.apply(undefined);
+
+        expect(element.textContent).toEqual('someText');
+    });
+
+    it("diff virtual node to undefined", () => {
+
+        const oldNode = createElement('div', null);
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<div></div>');
 
-        const newNode = null;
+        const newNode = undefined;
 
         const patches = diff(oldNode, newNode);
 
@@ -83,8 +135,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -92,24 +144,230 @@ describe("diff tests", () => {
 
         // Element should be removed
         expect(element.parentElement).toEqual(null);
+    });
+
+    it("diff undefined to virtual node", () => {
+
+        const oldNode = undefined;
+
+        const newNode = createElement('div', null);
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (SetElementPatch) {
+                    newNode:
+                    (VirtualNode) {
+                        name: 'div',
+                        attributes: null,
+                        children:
+                        [],
+                        isVirtualNode: true
+                    }
+                }
+            ],
+            childrenPatches:
+            [],
+            _context:
+            (PatchingContext) {
+                _original:
+                {},
+                _newNode: undefined
+            }
+        }`);
+
+        const element = patches.apply(undefined);
+
+        expect((element as Element).outerHTML).toEqual('<div></div>');
+
+    });
+
+    it("diff virtual text to virtual node", () => {
+
+        const oldNode = new VirtualText('some text');
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.textContent).toEqual('some text');
+
+        const newNode = new VirtualNode('span', null, [new VirtualText('Some other text')]);
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (ReplaceElementPatch) {
+                    newNode:
+                    (VirtualNode) {
+                        name: 'span',
+                        attributes: null,
+                        children:
+                        [
+                            (VirtualText) {
+                                text: 'Some other text'
+                            }
+                        ],
+                        isVirtualNode: true
+                    }
+                }
+            ],
+            childrenPatches:
+            [],
+            _context:
+            (PatchingContext) {
+                _original:
+                {},
+                _newNode: undefined
+            }
+        }`);
+
+        const rootElement = patches.apply(element);
+
+        expect(rootElement).not.toEqual(element);
+
+        expect((rootElement as HTMLElement).outerHTML).toEqual('<span>Some other text</span>');
+    });
+
+    it("diff virtual node to virtual text", () => {
+
+        const oldNode = new VirtualNode('span', null, [new VirtualText('Some text')]);
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.textContent).toEqual('Some text');
+
+        const newNode = new VirtualText('Some other text');
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (ReplaceElementPatch) {
+                    newNode:
+                    (VirtualText) {
+                        text: 'Some other text'
+                    }
+                }
+            ],
+            childrenPatches:
+            [],
+            _context:
+            (PatchingContext) {
+                _original:
+                {},
+                _newNode: undefined
+            }
+        }`);
+
+        const rootElement = patches.apply(element);
+
+        expect(rootElement).not.toEqual(element);
+
+        expect((rootElement as Text).textContent).toEqual('Some other text');
+    });
+
+    it("diff virtual text to virtual text same text", () => {
+
+        const oldNode = new VirtualText('some text');
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.textContent).toEqual('some text');
+
+        const newNode = new VirtualText('some text');
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [],
+            childrenPatches:
+            [],
+            _context:
+            (PatchingContext) {
+                _original:
+                {},
+                _newNode: undefined
+            }
+        }`);
+
+        const rootElement = patches.apply(element);
+
+        expect(rootElement).toEqual(element);
+
+        expect((rootElement as Text).textContent).toEqual('some text');
+    });
+
+    it("diff virtual text to virtual text different text", () => {
+
+        // CustomElement's render converts literals to virtual texts
+        const oldNode = new VirtualText('some text');
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.textContent).toEqual('some text');
+
+        const newNode = new VirtualText('some other text');
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (SetTextPatch) {
+                    value:
+                    (VirtualText) {
+                        text: 'some other text'
+                    }
+                }
+            ],
+            childrenPatches:
+            [],
+            _context:
+            (PatchingContext) {
+                _original:
+                {},
+                _newNode: undefined
+            }
+        }`);
+
+        const rootElement = patches.apply(element);
+
+        expect(rootElement).toEqual(element);
+
+        expect((rootElement as Text).textContent).toEqual('some other text');
     });
 
     it("diff same node type", () => {
 
-        const oldNode = createElement('div', null, null);
+        const oldNode = createElement("div", null);
 
         // Get the element to get patched
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<div></div>');
 
-        const newNode = createElement('div', null, null);
+        const newNode = createElement("div", null);
 
         const patches = diff(oldNode, newNode);
 
         expect(patches).toEqual({
             "_context": {
-                "_original": {}
+                "_original": {},
+                "_newNode": undefined
             },
             "childrenPatches": [],
             "patches": []
@@ -121,15 +379,12 @@ describe("diff tests", () => {
         expect(element.outerHTML).toEqual('<div></div>');
     });
 
-
     it("diff same node type with different attributes", () => {
 
         const oldNode = createElement('div', {
             id: 'myElement1',
             class: "class1 class2",
-
-        },
-            null);
+        });
 
         // Get the element to get patched
         const element = oldNode.render();
@@ -140,8 +395,7 @@ describe("diff tests", () => {
             id: 'myElement2', // Replace attribute value
             //class: "class1 class2", // Remove attribute
             href: "http://someurl.com" // Add attribute
-        },
-            null);
+        });
 
         const patches = diff(oldNode, newNode);
 
@@ -162,7 +416,7 @@ describe("diff tests", () => {
             ],
             childrenPatches:
             [],
-            _context:(PatchingContext) {_original:{}}
+            _context:(PatchingContext) {_original:{},_newNode:undefined}
         }`);
 
         patches.apply(element);
@@ -186,17 +440,39 @@ describe("diff tests", () => {
         comparePatches(patches, `
         (ElementPatches) {
             patches:
+            [],
+            childrenPatches:
             [
-                (ReplaceTextPatch) {
-                    value:
-                    (VirtualText) {
-                        text: 'Some other text'
+                (ChildElementPatches) {
+                    index: 0,
+                    patches:
+                    (ElementPatches) {
+                        patches:
+                        [
+                            (SetTextPatch) {
+                                value:
+                                (VirtualText) {
+                                    text: 'Some other text'
+                                }
+                            }
+                        ],
+                        childrenPatches:
+                        [],
+                        _context:
+                        (PatchingContext) {
+                            _original:
+                            {},
+                            _newNode: undefined
+                        }
                     }
                 }
             ],
-            childrenPatches:
-            [],
-            _context:(PatchingContext) {_original:{}}
+            _context:
+            (PatchingContext) {
+                _original:
+                {},
+                _newNode: undefined
+            }
         }`);
 
         patches.apply(element);
@@ -204,12 +480,174 @@ describe("diff tests", () => {
         expect(element.outerHTML).toEqual('<span>Some other text</span>');
     });
 
+    it("diff same node type with children to without children", () => {
+
+        const oldNode = createElement("ul", null,
+            createElement("li", null, "Item1"),
+            createElement("li", null, "Item2"),
+            createElement("li", null, "Item3")
+        );
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.outerHTML).toEqual('<ul><li>Item1</li><li>Item2</li><li>Item3</li></ul>');
+
+        const newNode = createElement("ul", null);
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (RemoveChildrenPatch) {}
+            ],
+            childrenPatches:
+            [],
+            _context:
+            (PatchingContext) {
+                _original:
+                {},
+                _newNode: undefined
+            }
+        }`);
+
+        patches.apply(element);
+
+        expect(element.outerHTML).toEqual('<ul></ul>');
+    });
+
+    it("diff same node type without children to with children", () => {
+
+        const oldNode = createElement("ul", null);
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.outerHTML).toEqual('<ul></ul>');
+
+        const newNode = createElement("ul", null,
+        createElement("li", null, "Item1"),
+        createElement("li", null, "Item2"),
+        createElement("li", null, "Item3")
+    );
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (AddChildrenPatch) {
+                    children:
+                    [
+                        (VirtualNode) {
+                            name: 'li',
+                            attributes: null,
+                            children:
+                            [
+                                (VirtualText) {
+                                    text: 'Item1'
+                                }
+                            ],
+                            isVirtualNode: true
+                        },
+                        (VirtualNode) {
+                            name: 'li',
+                            attributes: null,
+                            children:
+                            [
+                                (VirtualText) {
+                                    text: 'Item2'
+                                }
+                            ],
+                            isVirtualNode: true
+                        },
+                        (VirtualNode) {
+                            name: 'li',
+                            attributes: null,
+                            children:
+                            [
+                                (VirtualText) {
+                                    text: 'Item3'
+                                }
+                            ],
+                            isVirtualNode: true
+                        }
+                    ]
+                }
+            ],
+            childrenPatches:
+            [],
+            _context:
+            (PatchingContext) {
+                _original:
+                {},
+                _newNode: undefined
+            }
+        }`);
+
+        patches.apply(element);
+
+        expect(element.outerHTML).toEqual('<ul><li>Item1</li><li>Item2</li><li>Item3</li></ul>');
+    });
+
+    it("diff virtual node to virtual node with different name", () => {
+
+        const oldNode = new VirtualNode('div', null, [new VirtualText('Some text')]);
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.outerHTML).toEqual('<div>Some text</div>');
+
+        const newNode = new VirtualNode('span', null, [new VirtualText('Some other text')]);
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (ReplaceElementPatch) {
+                    newNode:
+                    (VirtualNode) {
+                        name: 'span',
+                        attributes: null,
+                        children:
+                        [
+                            (VirtualText) {
+                                text: 'Some other text'
+                            }
+                        ],
+                        isVirtualNode: true
+                    }
+                }
+            ],
+            childrenPatches:
+            [],
+            _context:
+            (PatchingContext) {
+                _original:
+                {},
+                _newNode: undefined
+            }
+        }`);
+
+        const rootElement = patches.apply(element);
+
+        expect(rootElement).not.toEqual(element);
+
+        expect((rootElement as HTMLElement).outerHTML).toEqual('<span>Some other text</span>');
+    });
+
     it("diff a node with changed child image url and span text", () => {
 
         const oldNode = createElement('div', null,
             createElement('img', {
                 src: 'http://images/image.gif'
-            }, null),
+            }),
 
             createElement('div', null,
                 createElement('span', null, 'Some text')
@@ -224,7 +662,7 @@ describe("diff tests", () => {
         const newNode = createElement('div', null,
             createElement('img', {
                 src: 'http://images/newImage.gif' // changed
-            }, null),
+            }),
 
             createElement('div', null,
                 createElement('span', null, 'Some other text') // changed
@@ -252,7 +690,12 @@ describe("diff tests", () => {
                         ],
                         childrenPatches:
                         [],
-                        _context:(PatchingContext) {_original:{}}
+                        _context:
+                        (PatchingContext) {
+                            _original:
+                            {},
+                            _newNode: undefined
+                        }
                     }
                 },
                 (ChildElementPatches) {
@@ -268,25 +711,57 @@ describe("diff tests", () => {
                                 patches:
                                 (ElementPatches) {
                                     patches:
+                                    [],
+                                    childrenPatches:
                                     [
-                                        (ReplaceTextPatch) {
-                                            value:
-                                            (VirtualText) {
-                                                text: 'Some other text'
+                                        (ChildElementPatches) {
+                                            index: 0,
+                                            patches:
+                                            (ElementPatches) {
+                                                patches:
+                                                [
+                                                    (SetTextPatch) {
+                                                        value:
+                                                        (VirtualText) {
+                                                            text: 'Some other text'
+                                                        }
+                                                    }
+                                                ],
+                                                childrenPatches:
+                                                [],
+                                                _context:
+                                                (PatchingContext) {
+                                                    _original:
+                                                    {},
+                                                    _newNode: undefined
+                                                }
                                             }
                                         }
                                     ],
-                                    childrenPatches:
-                                    [],
-                                    _context:(PatchingContext) {_original:{}}
+                                    _context:
+                                    (PatchingContext) {
+                                        _original:
+                                        {},
+                                        _newNode: undefined
+                                    }
                                 }
                             }
                         ],
-                        _context:(PatchingContext) {_original:{}}
+                        _context:
+                        (PatchingContext) {
+                            _original:
+                            {},
+                            _newNode: undefined
+                        }
                     }
                 }
             ],
-            _context:(PatchingContext) {_original:{}}
+            _context:
+            (PatchingContext) {
+                _original:
+                {},
+                _newNode: undefined
+            }
         }`);
 
         patches.apply(element);
@@ -299,7 +774,7 @@ describe("diff tests", () => {
         const oldNode = createElement('div', null,
             createElement('img', {
                 src: 'http://images/image.gif'
-            }, null),
+            }),
 
             createElement('div', null,
                 createElement('span', null, 'Some text')
@@ -314,7 +789,7 @@ describe("diff tests", () => {
         const newNode = createElement('div', null,
             createElement('img', {
                 src: 'http://images/newImage.gif' // changed
-            }, null),
+            }),
 
             createElement('div', null, 'Some other text') // replaced 'span' child with text
         );
@@ -340,7 +815,12 @@ describe("diff tests", () => {
                         ],
                         childrenPatches:
                         [],
-                        _context:(PatchingContext) {_original:{}}
+                        _context:
+                        (PatchingContext) {
+                            _original:
+                            {},
+                            _newNode: undefined
+                        }
                     }
                 },
                 (ChildElementPatches) {
@@ -348,22 +828,48 @@ describe("diff tests", () => {
                     patches:
                     (ElementPatches) {
                         patches:
+                        [],
+                        childrenPatches:
                         [
-                            (RemoveChildrenPatch) {},
-                            (SetTextPatch) {
-                                value:
-                                (VirtualText) {
-                                    text: 'Some other text'
+                            (ChildElementPatches) {
+                                index: 0,
+                                patches:
+                                (ElementPatches) {
+                                    patches:
+                                    [
+                                        (ReplaceElementPatch) {
+                                            newNode:
+                                            (VirtualText) {
+                                                text: 'Some other text'
+                                            }
+                                        }
+                                    ],
+                                    childrenPatches:
+                                    [],
+                                    _context:
+                                    (PatchingContext) {
+                                        _original:
+                                        {},
+                                        _newNode: undefined
+                                    }
                                 }
                             }
                         ],
-                        childrenPatches:
-                        [],
-                        _context:(PatchingContext) {_original:{}}
+                        _context:
+                        (PatchingContext) {
+                            _original:
+                            {},
+                            _newNode: undefined
+                        }
                     }
                 }
             ],
-            _context:(PatchingContext) {_original:{}}
+            _context:
+            (PatchingContext) {
+                _original:
+                {},
+                _newNode: undefined
+            }
         }`);
 
         patches.apply(element);
@@ -376,7 +882,7 @@ describe("diff tests", () => {
         const oldNode = createElement('div', null,
             createElement('img', {
                 src: 'http://images/image.gif'
-            }, null),
+            }),
 
             createElement('div', null,
                 createElement('span', null, 'Some text')
@@ -396,17 +902,43 @@ describe("diff tests", () => {
         (ElementPatches) {
             patches:
             [
-                (RemoveChildrenPatch) {},
-                (SetTextPatch) {
-                    value:
-                    (VirtualText) {
-                        text: 'Some text'
-                    }
+                (RemoveChildrenRangePatch) {
+                    from: 1,
+                    count: 1
                 }
             ],
             childrenPatches:
-            [],
-            _context:(PatchingContext) {_original:{}}
+            [
+                (ChildElementPatches) {
+                    index: 0,
+                    patches:
+                    (ElementPatches) {
+                        patches:
+                        [
+                            (ReplaceElementPatch) {
+                                newNode:
+                                (VirtualText) {
+                                    text: 'Some text'
+                                }
+                            }
+                        ],
+                        childrenPatches:
+                        [],
+                        _context:
+                        (PatchingContext) {
+                            _original:
+                            {},
+                            _newNode: undefined
+                        }
+                    }
+                }
+            ],
+            _context:
+            (PatchingContext) {
+                _original:
+                {},
+                _newNode: undefined
+            }
         }`);
 
         patches.apply(element);
@@ -427,7 +959,7 @@ describe("diff tests", () => {
 
             createElement('img', {
                 src: 'http://images/image.gif'
-            }, null),
+            }),
 
             createElement('div', null,
                 createElement('span', null, 'Some text')
@@ -440,50 +972,68 @@ describe("diff tests", () => {
         (ElementPatches) {
             patches:
             [
-                (RemoveTextPatch) {},
-                (AddChildrenPatch) {
-                    children:
-                    [
-                        (VirtualNode) {
-                            name: 'img',
-                            attributes:
-                            {
-                                src: 'http://images/image.gif'
-                            },
-                            children:
-                            [
-                                null
-                            ],
-                            isVirtualNode: true
-                        },
-                        (VirtualNode) {
-                            name: 'div',
-                            attributes: null,
-                            children:
-                            [
-                                (VirtualNode) {
-                                    name: 'span',
-                                    attributes: null,
-                                    children:
-                                    [
-                                        (VirtualText) {
-                                            text: 'Some text'
-                                        }
-                                    ],
-                                    isVirtualNode: true
-                                }
-                            ],
-                            isVirtualNode: true
-                        }
-                    ]
+                (SetChildPatch) {
+                    index: 1,
+                    newNode:
+                    (VirtualNode) {
+                        name: 'div',
+                        attributes: null,
+                        children:
+                        [
+                            (VirtualNode) {
+                                name: 'span',
+                                attributes: null,
+                                children:
+                                [
+                                    (VirtualText) {
+                                        text: 'Some text'
+                                    }
+                                ],
+                                isVirtualNode: true
+                            }
+                        ],
+                        isVirtualNode: true
+                    }
                 }
             ],
             childrenPatches:
-            [],
+            [
+                (ChildElementPatches) {
+                    index: 0,
+                    patches:
+                    (ElementPatches) {
+                        patches:
+                        [
+                            (ReplaceElementPatch) {
+                                newNode:
+                                (VirtualNode) {
+                                    name: 'img',
+                                    attributes:
+                                    {
+                                        src: 'http://images/image.gif'
+                                    },
+                                    children:
+                                    [],
+                                    isVirtualNode: true
+                                }
+                            }
+                        ],
+                        childrenPatches:
+                        [],
+                        _context:
+                        (PatchingContext) {
+                            _original:
+                            {},
+                            _newNode: undefined
+                        }
+                    }
+                }
+            ],
             _context:
             (PatchingContext) {
                 _original:
-                {}
+                {},
+                _newNode: undefined
             }
         }`);
 
@@ -528,19 +1078,38 @@ describe("diff tests", () => {
                     patches:
                     (ElementPatches) {
                         patches:
+                        [],
+                        childrenPatches:
                         [
-                            (ReplaceTextPatch) {
-                                value:
-                                (VirtualText) {
-                                    text: 'Text 4'
+                            (ChildElementPatches) {
+                                index: 0,
+                                patches:
+                                (ElementPatches) {
+                                    patches:
+                                    [
+                                        (SetTextPatch) {
+                                            value:
+                                            (VirtualText) {
+                                                text: 'Text 4'
+                                            }
+                                        }
+                                    ],
+                                    childrenPatches:
+                                    [],
+                                    _context:
+                                    (PatchingContext) {
+                                        _original:
+                                        {},
+                                        _newNode: undefined
+                                    }
                                 }
                             }
                         ],
-                        childrenPatches:
-                        [],
                         _context:
                         (PatchingContext) {
-                            _original:{}
+                            _original:
+                            {},
+                            _newNode: undefined
                         }
                     }
                 },
@@ -549,26 +1118,47 @@ describe("diff tests", () => {
                     patches:
                     (ElementPatches) {
                         patches:
+                        [],
+                        childrenPatches:
                         [
-                            (ReplaceTextPatch) {
-                                value:
-                                (VirtualText) {
-                                    text: 'Text 5'
+                            (ChildElementPatches) {
+                                index: 0,
+                                patches:
+                                (ElementPatches) {
+                                    patches:
+                                    [
+                                        (SetTextPatch) {
+                                            value:
+                                            (VirtualText) {
+                                                text: 'Text 5'
+                                            }
+                                        }
+                                    ],
+                                    childrenPatches:
+                                    [],
+                                    _context:
+                                    (PatchingContext) {
+                                        _original:
+                                        {},
+                                        _newNode: undefined
+                                    }
                                 }
                             }
                         ],
-                        childrenPatches:
-                        [],
                         _context:
                         (PatchingContext) {
-                            _original:{}
+                            _original:
+                            {},
+                            _newNode: undefined
                         }
                     }
                 }
             ],
             _context:
             (PatchingContext) {
-                _original:{}
+                _original:
+                {},
+                _newNode: undefined
             }
         }`);
 
@@ -579,7 +1169,7 @@ describe("diff tests", () => {
 
     it("diff a node with keyed children. Add a child to an empty container ", () => {
 
-        const oldNode = createElement('ul', null, null);
+        const oldNode = createElement('ul', null);
 
         // Get the element to get patched
         const element = oldNode.render();
@@ -620,8 +1210,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -683,20 +1273,38 @@ describe("diff tests", () => {
                     patches:
                     (ElementPatches) {
                         patches:
+                        [],
+                        childrenPatches:
                         [
-                            (ReplaceTextPatch) {
-                                value:
-                                (VirtualText) {
-                                    text: 'Text 11'
+                            (ChildElementPatches) {
+                                index: 0,
+                                patches:
+                                (ElementPatches) {
+                                    patches:
+                                    [
+                                        (SetTextPatch) {
+                                            value:
+                                            (VirtualText) {
+                                                text: 'Text 11'
+                                            }
+                                        }
+                                    ],
+                                    childrenPatches:
+                                    [],
+                                    _context:
+                                    (PatchingContext) {
+                                        _original:
+                                        {},
+                                        _newNode: undefined
+                                    }
                                 }
                             }
                         ],
-                        childrenPatches:
-                        [],
                         _context:
                         (PatchingContext) {
                             _original:
-                            {}
+                            {},
+                            _newNode: undefined
                         }
                     }
                 }
@@ -704,7 +1312,8 @@ describe("diff tests", () => {
             _context:
             (PatchingContext) {
                 _original:
-                {}
+                {},
+                _newNode: undefined
             }
         }`);
 
@@ -761,20 +1370,38 @@ describe("diff tests", () => {
                     patches:
                     (ElementPatches) {
                         patches:
+                        [],
+                        childrenPatches:
                         [
-                            (ReplaceTextPatch) {
-                                value:
-                                (VirtualText) {
-                                    text: 'Text 11'
+                            (ChildElementPatches) {
+                                index: 0,
+                                patches:
+                                (ElementPatches) {
+                                    patches:
+                                    [
+                                        (SetTextPatch) {
+                                            value:
+                                            (VirtualText) {
+                                                text: 'Text 11'
+                                            }
+                                        }
+                                    ],
+                                    childrenPatches:
+                                    [],
+                                    _context:
+                                    (PatchingContext) {
+                                        _original:
+                                        {},
+                                        _newNode: undefined
+                                    }
                                 }
                             }
                         ],
-                        childrenPatches:
-                        [],
                         _context:
                         (PatchingContext) {
                             _original:
-                            {}
+                            {},
+                            _newNode: undefined
                         }
                     }
                 }
@@ -782,7 +1409,8 @@ describe("diff tests", () => {
             _context:
             (PatchingContext) {
                 _original:
-                {}
+                {},
+                _newNode: undefined
             }
         }`);
 
@@ -886,8 +1514,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -1062,8 +1690,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -1109,8 +1737,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -1151,8 +1779,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -1200,8 +1828,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -1258,8 +1886,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -1330,8 +1958,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -1378,8 +2006,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -1440,8 +2068,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -1502,8 +2130,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -1569,8 +2197,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -1623,8 +2251,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -1688,8 +2316,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -1762,8 +2390,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -1890,8 +2518,8 @@ describe("diff tests", () => {
             [],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 
@@ -1939,7 +2567,7 @@ describe("diff tests", () => {
                     (ElementPatches) {
                         patches:
                         [
-                            (ReplaceTextPatch) {
+                            (SetTextPatch) {
                                 value:
                                 (VirtualText) {
                                     text: 6
@@ -1950,16 +2578,16 @@ describe("diff tests", () => {
                         [],
                         _context:
                         (PatchingContext) {
-                            _original:
-                            {}
+                            _original:{},
+                            _newNode:undefined
                         }
                     }
                 }
             ],
             _context:
             (PatchingContext) {
-                _original:
-                {}
+                _original:{},
+                _newNode:undefined
             }
         }`);
 

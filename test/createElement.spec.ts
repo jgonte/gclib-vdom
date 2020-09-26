@@ -6,21 +6,20 @@ describe("createElement tests", () => {
 
     it("creates a virtual node with the name of the element", () => {
 
-        const node = createElement('div', null, null);
+        const node = createElement('div', null);
 
         expect(node.name).toEqual('div');
 
         expect(node.attributes).toEqual(null);
 
-        expect(node.children).toEqual([null]);
+        expect(node.children).toEqual([]);
     });
 
     it("creates a virtual node with the name of the element and attributes", () => {
 
         const node = createElement('div', {
             id: 'myElement'
-        },
-            null);
+        });
 
         expect(node.name).toEqual('div');
 
@@ -28,7 +27,7 @@ describe("createElement tests", () => {
             id: 'myElement'
         });
 
-        expect(node.children).toEqual([null]);
+        expect(node.children).toEqual([]);
     });
 
     it("creates a virtual node with the name of the element and children", () => {
@@ -36,7 +35,7 @@ describe("createElement tests", () => {
         const node = createElement('div', null,
             createElement('img', {
                 src: 'http://images/image.gif'
-            }, null),
+            }),
             createElement('div', null,
                 createElement('span', null, 'Some text')
             )
@@ -56,7 +55,7 @@ describe("createElement tests", () => {
             src: 'http://images/image.gif'
         });
 
-        expect(child.children).toEqual([null]);
+        expect(child.children).toEqual([]);
 
         child = (node.children as VirtualNode[])![1];
 
@@ -83,7 +82,7 @@ describe("createElement tests", () => {
             },
             createElement('img', {
                 src: 'http://images/image.gif'
-            }, null),
+            }),
 
             createElement('span', null, 'Some text')
         );
@@ -104,7 +103,7 @@ describe("createElement tests", () => {
             src: 'http://images/image.gif'
         });
 
-        expect(child.children).toEqual([null]);
+        expect(child.children).toEqual([]);
 
         child = (node.children as VirtualNode[])![1];
 

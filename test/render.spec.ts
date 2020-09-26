@@ -4,7 +4,7 @@ describe("render tests", () => {
 
     it("creates an HTMLElement from a virtual node with the name of the element", () => {
 
-        const node = createElement('div', null, null);
+        const node = createElement('div', null);
 
         const element = node.render();
 
@@ -17,7 +17,7 @@ describe("render tests", () => {
             id: 'myElement',
             class: "class1 class2",
             style: "color: red;"
-        }, null);
+        });
 
         const element = node.render();
 
@@ -29,7 +29,7 @@ describe("render tests", () => {
         const node = createElement('div', null,
             createElement('img', {
                 src: 'http://images/image.gif'
-            }, null),
+            }),
 
             createElement('div', null,
                 createElement('span', null, 'Some text')
@@ -47,7 +47,7 @@ describe("render tests", () => {
 
             createElement('img', {
                 src: 'http://images/image.gif'
-            }, null),
+            }),
 
             createElement('span', null, 'Some text')
         );
@@ -55,5 +55,33 @@ describe("render tests", () => {
         const element = node.render();
 
         expect(element.outerHTML).toEqual('<div id=\"myElement\"><img src=\"http://images/image.gif\"><span>Some text</span></div>');
+    });
+
+    it("creates an externally linked svg element", () => {
+
+        const node = createElement('svg', null,
+
+            createElement('use', {
+                href: 'http://icons/icons.svg#my-icon'
+            })
+        );
+
+        const element = node.render();
+
+        expect(element.outerHTML).toEqual('<svg><use href=\"http://icons/icons.svg#my-icon\"></use></svg>');
+    });
+
+    it("creates an externally linked svg element with xlink:href", () => {
+
+        const node = createElement('svg', null,
+
+            createElement('use', {
+                xlinkHref: 'http://icons/icons.svg#my-icon'
+            })
+        );
+
+        const element = node.render();
+
+        expect(element.outerHTML).toEqual('<svg><use xlink:href=\"http://icons/icons.svg#my-icon\"></use></svg>');
     });
 });

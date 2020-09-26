@@ -9,20 +9,20 @@ import VirtualText from "./nodes/VirtualText";
  */
 export default function createElement(
     name: string,
-    attributes: any | null,
-    ...children: any[]): VirtualNode {
+    attributes: object | null = {},
+    ...children: Array<VirtualNode | string | number | boolean>): VirtualNode {
 
-    const childrenNodes: any[] = [];
+    const childrenNodes: Array<VirtualNode | VirtualText> = [];
 
     children.forEach(child => {
 
         if (!child) {
 
-            childrenNodes.push(null);
+            //childrenNodes.push(null);
         }
-        else if (child.isVirtualNode) {
+        else if ((child as VirtualNode).isVirtualNode) {
 
-            childrenNodes.push(child);
+            childrenNodes.push(child as VirtualNode);
         }
         else if (typeof child === 'object') {
 

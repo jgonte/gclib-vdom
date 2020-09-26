@@ -1,5 +1,14 @@
 import VirtualText from "./VirtualText";
 
+function isSvg(name: string): boolean {
+
+    return [
+        'svg',
+        'use',
+        'path'
+    ].indexOf(name) > -1;
+}
+
 /**
  * Defines a virtual node
  */
@@ -31,15 +40,25 @@ export default class VirtualNode {
         return this.attributes ? this.attributes.key : undefined;
     }
 
-    render(): HTMLElement {
+    render(): HTMLElement | SVGElement {
 
-        const element = document.createElement(this.name);
+        const element = isSvg(this.name) ?
+            document.createElementNS('http://www.w3.org/2000/svg', this.name) :
+            document.createElement(this.name);
 
         if (this.attributes) {
 
             for (const [k, v] of Object.entries(this.attributes)) {
 
-                if (typeof v === 'string' ||
+                if (k === 'xlinkHref') {
+
+                    element.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", v as string);
+                }
+                else if (k === 'class' && v) {
+
+                    element.setAttribute(k, v as string);
+                }
+                else if (typeof v === 'string' ||
                     typeof v === 'number') {
 
                     element.setAttribute(k, v.toString());
@@ -76,5 +95,4 @@ export default class VirtualNode {
 
         return element;
     }
-
 }

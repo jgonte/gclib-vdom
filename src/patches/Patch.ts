@@ -5,5 +5,5 @@ export abstract class Patch {
     /** 
      * Executes the patch on the node
      */
-    abstract apply(node: ChildNode, context: PatchingContext) : void;
+    abstract apply(node: ChildNode | undefined, context: PatchingContext) : void;
 }

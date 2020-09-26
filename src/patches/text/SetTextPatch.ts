@@ -17,11 +17,13 @@ export default class SetTextPatch extends Patch {
         super();
     }
 
-    apply(element: HTMLElement): void {
+    apply(element: Text): void {
 
-        const textNode = document.createTextNode(this.value.text.toString());
+        // const textNode = document.createTextNode(this.value.text.toString());
 
-        element.appendChild(textNode);      
+        // element.appendChild(textNode);  
+        
+        element.textContent = this.value.text.toString();
     }
 
 }

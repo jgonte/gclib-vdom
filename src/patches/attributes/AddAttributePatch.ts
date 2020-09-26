@@ -21,9 +21,11 @@ export default class AddAttributePatch extends Patch {
         super();
     }
 
-    apply(element: HTMLElement): void {
+    apply(element: HTMLElement): HTMLElement {
 
         element.setAttribute(this.name, this.value.toString());
+
+        return element;
     }
 
 }

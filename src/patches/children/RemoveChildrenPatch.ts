@@ -7,9 +7,9 @@ export default class RemoveChildrenPatch extends Patch {
 
     apply(element: HTMLElement): void {
 
-        while (element.firstChild) {
+        while (element.lastChild) {
 
-            element.removeChild(element.firstChild);
+            element.removeChild(element.lastChild);
         }
     }
     

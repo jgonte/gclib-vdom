@@ -26,16 +26,21 @@ export default class ElementPatches {
      * 
      * @param node Applies the patches to the given element
      */
-    apply(node: ChildNode): void {
+    apply(node?: ChildNode): ChildNode {
 
         this.patches.forEach(patch => patch.apply(node, this._context));
 
-        this.childrenPatches.forEach(patch => {
+        if (typeof node !== 'undefined') {
 
-            const childNode: ChildNode = node.childNodes[patch.index];
+            this.childrenPatches.forEach(patch => {
 
-            patch.patches.apply(childNode);
-        });
+                const childNode: ChildNode = node.childNodes[patch.index];
+    
+                patch.patches.apply(childNode);
+            });
+        }
+
+        return this._context.getNode() || node;
     }
 
     hasPatches() {
