@@ -1,10 +1,12 @@
+import PatchingContext from "../helpers/PatchingContext";
+import { CustomElementLike } from "../CustomElementLike";
 import { Patch } from "../Patch";
 
 /**
  * Patch to remove all the children from the element in the DOM
  */
 export default class RemoveChildrenRangePatch extends Patch {
-
+    
     constructor(
 
         /**
@@ -21,7 +23,9 @@ export default class RemoveChildrenRangePatch extends Patch {
         super();
     }
 
-    apply(element: HTMLElement): void {
+    applyPatch(parentNode: Node | Document | ShadowRoot, node: CustomElementLike): void {
+        
+        const removedChildrenElements: Array<Node> = [];
 
         // When a previous element is removed the next element occupies the previous index therefore we use the first index only
         const index: number = this.from;
@@ -30,15 +34,29 @@ export default class RemoveChildrenRangePatch extends Patch {
 
         for (let i: number = index; i <= to; ++i) {
 
-            const child = element.children[index];
+            const child = node.children[index] as CustomElementLike;
 
             if (child) { // It might be already removed
 
-                element.removeChild(child);
-            }
-            
+                if (child.onBeforeUnmount) {
+
+                    child.onBeforeUnmount();
+                }
+
+                node.removeChild(child);
+
+                removedChildrenElements.push(child);
+            }    
         }
-        
+
+        if (node.onAfterChildrenUpdated) {
+
+            node.onAfterChildrenUpdated({
+                inserted: [],
+                moved: [],
+                removed: removedChildrenElements
+            });
+        }
     }
-    
+
 }

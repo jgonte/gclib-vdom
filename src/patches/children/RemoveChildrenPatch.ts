@@ -1,3 +1,5 @@
+import PatchingContext from "../helpers/PatchingContext";
+import { CustomElementLike } from "../CustomElementLike";
 import { Patch } from "../Patch";
 
 /**
@@ -5,12 +7,31 @@ import { Patch } from "../Patch";
  */
 export default class RemoveChildrenPatch extends Patch {
 
-    apply(element: HTMLElement): void {
+    applyPatch(parentNode: Node | Document | ShadowRoot, node: CustomElementLike): void {
+        
+        const removedChildrenElements: Array<Node> = [];
 
-        while (element.lastChild) {
+        while (node.firstChild) {
 
-            element.removeChild(element.lastChild);
+            const child = node.firstChild as CustomElementLike;
+
+            if (child.onBeforeUnmount) {
+
+                child.onBeforeUnmount();
+            }
+
+            node.removeChild(child);
+
+            removedChildrenElements.push(child);
         }
-    }
-    
+
+        if (node.onAfterChildrenUpdated) {
+
+            node.onAfterChildrenUpdated({
+                inserted: [],
+                moved: [],
+                removed: removedChildrenElements
+            });
+        }
+    }   
 }

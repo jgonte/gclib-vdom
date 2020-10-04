@@ -1,6 +1,6 @@
 import { Patch } from "./Patch";
 import ChildElementPatches from "./ChildElementPatches";
-import PatchingContext from "../helpers/PatchingContext";
+import PatchingContext from "./helpers/PatchingContext";
 
 /**
  * Contains the patches that are applied to an element and its children
@@ -22,25 +22,28 @@ export default class ElementPatches {
         public childrenPatches: ChildElementPatches[]
     ) {}
 
-    /**
-     * 
-     * @param node Applies the patches to the given element
-     */
-    apply(node?: ChildNode): ChildNode {
+    // patch(rootNode: ShadowRoot | Document) : void {
 
-        this.patches.forEach(patch => patch.apply(node, this._context));
+    //     this.applyPatches(rootNode, undefined);
+    // }
 
-        if (typeof node !== 'undefined') {
+    applyPatches(rootNode: ShadowRoot | Document | Node, node?: Node | null) : void {
 
-            this.childrenPatches.forEach(patch => {
+        this.patches.forEach(patch => patch.applyPatch(rootNode, node, this._context));
 
-                const childNode: ChildNode = node.childNodes[patch.index];
-    
-                patch.patches.apply(childNode);
-            });
+        if (typeof node !== 'undefined' && node !== null) {
+
+            if (this.childrenPatches.length > 0) {
+
+                this.childrenPatches.forEach(patch => {
+
+                    const childNode: ChildNode = node.childNodes[patch.index];
+        
+                    patch.patches.applyPatches(node, childNode);
+                });
+            }
+  
         }
-
-        return this._context.getNode() || node;
     }
 
     hasPatches() {

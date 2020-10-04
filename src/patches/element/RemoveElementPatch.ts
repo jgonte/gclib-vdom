@@ -1,3 +1,4 @@
+import { CustomElementLike } from "../CustomElementLike";
 import { Patch } from "../Patch";
 
 /**
@@ -5,8 +6,13 @@ import { Patch } from "../Patch";
  */
 export default class RemoveElementPatch extends Patch {
 
-    apply(element: HTMLElement): void {
+    applyPatch(parentNode: Node | Document | ShadowRoot, node: CustomElementLike): void {
+        
+        if (node.onBeforeUnmount) {
 
-        element.remove();
+            node.onBeforeUnmount();
+        }
+
+        parentNode.removeChild(node);
     }
 }

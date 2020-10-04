@@ -5,7 +5,7 @@ import VirtualText from "../../nodes/VirtualText";
  * Patch to replace a text in the DOM element
  */
 export default class SetTextPatch extends Patch {
-
+    
     constructor(
 
          /**
@@ -17,13 +17,8 @@ export default class SetTextPatch extends Patch {
         super();
     }
 
-    apply(element: Text): void {
+    applyPatch(parentNode: Node | Document | ShadowRoot, node: Text): void {
 
-        // const textNode = document.createTextNode(this.value.text.toString());
-
-        // element.appendChild(textNode);  
-        
-        element.textContent = this.value.text.toString();
+        node.textContent = this.value.text.toString();
     }
-
 }

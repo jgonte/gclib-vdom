@@ -1,14 +1,15 @@
+import { ComponentBaseConstructor } from "./component/ComponentBase";
 import VirtualNode from "./nodes/VirtualNode"
 import VirtualText from "./nodes/VirtualText";
 
 /**
  * Creates a virtual node
- * @param name Name of the element
- * @param attributes Attributes of the element
- * @param children Children of the element
+ * @param name Name of the virtual node
+ * @param attributes Attributes of the virtual node
+ * @param children Children of the virtual node
  */
-export default function createElement(
-    name: string,
+export default function h(
+    name: string | ComponentBaseConstructor,
     attributes: object | null = {},
     ...children: Array<VirtualNode | string | number | boolean>): VirtualNode {
 

@@ -1,12 +1,12 @@
 import { Patch } from "../Patch";
-import PatchingContext from "../../helpers/PatchingContext";
 import { VirtualNode, VirtualText } from "../../gclib-vdom";
+import { CustomElementLike } from "../CustomElementLike";
 
 /**
  * Patch to replace the element in the DOM
  */
 export default class ReplaceElementPatch extends Patch {
-
+    
     constructor(
 
         /**
@@ -17,13 +17,26 @@ export default class ReplaceElementPatch extends Patch {
         super();
     }
 
-    apply(element: HTMLElement, context: PatchingContext): void {
+    applyPatch(parentNode: Node | ShadowRoot | Document, node: CustomElementLike): void {
+        
+        const newNode = this.newNode.render() as CustomElementLike;
 
-        const newElement = this.newNode.render();
+        if (node.onBeforeUnmount) {
 
-        element.replaceWith(newElement);
+            node.onBeforeUnmount();
+        }
 
-        context.setNode(newElement);
+        if (newNode.onBeforeMount) {
+
+            newNode.onBeforeMount();
+        }
+     
+        node.replaceWith(newNode);
+
+        if (newNode.onAfterMount) {
+
+            newNode.onAfterMount();
+        }
     }
 
 }

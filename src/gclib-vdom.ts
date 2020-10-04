@@ -1,6 +1,6 @@
 import VirtualNode from './nodes/VirtualNode';
 import VirtualText from './nodes/VirtualText';
-import createElement from './createElement';
+import h from './h';
 import ElementPatches from './patches/ElementPatches';
 import diff from './diff';
 //import CustomElement from './element/CustomElement';
@@ -8,7 +8,7 @@ import diff from './diff';
 export {
     VirtualNode,
     VirtualText,
-    createElement,
+    h as createElement,
     ElementPatches,
     diff,
     //CustomElement

@@ -1,13 +1,13 @@
 import { Patch } from "../Patch";
 import VirtualNode from "../../nodes/VirtualNode";
 import VirtualText from "../../nodes/VirtualText";
-import PatchingContext from "../../helpers/PatchingContext";
+import { CustomElementLike } from "../CustomElementLike";
 
 /**
  * Patch to set a new child at a given index
  */
 export default class SetElementPatch extends Patch {
-
+    
     constructor(
 
         /**
@@ -18,16 +18,20 @@ export default class SetElementPatch extends Patch {
         super();
     }
 
-    apply(element: HTMLElement, context: PatchingContext): void {
+    applyPatch(parentNode: Node | ShadowRoot | Document, node?: Node): void {
 
-        const newChild = this.newNode.render();
+        const newNode = this.newNode.render() as CustomElementLike;
 
-        // if (element) {
+        if (newNode.onBeforeMount) {
 
-        //     element.appendChild(newChild);
-        // }
+            newNode.onBeforeMount();
+        }
 
-        context.setNode(newChild);
+        parentNode.appendChild(newNode);
+
+        if (newNode.onAfterMount) {
+
+            newNode.onAfterMount();
+        }
     }
-
 }

@@ -1,29 +1,29 @@
-import createElement from '../src/createElement';
+import h from '../src/h';
 import VirtualNode from '../src/nodes/VirtualNode';
 import VirtualText from '../src/nodes/VirtualText';
 
-describe("createElement tests", () => {
+describe("h tests", () => {
 
     it("creates a virtual node with the name of the element", () => {
 
-        const node = createElement('div', null);
+        const node = h('div', null);
 
         expect(node.name).toEqual('div');
 
-        expect(node.attributes).toEqual(null);
+        expect(node.props).toEqual(null);
 
         expect(node.children).toEqual([]);
     });
 
-    it("creates a virtual node with the name of the element and attributes", () => {
+    it("creates a virtual node with the name of the element and props", () => {
 
-        const node = createElement('div', {
+        const node = h('div', {
             id: 'myElement'
         });
 
         expect(node.name).toEqual('div');
 
-        expect(node.attributes).toEqual({
+        expect(node.props).toEqual({
             id: 'myElement'
         });
 
@@ -32,18 +32,18 @@ describe("createElement tests", () => {
 
     it("creates a virtual node with the name of the element and children", () => {
 
-        const node = createElement('div', null,
-            createElement('img', {
+        const node = h('div', null,
+            h('img', {
                 src: 'http://images/image.gif'
             }),
-            createElement('div', null,
-                createElement('span', null, 'Some text')
+            h('div', null,
+                h('span', null, 'Some text')
             )
         );
 
         expect(node.name).toEqual('div');
 
-        expect(node.attributes).toEqual(null);
+        expect(node.props).toEqual(null);
 
         expect((node.children as VirtualNode[])!.length).toEqual(2);
 
@@ -51,7 +51,7 @@ describe("createElement tests", () => {
 
         expect(child.name).toEqual('img');
 
-        expect(child.attributes).toEqual({
+        expect(child.props).toEqual({
             src: 'http://images/image.gif'
         });
 
@@ -61,7 +61,7 @@ describe("createElement tests", () => {
 
         expect(child.name).toEqual('div');
 
-        expect(child.attributes).toEqual(null);
+        expect(child.props).toEqual(null);
 
         expect((child.children as VirtualNode[])!.length).toEqual(1);
 
@@ -69,27 +69,27 @@ describe("createElement tests", () => {
 
         expect(grandChild.name).toEqual('span');
 
-        expect(grandChild.attributes).toEqual(null);
+        expect(grandChild.props).toEqual(null);
 
         expect(grandChild.children).toEqual([{ "text": "Some text" }]);
     });
 
-    it("creates a virtual node with the name of the element, attributes and children", () => {
+    it("creates a virtual node with the name of the element, props and children", () => {
 
-        const node = createElement('div',
+        const node = h('div',
             {
                 id: 'myElement'
             },
-            createElement('img', {
+            h('img', {
                 src: 'http://images/image.gif'
             }),
 
-            createElement('span', null, 'Some text')
+            h('span', null, 'Some text')
         );
 
         expect(node.name).toEqual('div');
 
-        expect(node.attributes).toEqual({
+        expect(node.props).toEqual({
             id: 'myElement'
         });
 
@@ -99,7 +99,7 @@ describe("createElement tests", () => {
 
         expect(child.name).toEqual('img');
 
-        expect(child.attributes).toEqual({
+        expect(child.props).toEqual({
             src: 'http://images/image.gif'
         });
 
@@ -109,26 +109,26 @@ describe("createElement tests", () => {
 
         expect(child.name).toEqual('span');
 
-        expect(child.attributes).toEqual(null);
+        expect(child.props).toEqual(null);
 
         expect(child.children).toEqual([{ "text": "Some text" }]);
     });
 
-    it("creates a virtual node with the name of the element, attributes and children", () => {
+    it("creates a virtual node with the name of the element, props and children", () => {
 
         let count: number = 5;
 
         const increment = () => ++count;
 
-        const node = createElement("div", null,
-            createElement("h4", null, "Counter"),
+        const node = h("div", null,
+            h("h4", null, "Counter"),
             count,
-            createElement("button", { click: increment }, "Increment")
+            h("button", { click: increment }, "Increment")
         );
 
         expect(node.name).toEqual('div');
 
-        expect(node.attributes).toEqual(null);
+        expect(node.props).toEqual(null);
 
         expect((node.children as VirtualNode[])!.length).toEqual(3);
 
@@ -136,7 +136,7 @@ describe("createElement tests", () => {
 
         expect(child.name).toEqual('h4');
 
-        expect(child.attributes).toEqual(null);
+        expect(child.props).toEqual(null);
 
         expect(child.children).toEqual([{ "text": "Counter" }]);
 
@@ -148,7 +148,7 @@ describe("createElement tests", () => {
 
         expect(child.name).toEqual('button');
 
-        expect(child.attributes).toEqual({ click: increment });
+        expect(child.props).toEqual({ click: increment });
 
         expect(child.children).toEqual([{ "text": "Increment" }]);
     });

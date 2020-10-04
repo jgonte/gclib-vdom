@@ -1,13 +1,7 @@
+import { ComponentBaseConstructor } from "../component/ComponentBase";
+import { CustomElementLike } from "../patches/CustomElementLike";
+import { createElement } from "./helpers/createElement";
 import VirtualText from "./VirtualText";
-
-function isSvg(name: string): boolean {
-
-    return [
-        'svg',
-        'use',
-        'path'
-    ].indexOf(name) > -1;
-}
 
 /**
  * Defines a virtual node
@@ -19,12 +13,12 @@ export default class VirtualNode {
         /**
          * The name of the element
          */
-        public name: string,
+        public name: string | ComponentBaseConstructor,
 
         /**
-         * The attributes of the element
+         * The props of the element
          */
-        public attributes: any | null,
+        public props: any | null,
 
         /**
          * The children of the element or the text
@@ -37,55 +31,16 @@ export default class VirtualNode {
 
     get key(): string {
 
-        return this.attributes ? this.attributes.key : undefined;
+        return this.props ? this.props.key : undefined;
     }
 
-    render(): HTMLElement | SVGElement {
+    render(): CustomElementLike {
 
-        const element = isSvg(this.name) ?
-            document.createElementNS('http://www.w3.org/2000/svg', this.name) :
-            document.createElement(this.name);
+        const { name, props, children} = this;
 
-        if (this.attributes) {
-
-            for (const [k, v] of Object.entries(this.attributes)) {
-
-                if (k === 'xlinkHref') {
-
-                    element.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", v as string);
-                }
-                else if (k === 'class' && v) {
-
-                    element.setAttribute(k, v as string);
-                }
-                else if (typeof v === 'string' ||
-                    typeof v === 'number') {
-
-                    element.setAttribute(k, v.toString());
-                }
-                else if (typeof v === 'function') {
-
-                    const functionName: string = k;
-
-                    if (/^on/.test(functionName)) {
-
-                        const eventName: string = functionName.slice(2).toLowerCase();
-
-                        element.addEventListener(eventName, v as () => void);
-                    }
-                    else {
-
-                        throw Error(`Invalid event name: ${functionName}. It must start with on...`);
-                    }
-                }
-                else { // object, Array
-
-                    element.setAttribute(k, JSON.stringify(v));
-                }
-            }
-        }
-
-        for (const child of this.children) {
+        const element = createElement(name, props) as CustomElementLike;
+        
+        for (const child of children) {
 
             if (child) { // It might be null
 

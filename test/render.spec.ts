@@ -1,10 +1,13 @@
-import createElement from "../src/createElement";
+import h from "../src/h";
+import { Component } from "../src/component/Component";
+import { CustomElement } from "../src/component/CustomElement";
+import { VirtualNode, VirtualText } from "../src/gclib-vdom";
 
 describe("render tests", () => {
 
     it("creates an HTMLElement from a virtual node with the name of the element", () => {
 
-        const node = createElement('div', null);
+        const node = h('div', null);
 
         const element = node.render();
 
@@ -13,7 +16,7 @@ describe("render tests", () => {
 
     it("creates an HTMLElement from a virtual node with the name of the element and attributes", () => {
 
-        const node = createElement('div', {
+        const node = h('div', {
             id: 'myElement',
             class: "class1 class2",
             style: "color: red;"
@@ -26,13 +29,13 @@ describe("render tests", () => {
 
     it("creates an HTMLElement from a virtual node with the name of the element and children", () => {
 
-        const node = createElement('div', null,
-            createElement('img', {
+        const node = h('div', null,
+            h('img', {
                 src: 'http://images/image.gif'
             }),
 
-            createElement('div', null,
-                createElement('span', null, 'Some text')
+            h('div', null,
+                h('span', null, 'Some text')
             )
         );
 
@@ -43,13 +46,13 @@ describe("render tests", () => {
 
     it("creates an HTMLElement from a virtual node with the name of the element, attributes and children", () => {
 
-        const node = createElement('div', { id: 'myElement' },
+        const node = h('div', { id: 'myElement' },
 
-            createElement('img', {
+            h('img', {
                 src: 'http://images/image.gif'
             }),
 
-            createElement('span', null, 'Some text')
+            h('span', null, 'Some text')
         );
 
         const element = node.render();
@@ -59,9 +62,9 @@ describe("render tests", () => {
 
     it("creates an externally linked svg element", () => {
 
-        const node = createElement('svg', null,
+        const node = h('svg', null,
 
-            createElement('use', {
+            h('use', {
                 href: 'http://icons/icons.svg#my-icon'
             })
         );
@@ -73,9 +76,9 @@ describe("render tests", () => {
 
     it("creates an externally linked svg element with xlink:href", () => {
 
-        const node = createElement('svg', null,
+        const node = h('svg', null,
 
-            createElement('use', {
+            h('use', {
                 xlinkHref: 'http://icons/icons.svg#my-icon'
             })
         );
@@ -83,5 +86,45 @@ describe("render tests", () => {
         const element = node.render();
 
         expect(element.outerHTML).toEqual('<svg><use xlink:href=\"http://icons/icons.svg#my-icon\"></use></svg>');
+    });
+
+    it("creates a component", () => {
+
+        class MyComponent extends Component {
+
+            value: string = "Some text"
+
+            render(): VirtualNode | VirtualText {
+                
+                return h('span', null, this.value);
+            }
+        }
+
+        const node = h(MyComponent, null);
+
+        const element = node.render();
+
+        expect(element.outerHTML).toEqual('<span>Some text</span>');
+    });
+
+    it("creates a custom HTML element", () => {
+
+        class MyCustomElement extends CustomElement {
+
+            value: string = "Some text"
+
+            render(): VirtualNode | VirtualText {
+                
+                return h('span', null, this.value);
+            }
+        }
+
+        customElements.define('my-custom-element', MyCustomElement);
+
+        const node = h('my-custom-element', null);
+
+        const element = node.render();
+
+        expect(element.outerHTML).toEqual('<my-custom-element></my-custom-element>');
     });
 });

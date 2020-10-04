@@ -13,7 +13,7 @@ import SetChildPatch from "./patches/children/SetChildPatch";
 import AddChildrenPatch from "./patches/children/AddChildrenPatch";
 import MoveChildPatch from "./patches/children/MoveChildPatch";
 import RemoveChildrenRangePatch from "./patches/children/RemoveChildrenRangePatch";
-import OffsetManager from "./helpers/OffsetManager";
+import OffsetManager from "./patches/helpers/OffsetManager";
 import ReplaceElementPatch from "./patches/element/ReplaceElementPatch";
 import SetElementPatch from "./patches/element/SetElementPatch";
 
@@ -375,7 +375,7 @@ export default function diff(oldNode?: VirtualNode | VirtualText, newNode?: Virt
 
                         return new ElementPatches(
                             /*patches*/
-                            [...diffAttributes((oldNode as VirtualNode).attributes, (newNode as VirtualNode).attributes)],
+                            [...diffAttributes((oldNode as VirtualNode).props, (newNode as VirtualNode).props)],
                             /*childrenPatches*/
                             [] // No children to diff
                         );
@@ -385,7 +385,7 @@ export default function diff(oldNode?: VirtualNode | VirtualText, newNode?: Virt
                         return new ElementPatches(
                             /*patches*/
                             [
-                                ...diffAttributes((oldNode as VirtualNode).attributes, (newNode as VirtualNode).attributes),
+                                ...diffAttributes((oldNode as VirtualNode).props, (newNode as VirtualNode).props),
                                 new RemoveChildrenPatch() // Remove all the old children
                             ],
                             /*childrenPatches*/
@@ -400,7 +400,7 @@ export default function diff(oldNode?: VirtualNode | VirtualText, newNode?: Virt
                         return new ElementPatches(
                             /*patches*/
                             [
-                                ...diffAttributes((oldNode as VirtualNode).attributes, (newNode as VirtualNode).attributes),
+                                ...diffAttributes((oldNode as VirtualNode).props, (newNode as VirtualNode).props),
                                 new AddChildrenPatch(newChildren) // Add all the old children
                             ],
                             /*childrenPatches*/
@@ -437,7 +437,7 @@ export default function diff(oldNode?: VirtualNode | VirtualText, newNode?: Virt
                         return new ElementPatches(
                             /*patches*/
                             [
-                                ...diffAttributes((oldNode as VirtualNode).attributes, (newNode as VirtualNode).attributes),
+                                ...diffAttributes((oldNode as VirtualNode).props, (newNode as VirtualNode).props),
                                 ...patches,
                                 ...removeChildrenPatches
                             ],

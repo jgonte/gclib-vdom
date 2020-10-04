@@ -1,7 +1,8 @@
 import { Patch } from "../Patch";
 import VirtualNode from "../../nodes/VirtualNode";
 import VirtualText from "../../nodes/VirtualText";
-import PatchingContext from "../../helpers/PatchingContext";
+import PatchingContext from "../helpers/PatchingContext";
+import { CustomElementLike } from "../CustomElementLike";
 
 /**
  * Patch to set a new child at a given index
@@ -23,24 +24,68 @@ export default class SetChildPatch extends Patch {
         super();
     }
 
-    apply(element: HTMLElement, context: PatchingContext): void {
+    applyPatch(parentNode: Node | Document | ShadowRoot, node: CustomElementLike, context: PatchingContext): void {
+
+        const insertedChildrenElements: Array<Node> = [];
+
+        const removedChildrenElements: Array<Node> = [];
 
         const { index } = this;
 
-        const newChild = this.newNode.render();
+        const newChild = this.newNode.render() as CustomElementLike;
 
-        const originalElement = element.children[index];
+        const originalElement = node.children[index] as CustomElementLike;
 
         if (originalElement) {
 
             // Save the original element in the context
             context.setOriginalElement(originalElement, index);
 
-            element.replaceChild(newChild, originalElement);
+            if (originalElement.onBeforeUnmount) {
+
+                originalElement.onBeforeUnmount();
+            }
+
+            if (newChild.onBeforeMount) {
+
+                newChild.onBeforeMount();
+            }
+
+            node.replaceChild(newChild, originalElement);
+ 
+            if (newChild.onAfterMount) {
+
+                newChild.onAfterMount();
+            }
+
+            removedChildrenElements.push(originalElement);
+
+            insertedChildrenElements.push(newChild);
         }
         else {
 
-            element.appendChild(newChild);
+            if (newChild.onBeforeMount) {
+
+                newChild.onBeforeMount();
+            }
+
+            node.appendChild(newChild);
+
+            if (newChild.onAfterMount) {
+
+                newChild.onAfterMount();
+            }
+
+            insertedChildrenElements.push(newChild);
+        }
+
+        if (node.onAfterChildrenUpdated) {
+
+            node.onAfterChildrenUpdated({
+                inserted: insertedChildrenElements,
+                moved: [],
+                removed: removedChildrenElements
+            });
         }
     }
 

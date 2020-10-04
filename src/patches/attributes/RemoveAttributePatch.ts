@@ -4,7 +4,7 @@ import { Patch } from "../Patch";
  * Patch to remove an attribute from the DOM element
  */
 export default class RemoveAttributePatch extends Patch {
-
+    
     constructor(
 
         /**
@@ -16,9 +16,8 @@ export default class RemoveAttributePatch extends Patch {
         super();
     }
 
-    apply(element: HTMLElement): void {
-
-        element.removeAttribute(this.name);
+    applyPatch(parentNode: Node | Document | ShadowRoot, node: HTMLElement): void {
+        
+        node.removeAttribute(this.name);
     }
-
 }
