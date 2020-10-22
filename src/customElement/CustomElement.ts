@@ -1,6 +1,6 @@
 import VirtualNode from "../nodes/VirtualNode";
 import VirtualText from "../nodes/VirtualText";
-import applyMixins from "../utils/applyMixins";
+import { applyMixins } from "gclib-utils";
 import { getAllConstructors } from "./helpers/getAllConstructors";
 import { createProperty } from "./helpers/createProperty";
 import CustomPropertyDescriptor from "./CustomPropertyDescriptor";
