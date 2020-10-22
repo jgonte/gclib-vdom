@@ -1,12 +1,10 @@
-import PatchingContext from "../helpers/PatchingContext";
-import { CustomElementLike } from "../CustomElementLike";
-import { Patch } from "../Patch";
+import { Patch, PatchOptions } from "../Patch";
 
 /**
  * Patch to remove all the children from the element in the DOM
  */
-export default class RemoveChildrenRangePatch extends Patch {
-    
+export default class RemoveChildrenRangePatch implements Patch {
+
     constructor(
 
         /**
@@ -14,17 +12,22 @@ export default class RemoveChildrenRangePatch extends Patch {
          */
         public from: number,
 
-         /**
-         * The number of children to remove
-         */
+        /**
+        * The number of children to remove
+        */
         public count: number
 
-    ) {
-        super();
-    }
+    ) { }
 
-    applyPatch(parentNode: Node | Document | ShadowRoot, node: CustomElementLike): void {
-        
+    applyPatch(options: PatchOptions): void {
+
+        const { node, hooks } = options;
+
+        const {
+            nodeWillDisconnect: onBeforeUnmount,
+            nodeDidUpdateChildren: onAfterChildrenUpdated
+        } = hooks || {};
+
         const removedChildrenElements: Array<Node> = [];
 
         // When a previous element is removed the next element occupies the previous index therefore we use the first index only
@@ -34,24 +37,24 @@ export default class RemoveChildrenRangePatch extends Patch {
 
         for (let i: number = index; i <= to; ++i) {
 
-            const child = node.children[index] as CustomElementLike;
+            const child = (node as HTMLElement).children[index];
 
             if (child) { // It might be already removed
 
-                if (child.onBeforeUnmount) {
+                if (onBeforeUnmount) {
 
-                    child.onBeforeUnmount();
+                    onBeforeUnmount(child);
                 }
 
-                node.removeChild(child);
+                (node as HTMLElement).removeChild(child);
 
                 removedChildrenElements.push(child);
-            }    
+            }
         }
 
-        if (node.onAfterChildrenUpdated) {
+        if (onAfterChildrenUpdated) {
 
-            node.onAfterChildrenUpdated({
+            onAfterChildrenUpdated(node!, {
                 inserted: [],
                 moved: [],
                 removed: removedChildrenElements

@@ -1,6 +1,6 @@
-import { ComponentBaseConstructor } from "./component/ComponentBase";
 import VirtualNode from "./nodes/VirtualNode"
 import VirtualText from "./nodes/VirtualText";
+import { ComponentConstructor } from "./component/Component";
 
 /**
  * Creates a virtual node
@@ -9,7 +9,7 @@ import VirtualText from "./nodes/VirtualText";
  * @param children Children of the virtual node
  */
 export default function h(
-    name: string | ComponentBaseConstructor,
+    name: string | ComponentConstructor,
     attributes: object | null = {},
     ...children: Array<VirtualNode | string | number | boolean>): VirtualNode {
 

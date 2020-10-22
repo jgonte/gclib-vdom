@@ -1,10 +1,10 @@
-import { Patch } from "../Patch";
+import { Patch, PatchOptions } from "../Patch";
 
 /**
  * Patch to add an attribute to the DOM element
  */
-export default class AddAttributePatch extends Patch {
-    
+export default class AddAttributePatch implements Patch {
+
     constructor(
 
         /**
@@ -17,12 +17,12 @@ export default class AddAttributePatch extends Patch {
          */
         public value: any
 
-    ) {
-        super();
-    }
+    ) {}
 
-    applyPatch(parentNode: Node | Document | ShadowRoot, node: HTMLElement): void {
-        
-        node.setAttribute(this.name, this.value.toString());
+    applyPatch(options: PatchOptions): void {
+
+        const { node } = options;
+
+        (node as HTMLElement).setAttribute(this.name, this.value.toString());
     }
 }

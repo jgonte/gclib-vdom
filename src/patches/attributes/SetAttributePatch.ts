@@ -1,9 +1,9 @@
-import { Patch } from "../Patch";
+import { Patch, PatchOptions } from "../Patch";
 
 /**
  * Patch to remove an attribute from the DOM element
  */
-export default class SetAttributePatch extends Patch {
+export default class SetAttributePatch implements Patch {
     
     constructor(
 
@@ -17,12 +17,12 @@ export default class SetAttributePatch extends Patch {
          */
         public value: any
 
-    ) {
-        super();
-    }
+    ) {}
 
-    applyPatch(parentNode: Node | Document | ShadowRoot, node: HTMLElement): void {
+    applyPatch(options: PatchOptions): void {
         
-        node.setAttribute(this.name, this.value.toString());
+        const { node } = options;
+
+        (node as HTMLElement).setAttribute(this.name, this.value.toString());
     }
 }

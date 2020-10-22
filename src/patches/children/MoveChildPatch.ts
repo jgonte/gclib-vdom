@@ -1,11 +1,9 @@
-import { Patch } from "../Patch";
-import PatchingContext from "../helpers/PatchingContext";
-import { CustomElementLike } from "../CustomElementLike";
+import { Patch, PatchOptions } from "../Patch";
 
 /**
- * Patch to remove an attribute from the DOM element
+ * Patch to move a child from one position to another
  */
-export default class MoveElementPatch extends Patch {
+export default class MoveElementPatch implements Patch {
 
     constructor(
 
@@ -24,11 +22,18 @@ export default class MoveElementPatch extends Patch {
          */
         public offset: number
 
-    ) {
-        super();
-    }
+    ) { }
 
-    applyPatch(parentNode: Node | Document | ShadowRoot, node: CustomElementLike, context: PatchingContext): void {
+    applyPatch(options: PatchOptions): void {
+
+        const { node, context, hooks } = options;
+
+        const {
+            nodeWillDisconnect: onBeforeUnmount,
+            nodeWillConnect: onBeforeMount,
+            nodeDidConnect: onAfterMount,
+            nodeDidUpdateChildren: onAfterChildrenUpdated
+        } = hooks || {};
 
         const insertedChildrenElements: Array<Node> = [];
 
@@ -37,59 +42,59 @@ export default class MoveElementPatch extends Patch {
         const { from, to, offset } = this;
 
         // Check if it is in the context
-        let movingChild = context.getOriginalElement(from) as CustomElementLike; // Get the original element that was at that index before being removed
+        let movingChild = context!.getOriginalElement(from); // Get the original element that was at that index before being removed
 
         if (!movingChild) { // Not found in the context
 
-            movingChild = node.children[from - offset] as CustomElementLike;
+            movingChild = (node as HTMLElement).children[from - offset];
         }
 
-        const originalElement = node.children[to] as CustomElementLike;
+        const originalElement = (node as HTMLElement).children[to];
 
         if (originalElement) {
 
             // Save the original element in the context
-            context.setOriginalElement(originalElement, to);
+            context!.setOriginalElement(originalElement, to);
 
-            if (originalElement.onBeforeUnmount) {
+            if (onBeforeUnmount) {
 
-                originalElement.onBeforeUnmount();
+                onBeforeUnmount(originalElement);
             }
 
-            if (movingChild.onBeforeMount) {
+            if (onBeforeMount) {
 
-                movingChild.onBeforeMount();
+                onBeforeMount(movingChild);
             }
 
-            node.replaceChild(movingChild, originalElement);
+            (node as HTMLElement).replaceChild(movingChild, originalElement);
 
-            if (movingChild.onAfterMount) {
+            if (onAfterMount) {
 
-                movingChild.onAfterMount();
+                onAfterMount(movingChild);
             }
 
             movedChildrenElements.push(movingChild);
         }
         else {
 
-            if (movingChild.onBeforeMount) {
+            if (onBeforeMount) {
 
-                movingChild.onBeforeMount();
+                onBeforeMount(movingChild);
             }
 
-            node.appendChild(movingChild);
+            (node as HTMLElement).appendChild(movingChild);
 
-            if (movingChild.onAfterMount) {
+            if (onAfterMount) {
 
-                movingChild.onAfterMount();
+                onAfterMount(movingChild);
             }
 
             insertedChildrenElements.push(movingChild);
         }
 
-        if (node.onAfterChildrenUpdated) {
+        if (onAfterChildrenUpdated) {
 
-            node.onAfterChildrenUpdated({
+            onAfterChildrenUpdated(node!, {
                 inserted: insertedChildrenElements,
                 moved: movedChildrenElements,
                 removed: []
