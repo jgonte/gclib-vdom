@@ -1,37 +1,42 @@
-import PatchingContext from "../helpers/PatchingContext";
-import { CustomElementLike } from "../CustomElementLike";
-import { Patch } from "../Patch";
+import { Patch, PatchOptions } from "../Patch";
 
 /**
  * Patch to remove all the children from the element in the DOM
  */
-export default class RemoveChildrenPatch extends Patch {
+export default class RemoveChildrenPatch implements Patch {
 
-    applyPatch(parentNode: Node | Document | ShadowRoot, node: CustomElementLike): void {
-        
+    applyPatch(options: PatchOptions): void {
+
+        const { node, hooks } = options;
+
+        const {
+            nodeWillDisconnect,
+            nodeDidUpdate
+        } = hooks || {};
+
         const removedChildrenElements: Array<Node> = [];
 
-        while (node.firstChild) {
+        while (node!.firstChild) {
 
-            const child = node.firstChild as CustomElementLike;
+            const child = node!.firstChild;
 
-            if (child.onBeforeUnmount) {
+            if (nodeWillDisconnect) {
 
-                child.onBeforeUnmount();
+                nodeWillDisconnect(child);
             }
 
-            node.removeChild(child);
+            node!.removeChild(child);
 
             removedChildrenElements.push(child);
         }
 
-        if (node.onAfterChildrenUpdated) {
+        if (nodeDidUpdate) {
 
-            node.onAfterChildrenUpdated({
+            nodeDidUpdate(node!, {
                 inserted: [],
                 moved: [],
                 removed: removedChildrenElements
             });
         }
-    }   
+    }
 }

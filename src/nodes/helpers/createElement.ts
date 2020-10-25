@@ -1,5 +1,4 @@
-import { ComponentBase, ComponentBaseConstructor } from "../../component/ComponentBase";
-import { CustomElementLike } from "../../patches/CustomElementLike";
+import { ComponentConstructor } from "../../component/Component";
 
 function isSvg(name: string): boolean {
 
@@ -11,14 +10,14 @@ function isSvg(name: string): boolean {
 }
 
 export function createElement(
-    name: string | ComponentBaseConstructor, 
+    name: string | ComponentConstructor, 
     props: Record<string, string>) {
 
     if (typeof name === 'string') {
 
         const element = isSvg(name) ?
-            document.createElementNS('http://www.w3.org/2000/svg', name) as CustomElementLike :
-            document.createElement(name) as CustomElementLike;
+            document.createElementNS('http://www.w3.org/2000/svg', name) :
+            document.createElement(name);
 
         if (props) {
 

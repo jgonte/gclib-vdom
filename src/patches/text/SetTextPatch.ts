@@ -1,10 +1,10 @@
-import { Patch } from "../Patch";
+import { Patch, PatchOptions } from "../Patch";
 import VirtualText from "../../nodes/VirtualText";
 
 /**
  * Patch to replace a text in the DOM element
  */
-export default class SetTextPatch extends Patch {
+export default class SetTextPatch implements Patch {
     
     constructor(
 
@@ -13,12 +13,12 @@ export default class SetTextPatch extends Patch {
          */
         public value: VirtualText
 
-    ) {
-        super();
-    }
+    ) {}
 
-    applyPatch(parentNode: Node | Document | ShadowRoot, node: Text): void {
+    applyPatch(options: PatchOptions): void {
 
-        node.textContent = this.value.text.toString();
+        const { node } = options;
+
+        (node as Text).textContent = this.value.text.toString();
     }
 }

@@ -1,13 +1,11 @@
-import { Patch } from "../Patch";
+import { Patch, PatchOptions } from "../Patch";
 import VirtualNode from "../../nodes/VirtualNode";
 import VirtualText from "../../nodes/VirtualText";
-import PatchingContext from "../helpers/PatchingContext";
-import { CustomElementLike } from "../CustomElementLike";
 
 /**
  * Patch to set a new child at a given index
  */
-export default class SetChildPatch extends Patch {
+export default class SetChildPatch implements Patch {
 
     constructor(
 
@@ -20,11 +18,18 @@ export default class SetChildPatch extends Patch {
          * The new node to replace the existing element
          */
         public newNode: VirtualNode | VirtualText
-    ) {
-        super();
-    }
+    ) { }
 
-    applyPatch(parentNode: Node | Document | ShadowRoot, node: CustomElementLike, context: PatchingContext): void {
+    applyPatch(options: PatchOptions): void {
+
+        const { node, context, hooks } = options;
+
+        const {
+            nodeWillDisconnect,
+            nodeWillConnect,
+            nodeDidConnect,
+            nodeDidUpdate
+        } = hooks || {};
 
         const insertedChildrenElements: Array<Node> = [];
 
@@ -32,56 +37,56 @@ export default class SetChildPatch extends Patch {
 
         const { index } = this;
 
-        const newChild = this.newNode.render() as CustomElementLike;
+        const newChild = this.newNode.render();
 
-        const originalElement = node.children[index] as CustomElementLike;
+        const oldChild = (node as HTMLElement).children[index];
 
-        if (originalElement) {
+        if (oldChild) {
 
             // Save the original element in the context
-            context.setOriginalElement(originalElement, index);
+            context!.setOriginalElement(oldChild, index);
 
-            if (originalElement.onBeforeUnmount) {
+            if (nodeWillDisconnect) {
 
-                originalElement.onBeforeUnmount();
+                nodeWillDisconnect(oldChild);
             }
 
-            if (newChild.onBeforeMount) {
+            if (nodeWillConnect) {
 
-                newChild.onBeforeMount();
+                nodeWillConnect(newChild);
             }
 
-            node.replaceChild(newChild, originalElement);
- 
-            if (newChild.onAfterMount) {
+            (node as HTMLElement).replaceChild(newChild, oldChild);
 
-                newChild.onAfterMount();
+            if (nodeDidConnect) {
+
+                nodeDidConnect(newChild);
             }
 
-            removedChildrenElements.push(originalElement);
+            removedChildrenElements.push(oldChild);
 
             insertedChildrenElements.push(newChild);
         }
         else {
 
-            if (newChild.onBeforeMount) {
+            if (nodeWillConnect) {
 
-                newChild.onBeforeMount();
+                nodeWillConnect(newChild);
             }
 
-            node.appendChild(newChild);
+            (node as HTMLElement).appendChild(newChild);
 
-            if (newChild.onAfterMount) {
+            if (nodeDidConnect) {
 
-                newChild.onAfterMount();
+                nodeDidConnect(newChild);
             }
 
             insertedChildrenElements.push(newChild);
         }
 
-        if (node.onAfterChildrenUpdated) {
+        if (nodeDidUpdate) {
 
-            node.onAfterChildrenUpdated({
+            nodeDidUpdate(node!, {
                 inserted: insertedChildrenElements,
                 moved: [],
                 removed: removedChildrenElements

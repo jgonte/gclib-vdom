@@ -1,37 +1,41 @@
-import { Patch } from "../Patch";
+import { Patch, PatchOptions } from "../Patch";
 import VirtualNode from "../../nodes/VirtualNode";
 import VirtualText from "../../nodes/VirtualText";
-import { CustomElementLike } from "../CustomElementLike";
 
 /**
  * Patch to set a new child at a given index
  */
-export default class SetElementPatch extends Patch {
-    
+export default class SetElementPatch implements Patch {
+
     constructor(
 
         /**
          * The new node to replace the existing element
          */
         public newNode: VirtualNode | VirtualText
-    ) {
-        super();
-    }
+    ) {}
 
-    applyPatch(parentNode: Node | ShadowRoot | Document, node?: Node): void {
+    applyPatch(options: PatchOptions): void {
 
-        const newNode = this.newNode.render() as CustomElementLike;
+        const { parentNode, hooks } = options;
 
-        if (newNode.onBeforeMount) {
+        const {
+            nodeWillConnect: onBeforeMount,
+            nodeDidConnect: onAfterMount
+        } = hooks || {};
 
-            newNode.onBeforeMount();
+        const newNode = this.newNode.render();
+
+        if (onBeforeMount) {
+
+            onBeforeMount(newNode);
         }
 
         parentNode.appendChild(newNode);
 
-        if (newNode.onAfterMount) {
+        if (onAfterMount) {
 
-            newNode.onAfterMount();
+            onAfterMount(newNode);
         }
     }
 }

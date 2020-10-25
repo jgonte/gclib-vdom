@@ -1,6 +1,5 @@
 import h from "../src/h";
 import { Component } from "../src/component/Component";
-import { CustomElement } from "../src/component/CustomElement";
 import { VirtualNode, VirtualText } from "../src/gclib-vdom";
 
 describe("render tests", () => {
@@ -41,7 +40,7 @@ describe("render tests", () => {
 
         const element = node.render();
 
-        expect(element.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"><div><span>Some text</span></div></div>');
+        expect(element.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"/><div><span>Some text</span></div></div>');
     });
 
     it("creates an HTMLElement from a virtual node with the name of the element, attributes and children", () => {
@@ -57,7 +56,7 @@ describe("render tests", () => {
 
         const element = node.render();
 
-        expect(element.outerHTML).toEqual('<div id=\"myElement\"><img src=\"http://images/image.gif\"><span>Some text</span></div>');
+        expect(element.outerHTML).toEqual('<div id=\"myElement\"><img src=\"http://images/image.gif\"/><span>Some text</span></div>');
     });
 
     it("creates an externally linked svg element", () => {
@@ -71,7 +70,7 @@ describe("render tests", () => {
 
         const element = node.render();
 
-        expect(element.outerHTML).toEqual('<svg><use href=\"http://icons/icons.svg#my-icon\"></use></svg>');
+        expect(element.outerHTML).toEqual('');
     });
 
     it("creates an externally linked svg element with xlink:href", () => {
@@ -85,7 +84,7 @@ describe("render tests", () => {
 
         const element = node.render();
 
-        expect(element.outerHTML).toEqual('<svg><use xlink:href=\"http://icons/icons.svg#my-icon\"></use></svg>');
+        expect(element.outerHTML).toEqual('<svg><use xlink:href=\"http://icons/icons.svg#my-icon\"/></svg>');
     });
 
     it("creates a component", () => {
@@ -95,7 +94,7 @@ describe("render tests", () => {
             value: string = "Some text"
 
             render(): VirtualNode | VirtualText {
-                
+
                 return h('span', null, this.value);
             }
         }
@@ -105,26 +104,5 @@ describe("render tests", () => {
         const element = node.render();
 
         expect(element.outerHTML).toEqual('<span>Some text</span>');
-    });
-
-    it("creates a custom HTML element", () => {
-
-        class MyCustomElement extends CustomElement {
-
-            value: string = "Some text"
-
-            render(): VirtualNode | VirtualText {
-                
-                return h('span', null, this.value);
-            }
-        }
-
-        customElements.define('my-custom-element', MyCustomElement);
-
-        const node = h('my-custom-element', null);
-
-        const element = node.render();
-
-        expect(element.outerHTML).toEqual('<my-custom-element></my-custom-element>');
     });
 });

@@ -4,6 +4,7 @@ import displayObject from "../src/utils/displayObject";
 import ElementPatches from "../src/patches/ElementPatches";
 import VirtualNode from "../src/nodes/VirtualNode";
 import VirtualText from "../src/nodes/VirtualText";
+import { UpdatedChildren } from "../src/patches/Patch";
 
 function comparePatches(patches: ElementPatches, expected: string): void {
 
@@ -24,6 +25,33 @@ function createShadowRoot() {
     const element = document.createElement('div');
 
     return element.attachShadow({ mode: 'open' });
+}
+
+function setupLifecycleHooks() {
+
+    const hooks = {
+
+        nodeWillConnect(node: Node): void {},
+
+        nodeDidConnect(node: Node): void {},
+
+        nodeWillDisconnect(node: Node): void {},
+
+        nodeDidUpdate(node: Node, updatedChildren: UpdatedChildren): void {}
+    }
+
+    return {
+        
+        hooks,
+
+        spyNodeWillConnect: jest.spyOn(hooks, 'nodeWillConnect'),
+
+        spyNodeDidConnect: jest.spyOn(hooks, 'nodeDidConnect'),
+
+        spyNodeWillDisconnect: jest.spyOn(hooks, 'nodeWillDisconnect'),
+
+        spyNodeDidUpdate: jest.spyOn(hooks, 'nodeDidUpdate')
+    };
 }
 
 describe("diff tests", () => {
@@ -87,7 +115,25 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+
+        //expect(spyOnBeforeUnmount).toBeCalledWith(shadowRoot.firstChild);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(0); // Removed
     });
@@ -122,7 +168,23 @@ describe("diff tests", () => {
 
         const shadowRoot = createShadowRoot();
 
-        patches.applyPatches(shadowRoot, undefined);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+        
+        patches.applyPatches(shadowRoot, undefined, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // Added
 
@@ -162,7 +224,23 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(0); // Removed
     });
@@ -201,7 +279,23 @@ describe("diff tests", () => {
 
         const shadowRoot = createShadowRoot();
 
-        patches.applyPatches(shadowRoot, undefined);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, undefined, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // Added
 
@@ -255,7 +349,23 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // Replaced
 
@@ -301,7 +411,23 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // Replaced
 
@@ -340,7 +466,23 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -389,7 +531,25 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        // No mount changes but maybe onTextChanged event?
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -426,7 +586,23 @@ describe("diff tests", () => {
             "patches": []
         });
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -481,7 +657,25 @@ describe("diff tests", () => {
             _context:(PatchingContext) {_original:{}}
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        // Implement attribute changed events?
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -545,7 +739,23 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -592,7 +802,23 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(3); // Called for the children
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(1);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -676,7 +902,23 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(3); // For the children
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(3); // For the children
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(1);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -732,7 +974,23 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+        
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -758,7 +1016,7 @@ describe("diff tests", () => {
         // Get the element to get patched
         const element = oldNode.render();
 
-        expect(element.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"><div><span>Some text</span></div></div>');
+        expect(element.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"/><div><span>Some text</span></div></div>');
 
         const shadowRoot = createShadowRoot();
 
@@ -864,13 +1122,29 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
 
-        expect(child.outerHTML).toEqual('<div><img src=\"http://images/newImage.gif\"><div><span>Some other text</span></div></div>');
+        expect(child.outerHTML).toEqual('<div><img src=\"http://images/newImage.gif\"/><div><span>Some other text</span></div></div>');
 
         expect(child).toEqual(element); // Kept the node
     });
@@ -890,7 +1164,7 @@ describe("diff tests", () => {
         // Get the element to get patched
         const element = oldNode.render();
 
-        expect(element.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"><div><span>Some text</span></div></div>');
+        expect(element.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"/><div><span>Some text</span></div></div>');
 
         const shadowRoot = createShadowRoot();
 
@@ -978,13 +1252,29 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
 
-        expect(child.outerHTML).toEqual('<div><img src=\"http://images/newImage.gif\"><div>Some other text</div></div>');
+        expect(child.outerHTML).toEqual('<div><img src=\"http://images/newImage.gif\"/><div>Some other text</div></div>');
 
         expect(child).toEqual(element); // Kept the node
     });
@@ -1004,7 +1294,7 @@ describe("diff tests", () => {
         // Get the element to get patched
         const element = oldNode.render();
 
-        expect(element.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"><div><span>Some text</span></div></div>');
+        expect(element.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"/><div><span>Some text</span></div></div>');
 
         const shadowRoot = createShadowRoot();
 
@@ -1055,7 +1345,23 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(2);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(1);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1159,13 +1465,29 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(2);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(2);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(1);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
 
-        expect(child.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"><div><span>Some text</span></div></div>');
+        expect(child.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"/><div><span>Some text</span></div></div>');
 
         expect(child).toEqual(element); // Kept the node
     });
@@ -1289,7 +1611,23 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+
+        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+
+        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(1);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1351,7 +1689,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1460,7 +1806,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1564,7 +1918,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1678,7 +2040,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1863,7 +2233,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1919,7 +2297,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1970,7 +2356,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2028,7 +2422,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2095,7 +2497,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2176,7 +2586,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2233,7 +2651,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2304,7 +2730,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2375,7 +2809,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2451,7 +2893,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2514,7 +2964,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2587,7 +3045,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2670,7 +3136,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2807,7 +3281,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2883,7 +3365,15 @@ describe("diff tests", () => {
             }
         }`);
 
-        patches.applyPatches(shadowRoot, element);
+        const {
+            hooks, 
+            spyNodeWillConnect: spyOnBeforeMount,
+            spyNodeDidConnect: spyOnAfterMount,
+            spyNodeWillDisconnect: spyOnBeforeUnmount,
+            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 

@@ -1,23 +1,28 @@
-import { Patch } from "../Patch";
+import { Patch, PatchOptions } from "../Patch";
 import { VirtualNode, VirtualText } from "../../gclib-vdom";
-import { CustomElementLike } from "../CustomElementLike";
 
 /**
  * Patch to add an attribute to the DOM element
  */
-export default class AddChildrenPatch extends Patch {
+export default class AddChildrenPatch implements Patch {
 
     constructor(
 
         /**
-         * The new node to replace the element
+         * The new children to add
          */
         public children: Array<VirtualNode | VirtualText>
-    ) {
-        super();
-    }
+    ) { }
 
-    applyPatch(parentNode: Node | Document | ShadowRoot, node: CustomElementLike): void {
+    applyPatch(options: PatchOptions): void {
+
+        const { node, hooks } = options;
+
+        const {
+            nodeWillConnect,
+            nodeDidConnect,
+            nodeDidUpdate
+        } = hooks || {};
 
         const insertedChildrenElements: Array<Node> = [];
 
@@ -25,28 +30,29 @@ export default class AddChildrenPatch extends Patch {
 
         this.children.forEach(child => {
 
-            const childElement = child.render() as CustomElementLike;
+            const childElement = child.render();
 
             insertedChildrenElements.push(childElement);
 
-            if (childElement.onBeforeMount) {
+            if (nodeWillConnect) {
 
-                childElement.onBeforeMount();
+                nodeWillConnect(childElement);
             }
 
             fragment.appendChild(childElement);
 
-            if (childElement.onAfterMount) {
+            if (nodeDidConnect) {
 
-                childElement.onAfterMount();
+                nodeDidConnect(childElement);
             }
+
         });
 
-        node.appendChild(fragment);
+        (node as HTMLElement).appendChild(fragment);
 
-        if (node.onAfterChildrenUpdated) {
+        if (nodeDidUpdate) {
 
-            node.onAfterChildrenUpdated({
+            nodeDidUpdate(node!, {
                 inserted: insertedChildrenElements,
                 moved: [],
                 removed: []

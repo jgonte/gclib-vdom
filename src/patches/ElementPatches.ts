@@ -1,4 +1,4 @@
-import { Patch } from "./Patch";
+import { Patch, LifecycleHooks } from "./Patch";
 import ChildElementPatches from "./ChildElementPatches";
 import PatchingContext from "./helpers/PatchingContext";
 
@@ -27,9 +27,17 @@ export default class ElementPatches {
     //     this.applyPatches(rootNode, undefined);
     // }
 
-    applyPatches(rootNode: ShadowRoot | Document | Node, node?: Node | null) : void {
+    applyPatches(
+        rootNode: ShadowRoot | Document | Node, 
+        node?: Node | null,
+        hooks?: LifecycleHooks) : void {
 
-        this.patches.forEach(patch => patch.applyPatch(rootNode, node, this._context));
+        this.patches.forEach(patch => patch.applyPatch({
+            parentNode:  rootNode, 
+            node, 
+            context: this._context,
+            hooks
+        }));
 
         if (typeof node !== 'undefined' && node !== null) {
 
@@ -39,7 +47,7 @@ export default class ElementPatches {
 
                     const childNode: ChildNode = node.childNodes[patch.index];
         
-                    patch.patches.applyPatches(node, childNode);
+                    patch.patches.applyPatches(node, childNode, hooks);
                 });
             }
   

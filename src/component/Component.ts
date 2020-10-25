@@ -1,56 +1,16 @@
-import { diff, VirtualNode, VirtualText } from "../gclib-vdom";
-import { ComponentBase } from "./ComponentBase";
+import VirtualDomComponent from "../VirtualDomComponent";
 
-export abstract class Component /* extends HTMLElement */ implements ComponentBase{
+export type ComponentConstructor = new (...args: Array<any>) => Component;
 
-    /** Previous node to diff with the current one */
-    private previousNode?: VirtualNode | VirtualText;
+export abstract class Component extends VirtualDomComponent {
 
-    // constructor() {
+    get document(): ShadowRoot | Document | Node {
 
-    //     super();
-
-    //     this.attachShadow({ mode: "open" });
-    // }
-
-    abstract render() : VirtualNode | VirtualText;
-
-    update() : void {
-
-        let currentNode: VirtualNode | VirtualText = this.render();
-
-        const patches = diff(this.previousNode, currentNode);
-
-        this.previousNode = currentNode;
-
-        patches.applyPatches(document, undefined);
-
-        //patches.applyPatches(this.shadowRoot!, this.rootElement);
+        return document;
     }
 
-    // get rootElement()  {
-
-    //     return this.shadowRoot!.lastChild;
-    // }
-
-    onBeforeMount() {
-
-        console.log('onBeforeMount');
+    get rootElement(): Node | null {
+        
+        return null;
     }
-
-    onAfterMount() {
-
-        console.log('onAfterMount');
-    }
-
-    onBeforeUnmount() {
-
-        console.log('onBeforeUnmount');
-    }
-
-    onAfterChildrenUpdated(updatedChildren: any) {
-
-        console.log('onAfterChildrenUpdated');
-    }
-   
 }

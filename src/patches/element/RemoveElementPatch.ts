@@ -1,18 +1,23 @@
-import { CustomElementLike } from "../CustomElementLike";
-import { Patch } from "../Patch";
+import { Patch, PatchOptions } from "../Patch";
 
 /**
  * Patch to remove the element from the DOM
  */
-export default class RemoveElementPatch extends Patch {
+export default class RemoveElementPatch implements Patch {
 
-    applyPatch(parentNode: Node | Document | ShadowRoot, node: CustomElementLike): void {
+    applyPatch(options: PatchOptions): void {
         
-        if (node.onBeforeUnmount) {
+        const { parentNode, node, hooks } = options;
 
-            node.onBeforeUnmount();
+        const {
+            nodeWillDisconnect
+        } = hooks || {};
+
+        if (nodeWillDisconnect) {
+
+            nodeWillDisconnect(node!);
         }
 
-        parentNode.removeChild(node);
+        parentNode.removeChild(node!);
     }
 }

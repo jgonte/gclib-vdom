@@ -1,7 +1,9 @@
-import { ComponentBaseConstructor } from "../component/ComponentBase";
-import { CustomElementLike } from "../patches/CustomElementLike";
 import { createElement } from "./helpers/createElement";
 import VirtualText from "./VirtualText";
+import { LifecycleHooks } from "../patches/Patch";
+import { ComponentConstructor } from "../component/Component";
+
+export type CustomElementLike = Element & LifecycleHooks; 
 
 /**
  * Defines a virtual node
@@ -13,7 +15,7 @@ export default class VirtualNode {
         /**
          * The name of the element
          */
-        public name: string | ComponentBaseConstructor,
+        public name: string | ComponentConstructor,
 
         /**
          * The props of the element

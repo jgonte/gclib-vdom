@@ -1,41 +1,46 @@
-import { Patch } from "../Patch";
+import { Patch, PatchOptions } from "../Patch";
 import { VirtualNode, VirtualText } from "../../gclib-vdom";
-import { CustomElementLike } from "../CustomElementLike";
 
 /**
  * Patch to replace the element in the DOM
  */
-export default class ReplaceElementPatch extends Patch {
-    
+export default class ReplaceElementPatch implements Patch {
+
     constructor(
 
         /**
          * The new node to replace the element
          */
         public newNode: VirtualNode | VirtualText
-    ) {
-        super();
-    }
+    ) {}
 
-    applyPatch(parentNode: Node | ShadowRoot | Document, node: CustomElementLike): void {
-        
-        const newNode = this.newNode.render() as CustomElementLike;
+    applyPatch(options: PatchOptions): void {
 
-        if (node.onBeforeUnmount) {
+        const { node, hooks } = options;
 
-            node.onBeforeUnmount();
+        const {
+            nodeWillDisconnect,
+            nodeWillConnect,
+            nodeDidConnect
+        } = hooks || {};
+
+        const newNode = this.newNode.render();
+
+        if (nodeWillDisconnect) {
+
+            nodeWillDisconnect(node!);
         }
 
-        if (newNode.onBeforeMount) {
+        if (nodeWillConnect) {
 
-            newNode.onBeforeMount();
+            nodeWillConnect(newNode!);
         }
-     
-        node.replaceWith(newNode);
 
-        if (newNode.onAfterMount) {
+        (node as HTMLElement).replaceWith(newNode);
 
-            newNode.onAfterMount();
+        if (nodeDidConnect) {
+
+            nodeDidConnect(newNode);
         }
     }
 
