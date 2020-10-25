@@ -22,6 +22,7 @@ export default class AddChildrenPatch implements Patch {
             nodeWillConnect,
             nodeDidConnect,
             nodeDidUpdate
+
         } = hooks || {};
 
         const insertedChildrenElements: Array<Node> = [];
@@ -53,6 +54,7 @@ export default class AddChildrenPatch implements Patch {
         if (nodeDidUpdate) {
 
             nodeDidUpdate(node!, {
+
                 inserted: insertedChildrenElements,
                 moved: [],
                 removed: []

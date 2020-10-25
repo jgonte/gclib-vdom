@@ -21,7 +21,11 @@ export default function property(options?: PropertyOptions) {
 
     const { name, type, value, reflect } = options || {};
 
+<<<<<<< HEAD
     return function (target: CustomElement | CustomElementMixin, propertyKey: string) {
+=======
+    return function (target: any | CustomElementMixin, propertyKey: string) {
+>>>>>>> 9046a975f46a2b1742774d263e9715eea9ae1d10
 
         const propDescriptors = (target.constructor as CustomHTMLElementConstructor).propDescriptors || [];
 

@@ -33,6 +33,7 @@ export default class MoveElementPatch implements Patch {
             nodeWillConnect,
             nodeDidConnect,
             nodeDidUpdate
+
         } = hooks || {};
 
         const insertedChildrenElements: Array<Node> = [];
@@ -80,6 +81,7 @@ export default class MoveElementPatch implements Patch {
             if (nodeWillConnect) {
 
                 nodeWillConnect(movingChild);
+
             }
 
             (node as HTMLElement).appendChild(movingChild);

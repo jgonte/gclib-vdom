@@ -26,6 +26,7 @@ export default class RemoveChildrenRangePatch implements Patch {
         const {
             nodeWillDisconnect,
             nodeDidUpdate
+
         } = hooks || {};
 
         const removedChildrenElements: Array<Node> = [];
@@ -55,6 +56,7 @@ export default class RemoveChildrenRangePatch implements Patch {
         if (nodeDidUpdate) {
 
             nodeDidUpdate(node!, {
+
                 inserted: [],
                 moved: [],
                 removed: removedChildrenElements
