@@ -3,14 +3,14 @@ import VirtualNode from "../../nodes/VirtualNode";
 import VirtualText from "../../nodes/VirtualText";
 
 /**
- * Patch to set a new child at a given index
+ * Patch to set a new child when the parent node is empty
  */
 export default class SetElementPatch implements Patch {
 
     constructor(
 
         /**
-         * The new node to replace the existing element
+         * The new node to set in an empty one
          */
         public newNode: VirtualNode | VirtualText
     ) {}
@@ -20,22 +20,22 @@ export default class SetElementPatch implements Patch {
         const { parentNode, hooks } = options;
 
         const {
-            nodeWillConnect: onBeforeMount,
-            nodeDidConnect: onAfterMount
+            nodeWillConnect,
+            nodeDidConnect
         } = hooks || {};
 
         const newNode = this.newNode.render();
 
-        if (onBeforeMount) {
+        if (nodeWillConnect) {
 
-            onBeforeMount(newNode);
+            nodeWillConnect(newNode);
         }
 
         parentNode.appendChild(newNode);
 
-        if (onAfterMount) {
+        if (nodeDidConnect) {
 
-            onAfterMount(newNode);
+            nodeDidConnect(newNode);
         }
     }
 }

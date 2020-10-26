@@ -70,7 +70,7 @@ describe("render tests", () => {
 
         const element = node.render();
 
-        expect(element.outerHTML).toEqual('');
+        expect(element.outerHTML).toEqual('<svg><use href=\"http://icons/icons.svg#my-icon\"/></svg>');
     });
 
     it("creates an externally linked svg element with xlink:href", () => {

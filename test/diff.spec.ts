@@ -117,23 +117,23 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
 
-        //expect(spyOnBeforeUnmount).toBeCalledWith(shadowRoot.firstChild);
+        //expect(spyNodeWillDisconnect).toBeCalledWith(shadowRoot.firstChild);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(0); // Removed
     });
@@ -170,21 +170,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
         
         patches.applyPatches(shadowRoot, undefined, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(1);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // Added
 
@@ -226,21 +226,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(0); // Removed
     });
@@ -281,21 +281,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, undefined, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(1);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // Added
 
@@ -351,21 +351,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(1);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // Replaced
 
@@ -413,21 +413,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(1);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // Replaced
 
@@ -468,21 +468,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -533,23 +533,23 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
         // No mount changes but maybe onTextChanged event?
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -588,21 +588,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -659,23 +659,23 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        // Implement attribute changed events?
+        // Track the changed attributes?
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -741,21 +741,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -804,21 +804,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(3); // Called for the children
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(3);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(1);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -904,21 +904,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(3); // For the children
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(3);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(3); // For the children
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(3);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(1);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -976,21 +976,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
-        
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(1);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1124,21 +1124,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1254,21 +1254,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(1);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1347,21 +1347,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(1);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(2);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(1);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1467,21 +1467,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(2);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(2);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(1);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1613,21 +1613,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnAfterMount).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
 
-        expect(spyOnBeforeUnmount).toHaveBeenCalledTimes(1);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
 
-        expect(spyOnAfterChildrenUpdated).toHaveBeenCalledTimes(1);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1691,13 +1691,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1808,13 +1816,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2); // Prepended and moved node
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -1920,13 +1936,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2042,13 +2066,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(5);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(5);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(5);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2235,13 +2267,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(10);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(10);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(4);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(10);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2299,13 +2339,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2358,13 +2406,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2424,13 +2480,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2499,13 +2563,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(3);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(3);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2588,13 +2660,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(4);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(4);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(6);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(5);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2653,13 +2733,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2732,13 +2820,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2811,13 +2907,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2895,13 +2999,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(3);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(3);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(3);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -2966,13 +3078,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(3);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -3047,13 +3167,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(4);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(4);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(4);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -3138,13 +3266,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(3);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(3);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(3);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(4);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -3283,13 +3419,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(7);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(7);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(6);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(8);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -3367,13 +3511,21 @@ describe("diff tests", () => {
 
         const {
             hooks, 
-            spyNodeWillConnect: spyOnBeforeMount,
-            spyNodeDidConnect: spyOnAfterMount,
-            spyNodeWillDisconnect: spyOnBeforeUnmount,
-            spyNodeDidUpdate: spyOnAfterChildrenUpdated
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
