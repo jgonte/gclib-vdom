@@ -1,5 +1,7 @@
 import { LifecycleHooks, UpdatedChildren } from "./patches/Patch";
-import { VirtualNode, VirtualText, mount } from "./gclib-vdom";
+import VirtualNode from './nodes/VirtualNode';
+import VirtualText from './nodes/VirtualText';
+import mount from './nodes/helpers/mount';
 import callMixins from "./customElement/helpers/callMixins";
 
 /**

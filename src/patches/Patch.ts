@@ -29,11 +29,7 @@ export interface LifecycleHooks {
     /**
      * Called when the children of the parent have been added, removed or moved in the DOM
      */
-<<<<<<< HEAD
     nodeDidUpdate?: (node: Node, updatedChildren: UpdatedChildren) => void;
-=======
-    nodeDidUpdateChildren?: (node: Node, updatedChildren: UpdatedChildren) => void;
->>>>>>> 9046a975f46a2b1742774d263e9715eea9ae1d10
 }
 
 export interface PatchOptions {
