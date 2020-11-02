@@ -1,4 +1,4 @@
-import { Patch, PatchOptions } from "../Patch";
+import { Patch, PatchOptions, NodeChanges } from "../Patch";
 
 /**
  * Patch to remove all the children from the element in the DOM
@@ -7,11 +7,14 @@ export default class RemoveChildrenPatch implements Patch {
 
     applyPatch(options: PatchOptions): void {
 
-        const { node, hooks } = options;
+        const { 
+            node, 
+            context,
+            hooks
+        } = options;
 
         const {
-            nodeWillDisconnect,
-            nodeDidUpdate
+            nodeWillDisconnect
         } = hooks || {};
 
         const removedChildrenElements: Array<Node> = [];
@@ -30,13 +33,11 @@ export default class RemoveChildrenPatch implements Patch {
             removedChildrenElements.push(child);
         }
 
-        if (nodeDidUpdate) {
-
-            nodeDidUpdate(node!, {
-                inserted: [],
-                moved: [],
+        context!.setNodeChanges(
+            node!,
+            new NodeChanges({
                 removed: removedChildrenElements
-            });
-        }
+            })
+        );
     }
 }

@@ -1,7 +1,7 @@
-import { Patch, PatchOptions } from "../Patch";
+import { Patch, PatchOptions, NodeChanges } from "../Patch";
 
 /**
- * Patch to remove all the children from the element in the DOM
+ * Patch to remove a range of children from the element in the DOM
  */
 export default class RemoveChildrenRangePatch implements Patch {
 
@@ -21,11 +21,14 @@ export default class RemoveChildrenRangePatch implements Patch {
 
     applyPatch(options: PatchOptions): void {
 
-        const { node, hooks } = options;
+        const { 
+            node, 
+            context,
+            hooks 
+        } = options;
 
         const {
-            nodeWillDisconnect,
-            nodeDidUpdate
+            nodeWillDisconnect
 
         } = hooks || {};
 
@@ -53,15 +56,12 @@ export default class RemoveChildrenRangePatch implements Patch {
             }
         }
 
-        if (nodeDidUpdate) {
-
-            nodeDidUpdate(node!, {
-
-                inserted: [],
-                moved: [],
+        context!.setNodeChanges(
+            node!,
+            new NodeChanges({
                 removed: removedChildrenElements
-            });
-        }
+            })
+        );
     }
 
 }

@@ -1,4 +1,4 @@
-import { Patch, PatchOptions } from "../Patch";
+import { Patch, PatchOptions, NodeChanges } from "../Patch";
 
 /**
  * Patch to move a child from one position to another
@@ -26,17 +26,17 @@ export default class MoveElementPatch implements Patch {
 
     applyPatch(options: PatchOptions): void {
 
-        const { node, context, hooks } = options;
+        const { 
+            node, 
+            context, 
+            hooks 
+        } = options;
 
         const {
             nodeWillDisconnect,
             nodeWillConnect,
-            nodeDidConnect,
-            nodeDidUpdate
-
+            nodeDidConnect
         } = hooks || {};
-
-        const insertedChildrenElements: Array<Node> = [];
 
         const movedChildrenElements: Array<Node> = [];
 
@@ -50,7 +50,7 @@ export default class MoveElementPatch implements Patch {
             movingChild = (node as HTMLElement).children[from - offset];
         }
 
-        const originalElement = (node as HTMLElement).children[to];
+        const originalElement = (node as HTMLElement).children[to]; 
 
         if (originalElement) {
 
@@ -81,7 +81,6 @@ export default class MoveElementPatch implements Patch {
             if (nodeWillConnect) {
 
                 nodeWillConnect(movingChild);
-
             }
 
             (node as HTMLElement).appendChild(movingChild);
@@ -91,16 +90,14 @@ export default class MoveElementPatch implements Patch {
                 nodeDidConnect(movingChild);
             }
 
-            insertedChildrenElements.push(movingChild);
+            movedChildrenElements.push(movingChild);
         }
 
-        if (nodeDidUpdate) {
-
-            nodeDidUpdate(node!, {
-                inserted: insertedChildrenElements,
+        context!.setNodeChanges(
+            node!,
+            new NodeChanges({
                 moved: movedChildrenElements,
-                removed: []
-            });
-        }
+            })
+        );
     }
 }

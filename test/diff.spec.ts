@@ -4,7 +4,7 @@ import displayObject from "../src/utils/displayObject";
 import ElementPatches from "../src/patches/ElementPatches";
 import VirtualNode from "../src/nodes/VirtualNode";
 import VirtualText from "../src/nodes/VirtualText";
-import { UpdatedChildren } from "../src/patches/Patch";
+import { NodeChanges } from "../src/patches/Patch";
 
 function comparePatches(patches: ElementPatches, expected: string): void {
 
@@ -31,17 +31,17 @@ function setupLifecycleHooks() {
 
     const hooks = {
 
-        nodeWillConnect(node: Node): void {},
+        nodeWillConnect(node: Node): void { },
 
-        nodeDidConnect(node: Node): void {},
+        nodeDidConnect(node: Node): void { },
 
-        nodeWillDisconnect(node: Node): void {},
+        nodeWillDisconnect(node: Node): void { },
 
-        nodeDidUpdate(node: Node, updatedChildren: UpdatedChildren): void {}
+        nodeDidUpdate(node: Node, updatedChildren: NodeChanges): void { }
     }
 
     return {
-        
+
         hooks,
 
         spyNodeWillConnect: jest.spyOn(hooks, 'nodeWillConnect'),
@@ -66,15 +66,8 @@ describe("diff tests", () => {
 
         comparePatches(patches, `
         (ElementPatches) {
-            patches:
-            [],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            patches: [],
+            childrenPatches: []
         }`);
 
         const shadowRoot = createShadowRoot();
@@ -107,16 +100,11 @@ describe("diff tests", () => {
             [
                 (RemoveElementPatch) {}
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -131,9 +119,13 @@ describe("diff tests", () => {
 
         expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
 
-        //expect(spyNodeWillDisconnect).toBeCalledWith(shadowRoot.firstChild);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledWith(element);
 
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            removed: [element]
+        }));
 
         expect(shadowRoot.childNodes.length).toEqual(0); // Removed
     });
@@ -157,26 +149,26 @@ describe("diff tests", () => {
                     }
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            childrenPatches: []
         }`);
 
         const shadowRoot = createShadowRoot();
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
             spyNodeDidUpdate
         } = setupLifecycleHooks();
-        
+
         patches.applyPatches(shadowRoot, undefined, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // Added
+
+        const element = shadowRoot.firstChild!;
+
+        expect(element.textContent).toEqual('someText');
 
         expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
 
@@ -184,13 +176,11 @@ describe("diff tests", () => {
 
         expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
 
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(shadowRoot.childNodes.length).toEqual(1); // Added
-
-        const element = shadowRoot.firstChild!;
-
-        expect(element.textContent).toEqual('someText');
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            inserted: [element]
+        }));
     });
 
     it("diff virtual node to undefined", () => {
@@ -216,16 +206,11 @@ describe("diff tests", () => {
             [
                 (RemoveElementPatch) {}
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -240,7 +225,13 @@ describe("diff tests", () => {
 
         expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
 
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
+        expect(spyNodeWillDisconnect).toHaveBeenCalledWith(element);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            removed: [element]
+        }));
 
         expect(shadowRoot.childNodes.length).toEqual(0); // Removed
     });
@@ -262,25 +253,18 @@ describe("diff tests", () => {
                     (VirtualNode) {
                         name: 'div',
                         props: null,
-                        children:
-                        [],
+                        children: [],
                         isVirtualNode: true
                     }
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            childrenPatches: []
         }`);
 
         const shadowRoot = createShadowRoot();
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -289,19 +273,23 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, undefined, hooks);
 
+        expect(shadowRoot.childNodes.length).toEqual(1); // Added
+
+        const element = shadowRoot.firstChild! as HTMLElement;
+
+        expect(element.outerHTML).toEqual('<div></div>');
+
         expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
 
         expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
 
         expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
 
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(shadowRoot.childNodes.length).toEqual(1); // Added
-
-        const element = shadowRoot.firstChild! as HTMLElement;
-
-        expect(element.outerHTML).toEqual('<div></div>');
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            inserted: [element]
+        }));
     });
 
     it("diff virtual text to virtual node", () => {
@@ -340,17 +328,11 @@ describe("diff tests", () => {
                     }
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -402,17 +384,11 @@ describe("diff tests", () => {
                     }
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -421,19 +397,24 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
+        expect(shadowRoot.childNodes.length).toEqual(1); // Replaced
+
+        const child = shadowRoot.firstChild! as Text;
+
+        expect(child.textContent).toEqual('Some other text');
+
         expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
 
         expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
 
         expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
 
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(shadowRoot.childNodes.length).toEqual(1); // Replaced
-
-        const child = shadowRoot.firstChild! as Text;
-
-        expect(child.textContent).toEqual('Some other text');
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            inserted: [child],
+            removed: [element]
+        }));
     });
 
     it("diff virtual text to virtual text same text", () => {
@@ -455,19 +436,12 @@ describe("diff tests", () => {
 
         comparePatches(patches, `
         (ElementPatches) {
-            patches:
-            [],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            patches: [],
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -522,17 +496,11 @@ describe("diff tests", () => {
                     }
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -540,6 +508,14 @@ describe("diff tests", () => {
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as Text;
+
+        expect(child.textContent).toEqual('Some other text'); // Changed the text
+
+        expect(child).toEqual(element); // Kept the same node
 
         // No mount changes but maybe onTextChanged event?
 
@@ -549,15 +525,14 @@ describe("diff tests", () => {
 
         expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
 
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
-
-        const child = shadowRoot.firstChild! as Text;
-
-        expect(child.textContent).toEqual('Some other text'); // Changed the text
-
-        expect(child).toEqual(element); // Kept the same node
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot.firstChild, new NodeChanges({
+            text: {
+                oldValue: 'Some text',
+                newValue: 'Some other text'
+            }
+        }));
     });
 
     it("diff same node type", () => {
@@ -577,17 +552,14 @@ describe("diff tests", () => {
 
         const patches = diff(oldNode, newNode);
 
-        expect(patches).toEqual({
-            "_context": {
-                "_original": {},
-                "_newNode": undefined
-            },
-            "childrenPatches": [],
-            "patches": []
-        });
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches: [],
+            childrenPatches: []
+        }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -652,13 +624,11 @@ describe("diff tests", () => {
                     name: 'class'
                 }
             ],
-            childrenPatches:
-            [],
-            _context:(PatchingContext) {_original:{}}
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -675,7 +645,24 @@ describe("diff tests", () => {
 
         expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
 
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({
+            attributes: [
+                {
+                    key: 'id',
+                    oldValue: 'myElement1',
+                    newValue: 'myElement2'
+                },
+                {
+                    key: 'href',
+                    newValue: 'http://someurl.com'
+                },
+                {
+                    key: 'class',
+                    oldValue: 'class1 class2'
+                }]
+        }));
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -705,8 +692,7 @@ describe("diff tests", () => {
 
         comparePatches(patches, `
         (ElementPatches) {
-            patches:
-            [],
+            patches: [],
             childrenPatches:
             [
                 (ChildElementPatches) {
@@ -722,25 +708,14 @@ describe("diff tests", () => {
                                 }
                             }
                         ],
-                        childrenPatches:
-                        [],
-                        _context:
-                        (PatchingContext) {
-                            _original:
-                            {}
-                        }
+                        childrenPatches: []
                     }
                 }
-            ],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            ]
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -755,7 +730,14 @@ describe("diff tests", () => {
 
         expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
 
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element.firstChild, new NodeChanges({
+            text: {
+                oldValue: 'Some text',
+                newValue: 'Some other text'
+            }
+        }));
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -779,6 +761,8 @@ describe("diff tests", () => {
 
         expect(element.outerHTML).toEqual('<ul><li>Item1</li><li>Item2</li><li>Item3</li></ul>');
 
+        const originalChildNodes = Array.from(element.childNodes);
+
         const shadowRoot = createShadowRoot();
 
         shadowRoot.appendChild(element);
@@ -793,17 +777,11 @@ describe("diff tests", () => {
             [
                 (RemoveChildrenPatch) {}
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -819,6 +797,10 @@ describe("diff tests", () => {
         expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(3);
 
         expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot.firstChild, new NodeChanges({
+            removed: originalChildNodes
+        }));
 
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
@@ -893,17 +875,11 @@ describe("diff tests", () => {
                     ]
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -911,6 +887,14 @@ describe("diff tests", () => {
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<ul><li>Item1</li><li>Item2</li><li>Item3</li></ul>');
+
+        expect(child).toEqual(element); // Kept the same node
 
         expect(spyNodeWillConnect).toHaveBeenCalledTimes(3);
 
@@ -920,13 +904,11 @@ describe("diff tests", () => {
 
         expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+        const insertedChildNodes = Array.from(child.childNodes);
 
-        const child = shadowRoot.firstChild! as HTMLElement;
-
-        expect(child.outerHTML).toEqual('<ul><li>Item1</li><li>Item2</li><li>Item3</li></ul>');
-
-        expect(child).toEqual(element); // Kept the same node
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(child, new NodeChanges({
+            inserted: insertedChildNodes
+        }));
     });
 
     it("diff virtual node to virtual node with different name", () => {
@@ -965,17 +947,11 @@ describe("diff tests", () => {
                     }
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -984,14 +960,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -999,6 +967,19 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<span>Some other text</span>');
 
         expect(child).not.toEqual(element); // Replaced the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            inserted: [child],
+            removed: [element]
+        }));
     });
 
     it("diff a node with changed child image url and span text", () => {
@@ -1051,29 +1032,21 @@ describe("diff tests", () => {
                                 value: 'http://images/newImage.gif'
                             }
                         ],
-                        childrenPatches:
-                        [],
-                        _context:
-                        (PatchingContext) {
-                            _original:
-                            {}
-                        }
+                        childrenPatches: []
                     }
                 },
                 (ChildElementPatches) {
                     index: 1,
                     patches:
                     (ElementPatches) {
-                        patches:
-                        [],
+                        patches: [],
                         childrenPatches:
                         [
                             (ChildElementPatches) {
                                 index: 0,
                                 patches:
                                 (ElementPatches) {
-                                    patches:
-                                    [],
+                                    patches: [],
                                     childrenPatches:
                                     [
                                         (ChildElementPatches) {
@@ -1089,41 +1062,20 @@ describe("diff tests", () => {
                                                         }
                                                     }
                                                 ],
-                                                childrenPatches:
-                                                [],
-                                                _context:
-                                                (PatchingContext) {
-                                                    _original:
-                                                    {}
-                                                }
+                                                childrenPatches: []
                                             }
                                         }
-                                    ],
-                                    _context:
-                                    (PatchingContext) {
-                                        _original:
-                                        {}
-                                    }
+                                    ]
                                 }
                             }
-                        ],
-                        _context:
-                        (PatchingContext) {
-                            _original:
-                            {}
-                        }
+                        ]
                     }
                 }
-            ],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            ]
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -1132,14 +1084,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -1147,6 +1091,29 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<div><img src=\"http://images/newImage.gif\"/><div><span>Some other text</span></div></div>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(1, child.childNodes[0], new NodeChanges({
+            attributes: [{
+                key: 'src',
+                oldValue: 'http://images/image.gif',
+                newValue: 'http://images/newImage.gif'
+            }]
+        }));
+
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(2, child.childNodes[1].childNodes[0].childNodes[0], new NodeChanges({
+            text: {
+                oldValue: 'Some text',
+                newValue: 'Some other text'
+            }
+        }));
     });
 
     it("diff a node with changed child image url and replace span child with text", () => {
@@ -1163,6 +1130,8 @@ describe("diff tests", () => {
 
         // Get the element to get patched
         const element = oldNode.render();
+
+        const spanToRemove = element.childNodes[1].childNodes[0];
 
         expect(element.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"/><div><span>Some text</span></div></div>');
 
@@ -1182,8 +1151,7 @@ describe("diff tests", () => {
 
         comparePatches(patches, `
         (ElementPatches) {
-            patches:
-            [],
+            patches: [],
             childrenPatches:
             [
                 (ChildElementPatches) {
@@ -1197,21 +1165,14 @@ describe("diff tests", () => {
                                 value: 'http://images/newImage.gif'
                             }
                         ],
-                        childrenPatches:
-                        [],
-                        _context:
-                        (PatchingContext) {
-                            _original:
-                            {}
-                        }
+                        childrenPatches: []
                     }
                 },
                 (ChildElementPatches) {
                     index: 1,
                     patches:
                     (ElementPatches) {
-                        patches:
-                        [],
+                        patches: [],
                         childrenPatches:
                         [
                             (ChildElementPatches) {
@@ -1227,33 +1188,17 @@ describe("diff tests", () => {
                                             }
                                         }
                                     ],
-                                    childrenPatches:
-                                    [],
-                                    _context:
-                                    (PatchingContext) {
-                                        _original:
-                                        {}
-                                    }
+                                    childrenPatches: []
                                 }
                             }
-                        ],
-                        _context:
-                        (PatchingContext) {
-                            _original:
-                            {}
-                        }
+                        ]
                     }
                 }
-            ],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            ]
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -1262,21 +1207,40 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        const textToAdd = child.childNodes[1].childNodes[0];
+
+        expect(child.outerHTML).toEqual('<div><img src=\"http://images/newImage.gif\"/><div>Some other text</div></div>');
+
+        expect(child).toEqual(element); // Kept the node
+
+        const secondDiv = child.childNodes[1];
+
+        expect(secondDiv).toEqual(element.childNodes[1]); // Second div was kept as well
+
         expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
 
         expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
 
         expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
 
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2);
 
-        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(1, child.childNodes[0], new NodeChanges({
+            attributes: [{
+                key: 'src',
+                oldValue: 'http://images/image.gif',
+                newValue: 'http://images/newImage.gif'
+            }]
+        }));
 
-        const child = shadowRoot.firstChild! as HTMLElement;
-
-        expect(child.outerHTML).toEqual('<div><img src=\"http://images/newImage.gif\"/><div>Some other text</div></div>');
-
-        expect(child).toEqual(element); // Kept the node
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(2, secondDiv, new NodeChanges({ // div
+            inserted: [textToAdd],
+            removed: [spanToRemove]
+        }));
     });
 
     it("diff a node with children components replaced with text", () => {
@@ -1286,7 +1250,7 @@ describe("diff tests", () => {
                 src: 'http://images/image.gif'
             }),
 
-            h('div', null,
+            h('p', null,
                 h('span', null, 'Some text')
             )
         );
@@ -1294,7 +1258,11 @@ describe("diff tests", () => {
         // Get the element to get patched
         const element = oldNode.render();
 
-        expect(element.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"/><div><span>Some text</span></div></div>');
+        const oldImg = element.childNodes[0];
+
+        const oldParagraph = element.childNodes[1];
+
+        expect(element.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"/><p><span>Some text</span></p></div>');
 
         const shadowRoot = createShadowRoot();
 
@@ -1328,25 +1296,14 @@ describe("diff tests", () => {
                                 }
                             }
                         ],
-                        childrenPatches:
-                        [],
-                        _context:
-                        (PatchingContext) {
-                            _original:
-                            {}
-                        }
+                        childrenPatches: []
                     }
                 }
-            ],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            ]
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -1354,6 +1311,14 @@ describe("diff tests", () => {
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<div>Some text</div>');
+
+        expect(child).toEqual(element); // Kept the node
 
         expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
 
@@ -1363,13 +1328,10 @@ describe("diff tests", () => {
 
         expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
-
-        const child = shadowRoot.firstChild! as HTMLElement;
-
-        expect(child.outerHTML).toEqual('<div>Some text</div>');
-
-        expect(child).toEqual(element); // Kept the node
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // div
+            inserted: [child.childNodes[0]], // text node
+            removed: [oldParagraph, oldImg]
+        }));
     });
 
     it("diff a node with text replaced with children components", () => {
@@ -1448,25 +1410,14 @@ describe("diff tests", () => {
                                 }
                             }
                         ],
-                        childrenPatches:
-                        [],
-                        _context:
-                        (PatchingContext) {
-                            _original:
-                            {}
-                        }
+                        childrenPatches: []
                     }
                 }
-            ],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            ]
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -1474,6 +1425,14 @@ describe("diff tests", () => {
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"/><div><span>Some text</span></div></div>');
+
+        expect(child).toEqual(element); // Kept the node
 
         expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
 
@@ -1483,13 +1442,10 @@ describe("diff tests", () => {
 
         expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(1, element, new NodeChanges({ // div
+            inserted: [child.childNodes[0], child.childNodes[1]],
+        }));
 
-        const child = shadowRoot.firstChild! as HTMLElement;
-
-        expect(child.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"/><div><span>Some text</span></div></div>');
-
-        expect(child).toEqual(element); // Kept the node
     });
 
     it("diff a node with children components modify children no key", () => {
@@ -1504,6 +1460,8 @@ describe("diff tests", () => {
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li>Text 1</li><li>Text 2</li><li>Text 3</li></ul>');
+
+        const nodeToRemove = element.lastChild;
 
         const shadowRoot = createShadowRoot();
 
@@ -1531,8 +1489,7 @@ describe("diff tests", () => {
                     index: 0,
                     patches:
                     (ElementPatches) {
-                        patches:
-                        [],
+                        patches: [],
                         childrenPatches:
                         [
                             (ChildElementPatches) {
@@ -1548,29 +1505,17 @@ describe("diff tests", () => {
                                             }
                                         }
                                     ],
-                                    childrenPatches:
-                                    [],
-                                    _context:
-                                    (PatchingContext) {
-                                        _original:
-                                        {}
-                                    }
+                                    childrenPatches: []
                                 }
                             }
-                        ],
-                        _context:
-                        (PatchingContext) {
-                            _original:
-                            {}
-                        }
+                        ]
                     }
                 },
                 (ChildElementPatches) {
                     index: 1,
                     patches:
                     (ElementPatches) {
-                        patches:
-                        [],
+                        patches: [],
                         childrenPatches:
                         [
                             (ChildElementPatches) {
@@ -1586,33 +1531,17 @@ describe("diff tests", () => {
                                             }
                                         }
                                     ],
-                                    childrenPatches:
-                                    [],
-                                    _context:
-                                    (PatchingContext) {
-                                        _original:
-                                        {}
-                                    }
+                                    childrenPatches: []
                                 }
                             }
-                        ],
-                        _context:
-                        (PatchingContext) {
-                            _original:
-                            {}
-                        }
+                        ]
                     }
                 }
-            ],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            ]
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -1621,21 +1550,39 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<ul><li>Text 4</li><li>Text 5</li></ul>');
+
+        expect(child).toEqual(element); // Kept the node
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
         expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
 
         expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
 
         expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
 
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(3);
 
-        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(1, child.childNodes[0].childNodes[0], new NodeChanges({
+            text: {
+                oldValue: 'Text 1',
+                newValue: 'Text 4'
+            }
+        })); // text node
 
-        const child = shadowRoot.firstChild! as HTMLElement;
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(2, child.childNodes[1].childNodes[0], new NodeChanges({
+            text: {
+                oldValue: 'Text 2',
+                newValue: 'Text 5'
+            }
+        })); // text node
 
-        expect(child.outerHTML).toEqual('<ul><li>Text 4</li><li>Text 5</li></ul>');
-
-        expect(child).toEqual(element); // Kept the node
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(3, element, new NodeChanges({ // div
+            removed: [nodeToRemove!], // last child of initial children
+        }));
     });
 
     it("diff a node with keyed children. Add a child to an empty container ", () => {
@@ -1681,16 +1628,11 @@ describe("diff tests", () => {
                     ]
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -1698,6 +1640,14 @@ describe("diff tests", () => {
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li></ul>');
+
+        expect(child).toEqual(element); // Kept the node
 
         expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
 
@@ -1707,13 +1657,9 @@ describe("diff tests", () => {
 
         expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
-
-        const child = shadowRoot.firstChild! as HTMLElement;
-
-        expect(child.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li></ul>');
-
-        expect(child).toEqual(element); // Kept the node
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
+            inserted: [child.childNodes[0]],
+        }));
     });
 
     it("diff a node with keyed children. Prepend a child to existing children change text in old one", () => {
@@ -1772,8 +1718,7 @@ describe("diff tests", () => {
                     index: 1,
                     patches:
                     (ElementPatches) {
-                        patches:
-                        [],
+                        patches: [],
                         childrenPatches:
                         [
                             (ChildElementPatches) {
@@ -1789,33 +1734,17 @@ describe("diff tests", () => {
                                             }
                                         }
                                     ],
-                                    childrenPatches:
-                                    [],
-                                    _context:
-                                    (PatchingContext) {
-                                        _original:
-                                        {}
-                                    }
+                                    childrenPatches: []
                                 }
                             }
-                        ],
-                        _context:
-                        (PatchingContext) {
-                            _original:
-                            {}
-                        }
+                        ]
                     }
                 }
-            ],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            ]
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -1823,6 +1752,14 @@ describe("diff tests", () => {
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<ul><li key=\"3\">Text 3</li><li key=\"1\">Text 11</li></ul>');
+
+        expect(child).toEqual(element); // Kept the node
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
 
@@ -1832,13 +1769,17 @@ describe("diff tests", () => {
 
         expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2); // Prepended and moved node
 
-        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(1, child.childNodes[1].childNodes[0], new NodeChanges({
+            text: {
+                oldValue: 'Text 1',
+                newValue: 'Text 11'
+            }
+        })); // text node
 
-        const child = shadowRoot.firstChild! as HTMLElement;
-
-        expect(child.outerHTML).toEqual('<ul><li key=\"3\">Text 3</li><li key=\"1\">Text 11</li></ul>');
-
-        expect(child).toEqual(element); // Kept the node
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(2, element, new NodeChanges({ // ul
+            inserted: [child.childNodes[0]],
+            moved: [child.childNodes[1]]
+        }));
     });
 
     it("diff a node with keyed children. Append a child to existing children change text in old one", () => {
@@ -1892,8 +1833,7 @@ describe("diff tests", () => {
                     index: 0,
                     patches:
                     (ElementPatches) {
-                        patches:
-                        [],
+                        patches: [],
                         childrenPatches:
                         [
                             (ChildElementPatches) {
@@ -1909,33 +1849,17 @@ describe("diff tests", () => {
                                             }
                                         }
                                     ],
-                                    childrenPatches:
-                                    [],
-                                    _context:
-                                    (PatchingContext) {
-                                        _original:
-                                        {}
-                                    }
+                                    childrenPatches: []
                                 }
                             }
-                        ],
-                        _context:
-                        (PatchingContext) {
-                            _original:
-                            {}
-                        }
+                        ]
                     }
                 }
-            ],
-            _context:
-            (PatchingContext) {
-                _original:
-                {}
-            }
+            ]
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -1944,14 +1868,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -1959,6 +1875,25 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<ul><li key=\"1\">Text 11</li><li key=\"3\">Text 3</li></ul>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2); // Prepended and moved node
+
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(1, child.childNodes[0].childNodes[0], new NodeChanges({
+            text: {
+                oldValue: 'Text 1',
+                newValue: 'Text 11'
+            }
+        })); // text node
+
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(2, element, new NodeChanges({ // ul
+            inserted: [child.childNodes[1]]
+        }));
     });
 
     it("diff a node with keyed children. Insert at the beginning, in the middle and at the end", () => {
@@ -2056,16 +1991,11 @@ describe("diff tests", () => {
                     }
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -2074,14 +2004,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(5);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(5);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(5);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -2089,6 +2011,19 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li><li key=\"4\">Text 4</li><li key=\"5\">Text 5</li></ul>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(5);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(5);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1); // Prepended and moved node
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
+            inserted: [child.childNodes[0], child.childNodes[2], child.childNodes[4]],
+            moved: [child.childNodes[1], child.childNodes[3]]
+        }));
     });
 
     it("diff a node with keyed children. Insert two children at the beginning, two in the middle and two at the end", () => {
@@ -2257,16 +2192,11 @@ describe("diff tests", () => {
                     }
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -2275,14 +2205,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(10);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(10);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(4);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(10);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -2290,6 +2212,19 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li><li key=\"4\">Text 4</li><li key=\"5\">Text 5</li><li key=\"6\">Text 6</li><li key=\"7\">Text 7</li><li key=\"8\">Text 8</li><li key=\"9\">Text 9</li><li key=\"10\">Text 10</li></ul>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(10);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(10);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(4);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
+            inserted: [child.childNodes[0], child.childNodes[1], child.childNodes[4], child.childNodes[5], child.childNodes[8], child.childNodes[9]],
+            moved: [child.childNodes[2], child.childNodes[3], child.childNodes[6], child.childNodes[7]]
+        }));
     });
 
     it("diff a node with keyed children. Remove first node", () => {
@@ -2303,6 +2238,10 @@ describe("diff tests", () => {
         const element = oldNode.render();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li></ul>');
+
+        const firstChild = element.childNodes[0];
+
+        const secondChild = element.childNodes[1];
 
         const shadowRoot = createShadowRoot();
 
@@ -2329,16 +2268,11 @@ describe("diff tests", () => {
                     count: 1
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -2347,14 +2281,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -2362,6 +2288,19 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<ul><li key=\"2\">Text 2</li></ul>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
+            moved: [secondChild],
+            removed: [firstChild]
+        }));
     });
 
     it("diff a node with keyed children. Remove last node", () => {
@@ -2373,6 +2312,8 @@ describe("diff tests", () => {
 
         // Get the element to get patched
         const element = oldNode.render();
+
+        const lastNode = element.childNodes[1];
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li></ul>');
 
@@ -2396,16 +2337,11 @@ describe("diff tests", () => {
                     count: 1
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -2413,6 +2349,14 @@ describe("diff tests", () => {
         } = setupLifecycleHooks();
 
         patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li></ul>');
+
+        expect(child).toEqual(element); // Kept the node
 
         expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
 
@@ -2422,13 +2366,9 @@ describe("diff tests", () => {
 
         expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
-
-        const child = shadowRoot.firstChild! as HTMLElement;
-
-        expect(child.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li></ul>');
-
-        expect(child).toEqual(element); // Kept the node
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
+            removed: [lastNode]
+        }));
     });
 
     it("diff a node with keyed children. Remove middle node", () => {
@@ -2441,6 +2381,10 @@ describe("diff tests", () => {
 
         // Get the element to get patched
         const element = oldNode.render();
+
+        const middleChild = element.childNodes[1];
+
+        const lastChild = element.childNodes[2];
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li></ul>');
 
@@ -2470,16 +2414,11 @@ describe("diff tests", () => {
                     count: 1
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -2488,14 +2427,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -2503,6 +2434,19 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"3\">Text 3</li></ul>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
+            removed: [middleChild],
+            moved: [lastChild]
+        }));
     });
 
     it("diff a node with keyed children. Remove from the beginning, the middle and the end", () => {
@@ -2517,6 +2461,8 @@ describe("diff tests", () => {
 
         // Get the element to get patched
         const element = oldNode.render();
+
+        const oldChildren = Array.from(element.childNodes);
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li><li key=\"4\">Text 4</li><li key=\"5\">Text 5</li></ul>');
 
@@ -2553,16 +2499,11 @@ describe("diff tests", () => {
                     count: 3
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -2571,14 +2512,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(3);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(3);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -2586,6 +2519,19 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<ul><li key=\"2\">Text 2</li><li key=\"4\">Text 4</li></ul>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(3);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
+            moved: [oldChildren[1], oldChildren[3]],
+            removed: [oldChildren[4], oldChildren[0], oldChildren[2]]
+        }));
     });
 
     it("diff a node with keyed children. Remove two children from the beginning, two from the middle and two from the end", () => {
@@ -2605,6 +2551,8 @@ describe("diff tests", () => {
 
         // Get the element to get patched
         const element = oldNode.render();
+
+        const oldChildren = Array.from(element.childNodes);
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li><li key=\"4\">Text 4</li><li key=\"5\">Text 5</li><li key=\"6\">Text 6</li><li key=\"7\">Text 7</li><li key=\"8\">Text 8</li><li key=\"9\">Text 9</li><li key=\"10\">Text 10</li></ul>');
 
@@ -2650,16 +2598,11 @@ describe("diff tests", () => {
                     count: 6
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -2668,14 +2611,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(4);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(4);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(6);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(5);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -2683,6 +2618,31 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<ul><li key=\"3\">Text 3</li><li key=\"4\">Text 4</li><li key=\"7\">Text 7</li><li key=\"8\">Text 8</li></ul>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(4);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(4);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(6);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
+            moved: [
+                oldChildren[2], //from
+                oldChildren[3],
+                oldChildren[6],
+                oldChildren[7]
+            ],
+            removed: [
+                oldChildren[8],
+                oldChildren[9],
+                oldChildren[0],
+                oldChildren[1],
+                oldChildren[4],
+                oldChildren[5]
+            ]
+        }));
     });
 
     it("diff a node with keyed children. Swap children", () => {
@@ -2694,6 +2654,8 @@ describe("diff tests", () => {
 
         // Get the element to get patched
         const element = oldNode.render();
+
+        const oldChildren = Array.from(element.childNodes);
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li></ul>');
 
@@ -2723,16 +2685,11 @@ describe("diff tests", () => {
                     offset: 0
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -2741,14 +2698,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -2756,6 +2705,21 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<ul><li key=\"2\">Text 2</li><li key=\"1\">Text 1</li></ul>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
+            moved: [
+                oldChildren[1], //from
+                oldChildren[0]
+            ]
+        }));
     });
 
     it("diff a node with keyed children. Add at the beginning, remove from the end", () => {
@@ -2767,6 +2731,8 @@ describe("diff tests", () => {
 
         // Get the element to get patched
         const element = oldNode.render();
+
+        const oldChildren = Array.from(element.childNodes);
 
         expect(element.outerHTML).toEqual('<ul><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li></ul>');
 
@@ -2810,16 +2776,11 @@ describe("diff tests", () => {
                     offset: 0
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -2828,14 +2789,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -2843,6 +2796,20 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li></ul>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
+            inserted: [child.childNodes[0]],
+            moved: [oldChildren[0]], // from
+            removed: [oldChildren[1]]
+        }));
     });
 
     it("diff a node with keyed children. Add at the end, remove from the beginning", () => {
@@ -2854,6 +2821,8 @@ describe("diff tests", () => {
 
         // Get the element to get patched
         const element = oldNode.render();
+
+        const oldChildren = Array.from(element.childNodes);
 
         expect(element.outerHTML).toEqual('<ul><li key=\"3\">Text 3</li><li key=\"1\">Text 1</li></ul>');
 
@@ -2897,16 +2866,11 @@ describe("diff tests", () => {
                     }
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -2915,14 +2879,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -2930,6 +2886,20 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li></ul>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
+            inserted: [child.childNodes[1]],
+            moved: [oldChildren[1]], // from
+            removed: [oldChildren[0]]
+        }));
     });
 
     it("diff a node with keyed children. Swap children and add one in the middle", () => {
@@ -2941,6 +2911,8 @@ describe("diff tests", () => {
 
         // Get the element to get patched
         const element = oldNode.render();
+
+        const oldChildren = Array.from(element.childNodes);
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li></ul>');
 
@@ -2989,16 +2961,11 @@ describe("diff tests", () => {
                     offset: 0
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -3007,14 +2974,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(3);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(3);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(3);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -3022,6 +2981,19 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<ul><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li><li key=\"1\">Text 1</li></ul>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(3);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(3);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
+            inserted: [child.childNodes[1]],
+            moved: [oldChildren[1], oldChildren[0]] // from
+        }));
     });
 
     it("diff a node with keyed children. Swap children and remove one from the middle", () => {
@@ -3034,6 +3006,8 @@ describe("diff tests", () => {
 
         // Get the element to get patched
         const element = oldNode.render();
+
+        const oldChildren = Array.from(element.childNodes);
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li></ul>');
 
@@ -3068,16 +3042,11 @@ describe("diff tests", () => {
                     count: 1
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -3086,14 +3055,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(3);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -3101,6 +3062,19 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<ul><li key=\"3\">Text 3</li><li key=\"1\">Text 1</li></ul>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul     
+            moved: [oldChildren[2], oldChildren[0]], // from
+            removed: [oldChildren[1]]
+        }));
     });
 
     it("diff a node with keyed children. Reverse children", () => {
@@ -3115,6 +3089,8 @@ describe("diff tests", () => {
 
         // Get the element to get patched
         const element = oldNode.render();
+
+        const oldChildren = Array.from(element.childNodes);
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li><li key=\"4\">Text 4</li><li key=\"5\">Text 5</li></ul>');
 
@@ -3157,16 +3133,11 @@ describe("diff tests", () => {
                     offset: 0
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -3175,14 +3146,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(4);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(4);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(4);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -3190,6 +3153,18 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<ul><li key=\"5\">Text 5</li><li key=\"4\">Text 4</li><li key=\"3\">Text 3</li><li key=\"2\">Text 2</li><li key=\"1\">Text 1</li></ul>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(4);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(4);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul     
+            moved: [oldChildren[4], oldChildren[3], oldChildren[1], oldChildren[0]] // from
+        }));
     });
 
     it("diff a node with keyed children. Combination of all the above v1", () => {
@@ -3203,6 +3178,8 @@ describe("diff tests", () => {
 
         // Get the element to get patched
         const element = oldNode.render();
+
+        const oldChildren = Array.from(element.childNodes);
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li><li key=\"4\">Text 4</li></ul>');
 
@@ -3256,16 +3233,11 @@ describe("diff tests", () => {
                     count: 1
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -3274,14 +3246,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(3);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(3);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(3);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(4);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -3289,6 +3253,20 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<ul><li key=\"4\">Text 4</li><li key=\"5\">Text 5</li><li key=\"1\">Text 1</li></ul>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(3);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(3);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(3);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul 
+            inserted: [element.childNodes[1]],
+            moved: [oldChildren[3], oldChildren[0]], // from
+            removed: [oldChildren[1], oldChildren[2]]
+        }));
     });
 
     it("diff a node with keyed children. Combination of all the above", () => {
@@ -3307,6 +3285,8 @@ describe("diff tests", () => {
 
         // Get the element to get patched
         const element = oldNode.render();
+
+        const oldChildren = Array.from(element.childNodes);
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li><li key=\"3\">Text 3</li><li key=\"4\">Text 4</li><li key=\"5\">Text 5</li><li key=\"6\">Text 6</li><li key=\"7\">Text 7</li><li key=\"8\">Text 8</li><li key=\"9\">Text 9</li></ul>');
 
@@ -3409,16 +3389,11 @@ describe("diff tests", () => {
                     count: 2
                 }
             ],
-            childrenPatches:
-            [],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            childrenPatches: []
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -3427,14 +3402,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(7);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(7);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(6);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(8);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -3442,6 +3409,20 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<ul><li key=\"11\">Text 11</li><li key=\"8\">Text 8</li><li key=\"4\">Text 4</li><li key=\"12\">Text 12</li><li key=\"7\">Text 7</li><li key=\"3\">Text 3</li><li key=\"13\">Text 13</li></ul>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(7);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(7);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(6);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul 
+            inserted: [element.childNodes[0], element.childNodes[3], element.childNodes[6]],
+            moved: [oldChildren[7], oldChildren[3], oldChildren[6], oldChildren[2]], // from
+            removed: [oldChildren[0], oldChildren[4], oldChildren[1], oldChildren[5], oldChildren[8]]
+        }));
     });
 
     it("diff a node with non-keyed children. Counter", () => {
@@ -3477,8 +3458,7 @@ describe("diff tests", () => {
 
         comparePatches(patches, `
         (ElementPatches) {
-            patches:
-            [],
+            patches: [],
             childrenPatches:
             [
                 (ChildElementPatches) {
@@ -3494,23 +3474,14 @@ describe("diff tests", () => {
                                 }
                             }
                         ],
-                        childrenPatches:
-                        [],
-                        _context:
-                        (PatchingContext) {
-                            _original:{}
-                        }
+                        childrenPatches: []
                     }
                 }
-            ],
-            _context:
-            (PatchingContext) {
-                _original:{}
-            }
+            ]
         }`);
 
         const {
-            hooks, 
+            hooks,
             spyNodeWillConnect,
             spyNodeDidConnect,
             spyNodeWillDisconnect,
@@ -3519,14 +3490,6 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
-
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
-
-        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
-
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
-
         expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
 
         const child = shadowRoot.firstChild! as HTMLElement;
@@ -3534,6 +3497,21 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<div><h4>Counter</h4>6<button>Increment</button></div>');
 
         expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(child.childNodes[1], new NodeChanges({
+            text: {
+                oldValue: '5',
+                newValue: '6'
+            }
+        }));       
     });
 
 });

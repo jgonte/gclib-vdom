@@ -1,4 +1,4 @@
-import { Patch, PatchOptions } from "../Patch";
+import { Patch, PatchOptions, NodeChanges } from "../Patch";
 
 /**
  * Patch to remove an attribute from the DOM element
@@ -21,8 +21,26 @@ export default class SetAttributePatch implements Patch {
 
     applyPatch(options: PatchOptions): void {
         
-        const { node } = options;
+        const { 
+            node, 
+            context 
+        } = options;
 
-        (node as HTMLElement).setAttribute(this.name, this.value.toString());
+        const oldValue = (node as HTMLElement).getAttribute(this.name);
+
+        const newValue = this.value.toString();
+
+        (node as HTMLElement).setAttribute(this.name, newValue);
+
+        context!.setNodeChanges(
+            node!,
+            new NodeChanges({
+                attributes: [{
+                    key: this.name,
+                    oldValue,
+                    newValue
+                }]
+            })
+        );
     }
 }

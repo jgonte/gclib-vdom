@@ -1,8 +1,9 @@
-import { Patch, PatchOptions } from "../Patch";
-import { VirtualNode, VirtualText } from "../../gclib-vdom";
+import { Patch, PatchOptions, NodeChanges } from '../Patch';
+import VirtualNode from '../../nodes/VirtualNode';
+import VirtualText from '../../nodes/VirtualText';
 
 /**
- * Patch to add an attribute to the DOM element
+ * Patch to add children to the DOM
  */
 export default class AddChildrenPatch implements Patch {
 
@@ -16,13 +17,15 @@ export default class AddChildrenPatch implements Patch {
 
     applyPatch(options: PatchOptions): void {
 
-        const { node, hooks } = options;
+        const { 
+            node,
+            context,
+            hooks 
+        } = options;
 
         const {
             nodeWillConnect,
-            nodeDidConnect,
-            nodeDidUpdate
-
+            nodeDidConnect
         } = hooks || {};
 
         const insertedChildrenElements: Array<Node> = [];
@@ -46,19 +49,15 @@ export default class AddChildrenPatch implements Patch {
 
                 nodeDidConnect(childElement);
             }
-
         });
 
         (node as HTMLElement).appendChild(fragment);
 
-        if (nodeDidUpdate) {
-
-            nodeDidUpdate(node!, {
-
-                inserted: insertedChildrenElements,
-                moved: [],
-                removed: []
-            });
-        }
+        context!.setNodeChanges(
+            node!,
+            new NodeChanges({
+                inserted: insertedChildrenElements
+            })
+        );
     }
 }

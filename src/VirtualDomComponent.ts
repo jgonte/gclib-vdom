@@ -1,4 +1,4 @@
-import { LifecycleHooks, UpdatedChildren } from "./patches/Patch";
+import { LifecycleHooks, NodeChanges } from "./patches/Patch";
 import VirtualNode from './nodes/VirtualNode';
 import VirtualText from './nodes/VirtualText';
 import mount from './nodes/helpers/mount';
@@ -36,7 +36,7 @@ export default abstract class VirtualDomComponent implements LifecycleHooks {
 
     onNodeWillDisconnect?: (node: Node) => void;
 
-    onNodeDidUpdate?: (node: Node, updatedChildren: UpdatedChildren) => void;
+    onNodeDidUpdate?: (node: Node, updatedChildren: NodeChanges) => void;
 
     bindLifecycleCallbacks() {
 
@@ -88,7 +88,7 @@ export default abstract class VirtualDomComponent implements LifecycleHooks {
         }
     }
     
-    nodeDidUpdate(node: Node, updatedChildren: UpdatedChildren) {
+    nodeDidUpdate(node: Node, updatedChildren: NodeChanges) {
 
         //callMixins(this, 'nodeDidUpdateChildren', node);
 

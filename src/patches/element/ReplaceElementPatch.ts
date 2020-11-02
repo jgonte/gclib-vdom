@@ -1,4 +1,4 @@
-import { Patch, PatchOptions } from "../Patch";
+import { Patch, PatchOptions, NodeChanges } from "../Patch";
 import { VirtualNode, VirtualText } from "../../gclib-vdom";
 
 /**
@@ -16,7 +16,13 @@ export default class ReplaceElementPatch implements Patch {
 
     applyPatch(options: PatchOptions): void {
 
-        const { node, hooks } = options;
+        const { 
+            parentNode,
+            node, 
+            parentContext,
+            context,
+            hooks 
+        } = options;
 
         const {
             nodeWillDisconnect,
@@ -42,6 +48,14 @@ export default class ReplaceElementPatch implements Patch {
 
             nodeDidConnect(newNode);
         }
+
+        (parentContext || context)!.setNodeChanges(
+            parentNode,
+            new NodeChanges({
+                inserted: [newNode!],
+                removed: [node!]
+            })
+        );
     }
 
 }

@@ -1,4 +1,4 @@
-import { Patch, PatchOptions } from "../Patch";
+import { Patch, PatchOptions, NodeChanges } from "../Patch";
 import VirtualNode from "../../nodes/VirtualNode";
 import VirtualText from "../../nodes/VirtualText";
 
@@ -17,7 +17,11 @@ export default class SetElementPatch implements Patch {
 
     applyPatch(options: PatchOptions): void {
 
-        const { parentNode, hooks } = options;
+        const { 
+            parentNode,
+            context,
+            hooks 
+        } = options;
 
         const {
             nodeWillConnect,
@@ -37,5 +41,12 @@ export default class SetElementPatch implements Patch {
 
             nodeDidConnect(newNode);
         }
+
+        context!.setNodeChanges(
+            parentNode,
+            new NodeChanges({
+                inserted: [newNode!]
+            })
+        );
     }
 }

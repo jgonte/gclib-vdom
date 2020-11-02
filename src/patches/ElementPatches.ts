@@ -1,14 +1,13 @@
 import { Patch, LifecycleHooks } from "./Patch";
 import ChildElementPatches from "./ChildElementPatches";
 import PatchingContext from "./helpers/PatchingContext";
+import { isUndefinedOrNull } from "../utils/utils";
 
 /**
  * Contains the patches that are applied to an element and its children
  */
 export default class ElementPatches {
 
-    private _context: PatchingContext = new PatchingContext();
-    
     constructor(
 
         /**
@@ -20,37 +19,49 @@ export default class ElementPatches {
          * The patches to apply to the children of this element
          */
         public childrenPatches: ChildElementPatches[]
-    ) {}
-
-    // patch(rootNode: ShadowRoot | Document) : void {
-
-    //     this.applyPatches(rootNode, undefined);
-    // }
+    ) { }
 
     applyPatches(
-        rootNode: ShadowRoot | Document | Node, 
+        parentNode: ShadowRoot | Document | Node,
         node?: Node | null,
-        hooks?: LifecycleHooks) : void {
+        hooks?: LifecycleHooks,
+        parentContext?: PatchingContext
+    ): void {
 
-        this.patches.forEach(patch => patch.applyPatch({
-            parentNode:  rootNode, 
-            node, 
-            context: this._context,
-            hooks
-        }));
+        const context: PatchingContext = new PatchingContext();
 
-        if (typeof node !== 'undefined' && node !== null) {
+        for (let i = 0; i < this.patches.length; ++i) {
 
-            if (this.childrenPatches.length > 0) {
+            this.patches[i].applyPatch({
+                parentNode,
+                node,
+                context,
+                parentContext,
+                hooks
+            });
+        }
 
-                this.childrenPatches.forEach(patch => {
+        if (!isUndefinedOrNull(node)) {
 
-                    const childNode: ChildNode = node.childNodes[patch.index];
-        
-                    patch.patches.applyPatches(node, childNode, hooks);
-                });
+            for (let i = 0; i < this.childrenPatches.length; ++i) {
+
+                const patch = this.childrenPatches[i];
+
+                const childNode: ChildNode = node!.childNodes[patch.index];
+
+                patch.patches.applyPatches(
+                    node!, 
+                    childNode, 
+                    hooks,
+                    context);
             }
-  
+        }
+
+        context.mergeOriginalElements(node!);
+
+        if (hooks?.nodeDidUpdate) {
+
+            context.callDidUpdateForNodes(hooks?.nodeDidUpdate);
         }
     }
 

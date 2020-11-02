@@ -1,4 +1,4 @@
-import { Patch, PatchOptions } from "../Patch";
+import { Patch, PatchOptions, NodeChanges } from "../Patch";
 import VirtualNode from "../../nodes/VirtualNode";
 import VirtualText from "../../nodes/VirtualText";
 
@@ -22,13 +22,16 @@ export default class SetChildPatch implements Patch {
 
     applyPatch(options: PatchOptions): void {
 
-        const { node, context, hooks } = options;
+        const {
+            node,
+            context,
+            hooks
+        } = options;
 
         const {
             nodeWillDisconnect,
             nodeWillConnect,
-            nodeDidConnect,
-            nodeDidUpdate
+            nodeDidConnect
         } = hooks || {};
 
         const insertedChildrenElements: Array<Node> = [];
@@ -84,14 +87,13 @@ export default class SetChildPatch implements Patch {
             insertedChildrenElements.push(newChild);
         }
 
-        if (nodeDidUpdate) {
-
-            nodeDidUpdate(node!, {
+        context!.setNodeChanges(
+            node!,
+            new NodeChanges({
                 inserted: insertedChildrenElements,
-                moved: [],
                 removed: removedChildrenElements
-            });
-        }
+            })
+        );
     }
 
 }

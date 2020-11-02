@@ -1,4 +1,4 @@
-import { Patch, PatchOptions } from "../Patch";
+import { Patch, PatchOptions, NodeChanges } from "../Patch";
 
 /**
  * Patch to remove the element from the DOM
@@ -6,8 +6,13 @@ import { Patch, PatchOptions } from "../Patch";
 export default class RemoveElementPatch implements Patch {
 
     applyPatch(options: PatchOptions): void {
-        
-        const { parentNode, node, hooks } = options;
+
+        const {
+            parentNode,
+            node,
+            context,
+            hooks
+        } = options;
 
         const {
             nodeWillDisconnect
@@ -19,5 +24,12 @@ export default class RemoveElementPatch implements Patch {
         }
 
         parentNode.removeChild(node!);
+
+        context!.setNodeChanges(
+            parentNode,
+            new NodeChanges({
+                removed: [node!]
+            })
+        );
     }
 }
