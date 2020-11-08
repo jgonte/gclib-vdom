@@ -1,5 +1,3 @@
-import { ComponentConstructor } from "../../component/Component";
-
 function isSvg(name: string): boolean {
 
     return [
@@ -10,7 +8,7 @@ function isSvg(name: string): boolean {
 }
 
 export function createElement(
-    name: string | ComponentConstructor, 
+    name: string | FunctionConstructor, 
     props: Record<string, string>) {
 
     if (typeof name === 'string') {
@@ -62,7 +60,7 @@ export function createElement(
     }
     else if (typeof name === 'function') {
 
-        const component = new name();
+        const component = new name() as any;
 
         const element = component.render().render();
 

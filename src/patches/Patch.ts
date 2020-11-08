@@ -107,14 +107,14 @@ export interface LifecycleHooks {
     nodeDidConnect?: (node: Node) => void;
 
     /**
+     * Called when the text content has changed, attributes have been added, replaced or removed and children of the parent have been added, removed or moved in the DOM
+     */
+    nodeDidUpdate?: (node: Node, nodeChanges: NodeChanges) => void;
+
+    /**
      * Called when the node is about to be removed from the DOM
      */
     nodeWillDisconnect?: (node: Node) => void;
-
-    /**
-     * Called when the children of the parent have been added, removed or moved in the DOM
-     */
-    nodeDidUpdate?: (node: Node, updatedChildren: NodeChanges) => void;
 }
 
 export interface PatchOptions {

@@ -1,6 +1,5 @@
 import VirtualNode from "./nodes/VirtualNode"
 import VirtualText from "./nodes/VirtualText";
-import { ComponentConstructor } from "./component/Component";
 
 /**
  * Creates a virtual node
@@ -9,7 +8,7 @@ import { ComponentConstructor } from "./component/Component";
  * @param children Children of the virtual node
  */
 export default function h(
-    name: string | ComponentConstructor,
+    name: string | FunctionConstructor,
     attributes: object | null = {},
     ...children: Array<VirtualNode | string | number | boolean>): VirtualNode {
 
@@ -17,9 +16,9 @@ export default function h(
 
     children.forEach(child => {
 
-        if (!child) {
+        if (child === null) { // Keep it as the first test so the ones below are not executed
 
-            //childrenNodes.push(null);
+            // Do nothing
         }
         else if ((child as VirtualNode).isVirtualNode) {
 

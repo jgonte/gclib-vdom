@@ -1,78 +1,78 @@
-import h from "../src/h";
-import CustomElement from "../src/customElement/CustomElement";
-import { VirtualNode, VirtualText } from "../src/gclib-vdom";
-import component from "../src/customElement/decorators/component";
-import property from "../src/customElement/decorators/property";
+// import h from "../src/h";
+// import CustomElement from "../src/customElement/CustomElement";
+// import { VirtualNode, VirtualText } from "../src/gclib-vdom";
+// import component from "../src/customElement/decorators/component";
+// import property from "../src/customElement/decorators/property";
 
-describe("custom element tests", () => {
+// describe("custom element tests", () => {
 
-    // it('should define a custom element', () => {
+//     it('should define a custom element', () => {
 
-    //     @component({ tag: 'ce-1' })
-    //     class MyCustomElement extends CustomElement {
+//         @component({ tag: 'ce-1' })
+//         class MyCustomElement extends CustomElement {
 
-    //         @property()
-    //         value: string = "Some text";
+//             @property()
+//             value: string = "Some text";
         
-    //         render(): VirtualNode | VirtualText {
+//             render(): VirtualNode | VirtualText {
         
-    //             return h('span', null, this.value);
-    //         }
+//                 return h('span', null, this.value);
+//             }
 
-    //         onBeforeMount(node: Node) {
+//             onBeforeMount(node: Node) {
 
-    //             (node as HTMLElement).setAttribute('class', 'custom');
-    //         }
-    //     }
+//                 (node as HTMLElement).setAttribute('class', 'custom');
+//             }
+//         }
         
-    //     const node = h('my-custom-element', null);
+//         const node = h('my-custom-element', null);
 
-    //     const element = node.render() as CustomElement;
+//         const element = node.render() as CustomElement;
 
-    //     expect(element.outerHTML).toEqual('<my-custom-element></my-custom-element>');    
+//         expect(element.outerHTML).toEqual('<my-custom-element></my-custom-element>');    
         
-    //     document.body.appendChild(element);
+//         document.body.appendChild(element);
 
-    //     const customElement = document.body.lastElementChild! as CustomElement;
+//         const customElement = document.body.lastElementChild! as CustomElement;
 
-    //     expect(customElement.tagName).toBe('MY-CUSTOM-ELEMENT');
+//         expect(customElement.tagName).toBe('MY-CUSTOM-ELEMENT');
 
-    //     //expect((customElement as any).value).toBe("Some text");
+//         //expect((customElement as any).value).toBe("Some text");
 
-    //     //expect((customElement.rootElement as HTMLElement).outerHTML).toBe('');
-    // });
+//         //expect((customElement.rootElement as HTMLElement).outerHTML).toBe('');
+//     });
 
 
-    it("simple custom HTML element", () => {
+//     it("simple custom HTML element", () => {
 
-        class MyCustomElement extends CustomElement {
+//         class MyCustomElement extends CustomElement {
 
-            value: string = "Some text";
+//             value: string = "Some text";
         
-            render(): VirtualNode | VirtualText {
+//             render(): VirtualNode | VirtualText {
         
-                return h('span', null, this.value);
-            }
-        }
+//                 return h('span', null, this.value);
+//             }
+//         }
         
-        customElements.define('my-custom-element', MyCustomElement as any);
+//         customElements.define('my-custom-element', MyCustomElement as any);
 
-        const node = h('my-custom-element', null);
+//         const node = h('my-custom-element', null);
 
-        const element = node.render() as typeof CustomElement;
+//         const element = node.render() as typeof CustomElement;
 
-        expect(element.outerHTML).toEqual('<my-custom-element></my-custom-element>');      
+//         expect(element.outerHTML).toEqual('<my-custom-element></my-custom-element>');      
         
-        const spyUpdate = jest.spyOn(element as any, 'update');
+//         const spyUpdate = jest.spyOn(element as any, 'update');
 
-        const spyOnBeforeMount = jest.spyOn(element as any, 'nodeWillConnect');
+//         const spyOnBeforeMount = jest.spyOn(element as any, 'nodeWillConnect');
 
-        document.body.appendChild(element);
+//         document.body.appendChild(element);
 
-        expect(spyUpdate).toHaveBeenCalledTimes(1);
+//         expect(spyUpdate).toHaveBeenCalledTimes(1);
 
-        expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
+//         expect(spyOnBeforeMount).toHaveBeenCalledTimes(1);
 
-    });
+//     });
 
-});
+// });

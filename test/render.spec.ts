@@ -1,6 +1,6 @@
 import h from "../src/h";
-import { Component } from "../src/component/Component";
-import { VirtualNode, VirtualText } from "../src/gclib-vdom";
+//import { Component } from "../src/component/Component";
+//import { VirtualNode, VirtualText } from "../src/gclib-vdom";
 
 describe("render tests", () => {
 
@@ -87,22 +87,22 @@ describe("render tests", () => {
         expect(element.outerHTML).toEqual('<svg><use xlink:href=\"http://icons/icons.svg#my-icon\"/></svg>');
     });
 
-    it("creates a component", () => {
+    // it("creates a component", () => {
 
-        class MyComponent extends Component {
+    //     class MyComponent extends Component {
 
-            value: string = "Some text"
+    //         value: string = "Some text"
 
-            render(): VirtualNode | VirtualText {
+    //         render(): VirtualNode | VirtualText {
 
-                return h('span', null, this.value);
-            }
-        }
+    //             return h('span', null, this.value);
+    //         }
+    //     }
 
-        const node = h(MyComponent, null);
+    //     const node = h(MyComponent, null);
 
-        const element = node.render();
+    //     const element = node.render();
 
-        expect(element.outerHTML).toEqual('<span>Some text</span>');
-    });
+    //     expect(element.outerHTML).toEqual('<span>Some text</span>');
+    // });
 });
