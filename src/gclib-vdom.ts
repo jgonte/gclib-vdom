@@ -1,5 +1,6 @@
 import VirtualNode from './nodes/VirtualNode';
 import VirtualText from './nodes/VirtualText';
+import FragmentNode, { Fragment } from './nodes/FragmentNode';
 import h from './h';
 import ElementPatches from './patches/ElementPatches';
 import mount from './nodes/helpers/mount';
@@ -7,6 +8,8 @@ import mount from './nodes/helpers/mount';
 export {
     VirtualNode,
     VirtualText,
+    FragmentNode,
+    Fragment,
     h,
     ElementPatches,
     mount

@@ -1,5 +1,6 @@
 import VirtualNode from "./nodes/VirtualNode"
 import VirtualText from "./nodes/VirtualText";
+import FragmentNode, { Fragment } from "./nodes/FragmentNode";
 
 /**
  * Creates a virtual node
@@ -10,19 +11,23 @@ import VirtualText from "./nodes/VirtualText";
 export default function h(
     name: string | FunctionConstructor,
     attributes: object | null = {},
-    ...children: Array<VirtualNode | string | number | boolean>): VirtualNode {
+    ...children: Array<VirtualNode | FragmentNode | string | number | boolean>): VirtualNode {
 
-    const childrenNodes: Array<VirtualNode | VirtualText> = [];
+    const childrenNodes: Array<VirtualNode | FragmentNode | VirtualText> = [];
 
     children.forEach(child => {
 
-        if (child === null) { // Keep it as the first test so the ones below are not executed
+        if (child === null) {
 
             // Do nothing
         }
         else if ((child as VirtualNode).isVirtualNode) {
 
             childrenNodes.push(child as VirtualNode);
+        }
+        else if ((child as FragmentNode).isFragmentNode) {
+
+            childrenNodes.push(child as FragmentNode);
         }
         else if (typeof child === 'object') {
 
@@ -34,5 +39,12 @@ export default function h(
         }
     });
 
-    return new VirtualNode(name, attributes, childrenNodes);
+    if (typeof name === 'string') {
+
+        return new VirtualNode(name, attributes, childrenNodes); 
+    }
+    else {
+
+        return new FragmentNode(childrenNodes as any) as any;
+    }
 }

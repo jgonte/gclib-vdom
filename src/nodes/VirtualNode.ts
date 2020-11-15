@@ -1,6 +1,7 @@
 import { createElement } from "./helpers/createElement";
 import VirtualText from "./VirtualText";
 import { LifecycleHooks } from "../patches/Patch";
+import { FragmentNode } from "../gclib-vdom";
 
 export type CustomElementLike = Element & LifecycleHooks; 
 
@@ -9,12 +10,14 @@ export type CustomElementLike = Element & LifecycleHooks;
  */
 export default class VirtualNode {
 
+    isVirtualNode: boolean = true;
+
     constructor(
 
         /**
          * The name of the element
          */
-        public name: string | FunctionConstructor,
+        public name: string,
 
         /**
          * The props of the element
@@ -24,11 +27,9 @@ export default class VirtualNode {
         /**
          * The children of the element or the text
          */
-        public children: (VirtualNode | VirtualText)[]
+        public children: (VirtualNode | VirtualText | FragmentNode)[]
 
     ) { }
-
-    isVirtualNode: boolean = true;
 
     get key(): string {
 

@@ -4,6 +4,37 @@
 // import component from "../src/customElement/decorators/component";
 // import property from "../src/customElement/decorators/property";
 
+describe("custom element tests", () => {
+
+    it('should define a custom element', () => {
+
+        let calledFromObservedAttributes = false;
+
+        // Define the component
+        class MyComponent extends HTMLElement {
+
+            static get observedAttributes() {
+
+                calledFromObservedAttributes = true;
+
+                return [];
+            }
+        }
+
+        customElements.define('my-component', MyComponent);
+
+        // Attach it to the DOM
+        const root = document.createElement('div');
+
+        root.innerHTML='<my-component></my-component>';
+
+        document.body.appendChild(root);
+
+        // Check that the methods were called
+        expect(calledFromObservedAttributes).toEqual(true);        
+    });
+});
+
 // describe("custom element tests", () => {
 
 //     it('should define a custom element', () => {
@@ -13,9 +44,9 @@
 
 //             @property()
 //             value: string = "Some text";
-        
+
 //             render(): VirtualNode | VirtualText {
-        
+
 //                 return h('span', null, this.value);
 //             }
 
@@ -24,13 +55,13 @@
 //                 (node as HTMLElement).setAttribute('class', 'custom');
 //             }
 //         }
-        
+
 //         const node = h('my-custom-element', null);
 
 //         const element = node.render() as CustomElement;
 
 //         expect(element.outerHTML).toEqual('<my-custom-element></my-custom-element>');    
-        
+
 //         document.body.appendChild(element);
 
 //         const customElement = document.body.lastElementChild! as CustomElement;
@@ -48,13 +79,13 @@
 //         class MyCustomElement extends CustomElement {
 
 //             value: string = "Some text";
-        
+
 //             render(): VirtualNode | VirtualText {
-        
+
 //                 return h('span', null, this.value);
 //             }
 //         }
-        
+
 //         customElements.define('my-custom-element', MyCustomElement as any);
 
 //         const node = h('my-custom-element', null);
@@ -62,7 +93,7 @@
 //         const element = node.render() as typeof CustomElement;
 
 //         expect(element.outerHTML).toEqual('<my-custom-element></my-custom-element>');      
-        
+
 //         const spyUpdate = jest.spyOn(element as any, 'update');
 
 //         const spyOnBeforeMount = jest.spyOn(element as any, 'nodeWillConnect');

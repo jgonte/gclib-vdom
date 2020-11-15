@@ -3,7 +3,7 @@ import { Patch, PatchOptions, NodeChanges } from "../Patch";
 /**
  * Patch to move a child from one position to another
  */
-export default class MoveElementPatch implements Patch {
+export default class MoveChildPatch implements Patch {
 
     constructor(
 
@@ -28,6 +28,7 @@ export default class MoveElementPatch implements Patch {
 
         const { 
             node, 
+            parentNode,
             context, 
             hooks 
         } = options;
@@ -42,15 +43,19 @@ export default class MoveElementPatch implements Patch {
 
         const { from, to, offset } = this;
 
+        const n = node instanceof DocumentFragment?
+            parentNode:
+            node;
+
         // Check if it is in the context
         let movingChild = context!.getOriginalElement(from); // Get the original element that was at that index before being removed
 
         if (!movingChild) { // Not found in the context
 
-            movingChild = (node as HTMLElement).children[from - offset];
+            movingChild = (n as HTMLElement).children[from - offset];
         }
 
-        const originalElement = (node as HTMLElement).children[to]; 
+        const originalElement = (n as HTMLElement).children[to]; 
 
         if (originalElement) {
 
@@ -67,7 +72,7 @@ export default class MoveElementPatch implements Patch {
                 nodeWillConnect(movingChild);
             }
 
-            (node as HTMLElement).replaceChild(movingChild, originalElement);
+            (n as HTMLElement).replaceChild(movingChild, originalElement);
 
             if (nodeDidConnect) {
 
@@ -83,7 +88,7 @@ export default class MoveElementPatch implements Patch {
                 nodeWillConnect(movingChild);
             }
 
-            (node as HTMLElement).appendChild(movingChild);
+            (n as HTMLElement).appendChild(movingChild);
 
             if (nodeDidConnect) {
 
@@ -94,7 +99,7 @@ export default class MoveElementPatch implements Patch {
         }
 
         context!.setNodeChanges(
-            node!,
+            n!,
             new NodeChanges({
                 moved: movedChildrenElements,
             })

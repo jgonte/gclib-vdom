@@ -1,6 +1,7 @@
 import { Patch, PatchOptions, NodeChanges } from '../Patch';
 import VirtualNode from '../../nodes/VirtualNode';
 import VirtualText from '../../nodes/VirtualText';
+import { FragmentNode } from '../../gclib-vdom';
 
 /**
  * Patch to add children to the DOM
@@ -12,7 +13,7 @@ export default class AddChildrenPatch implements Patch {
         /**
          * The new children to add
          */
-        public children: Array<VirtualNode | VirtualText>
+        public children: Array<VirtualNode | VirtualText | FragmentNode>
     ) { }
 
     applyPatch(options: PatchOptions): void {

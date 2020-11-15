@@ -23,6 +23,7 @@ export default class RemoveChildrenRangePatch implements Patch {
 
         const { 
             node, 
+            parentNode,
             context,
             hooks 
         } = options;
@@ -39,9 +40,13 @@ export default class RemoveChildrenRangePatch implements Patch {
 
         const to: number = this.from + this.count - 1;
 
+        const n = node instanceof DocumentFragment ?
+            parentNode:
+            node;
+
         for (let i: number = index; i <= to; ++i) {
 
-            const child = (node as HTMLElement).children[index];
+            const child = (n as HTMLElement).children[index];
 
             if (child) { // It might be already removed
 
@@ -50,14 +55,14 @@ export default class RemoveChildrenRangePatch implements Patch {
                     nodeWillDisconnect(child);
                 }
 
-                (node as HTMLElement).removeChild(child);
+                (n as HTMLElement).removeChild(child);
 
                 removedChildrenElements.push(child);
             }
         }
 
         context!.setNodeChanges(
-            node!,
+            n!,
             new NodeChanges({
                 removed: removedChildrenElements
             })

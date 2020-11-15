@@ -24,6 +24,7 @@ export default class SetChildPatch implements Patch {
 
         const {
             node,
+            parentNode,
             context,
             hooks
         } = options;
@@ -42,7 +43,11 @@ export default class SetChildPatch implements Patch {
 
         const newChild = this.newNode.render();
 
-        const oldChild = (node as HTMLElement).children[index];
+        const n = node instanceof DocumentFragment ?
+            parentNode :
+            node
+
+        const oldChild = (n as HTMLElement).children[index];
 
         if (oldChild) {
 
@@ -59,7 +64,7 @@ export default class SetChildPatch implements Patch {
                 nodeWillConnect(newChild);
             }
 
-            (node as HTMLElement).replaceChild(newChild, oldChild);
+            (n as HTMLElement).replaceChild(newChild, oldChild);
 
             if (nodeDidConnect) {
 
@@ -77,7 +82,7 @@ export default class SetChildPatch implements Patch {
                 nodeWillConnect(newChild);
             }
 
-            (node as HTMLElement).appendChild(newChild);
+            (n as HTMLElement).appendChild(newChild);
 
             if (nodeDidConnect) {
 
@@ -88,7 +93,7 @@ export default class SetChildPatch implements Patch {
         }
 
         context!.setNodeChanges(
-            node!,
+            n!,
             new NodeChanges({
                 inserted: insertedChildrenElements,
                 removed: removedChildrenElements

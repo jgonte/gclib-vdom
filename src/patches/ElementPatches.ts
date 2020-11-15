@@ -41,23 +41,27 @@ export default class ElementPatches {
             });
         }
 
-        if (!isUndefinedOrNull(node)) {
+        const n = node instanceof DocumentFragment ?
+            parentNode :
+            node;
+
+        if (!isUndefinedOrNull(n)) {
 
             for (let i = 0; i < this.childrenPatches.length; ++i) {
 
                 const patch = this.childrenPatches[i];
 
-                const childNode: ChildNode = node!.childNodes[patch.index];
+                const childNode: ChildNode = n!.childNodes[patch.index];
 
                 patch.patches.applyPatches(
-                    node!, 
-                    childNode, 
+                    n!,
+                    childNode,
                     hooks,
                     context);
             }
         }
 
-        context.mergeOriginalElements(node!);
+        context.mergeOriginalElements(n!);
 
         if (hooks?.nodeDidUpdate) {
 
@@ -69,5 +73,4 @@ export default class ElementPatches {
 
         return this.patches.length || this.childrenPatches.length;
     }
-
 }

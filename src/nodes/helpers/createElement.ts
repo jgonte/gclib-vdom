@@ -1,3 +1,5 @@
+import VirtualNode from "../VirtualNode";
+
 function isSvg(name: string): boolean {
 
     return [
@@ -8,7 +10,7 @@ function isSvg(name: string): boolean {
 }
 
 export function createElement(
-    name: string | FunctionConstructor, 
+    name: string | FunctionConstructor,
     props: Record<string, string>) {
 
     if (typeof name === 'string') {
@@ -25,9 +27,14 @@ export function createElement(
 
                     element.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", v as string);
                 }
-                else if (k === 'class' && v) {
+                else if (k === 'class') {
 
-                    element.setAttribute(k, v as string);
+                    if (typeof v !== 'undefined' &&
+                        v !== null && 
+                        v !== '') {
+
+                        element.setAttribute(k, v as string);
+                    }
                 }
                 else if (typeof v === 'string' ||
                     typeof v === 'number') {
@@ -51,23 +58,28 @@ export function createElement(
                 }
                 else { // object, Array
 
-                    element.setAttribute(k, JSON.stringify(v));
+                    if ((v as VirtualNode).isVirtualNode) {
+
+                        (element as any)[k] = v;
+                    }
+                    else {
+
+                        element.setAttribute(k, JSON.stringify(v));
+                    }                   
                 }
             }
         }
 
         return element;
     }
-    else if (typeof name === 'function') {
+    else if (typeof name === 'function') { // Component
 
-        const component = new name() as any;
+        const component = new (name as FunctionConstructor)() as any;
 
-        const element = component.render().render();
-
-        return element;
+        return component.render().render();
     }
     else {
 
-        throw new Error(`createElement not implemented for name: ${JSON.stringify(name)}`);
+        throw new Error(`createElement is not implemented for name: ${JSON.stringify(name)}`);
     }
 }

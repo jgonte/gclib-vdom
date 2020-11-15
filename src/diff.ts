@@ -16,6 +16,7 @@ import RemoveChildrenRangePatch from "./patches/children/RemoveChildrenRangePatc
 import OffsetManager from "./patches/helpers/OffsetManager";
 import ReplaceElementPatch from "./patches/element/ReplaceElementPatch";
 import SetElementPatch from "./patches/element/SetElementPatch";
+import { FragmentNode, Fragment } from "./gclib-vdom";
 
 function diffAttributes(oldAttributes?: any | null, newAttributes?: any | null): Patch[] {
 
@@ -46,7 +47,6 @@ function diffAttributes(oldAttributes?: any | null, newAttributes?: any | null):
                 patches.push(new AddAttributePatch(k, v));
             }
         }
-
     }
 
     if (oldAttributeNames.length > 0) {
@@ -66,12 +66,17 @@ function isUndefinedOrNull(o?: object | null): boolean {
     return typeof o === 'undefined' || o === null;
 }
 
-function isVirtualNode(node: VirtualNode | VirtualText): boolean {
+function isVirtualNode(node: VirtualNode | VirtualText | FragmentNode): boolean {
 
     return (node as VirtualNode).isVirtualNode;
 }
 
-function hasKeys(children: Array<VirtualNode | VirtualText> = []): boolean {
+function isFragmentNode(node: VirtualNode | VirtualText | FragmentNode): boolean {
+
+    return (node as FragmentNode).isFragmentNode;
+}
+
+function hasKeys(children: Array<VirtualNode | VirtualText | FragmentNode> = []): boolean {
 
     const keys: Set<string> = new Set<string>();
 
@@ -136,7 +141,8 @@ interface IndexedVirtualNode {
 
 function diffKeyedChildren(
     oldChildren: Array<VirtualNode>,
-    newChildren: Array<VirtualNode>): [Array<Patch>, Array<ChildElementPatches>] {
+    newChildren: Array<VirtualNode>
+): [Array<Patch>, Array<ChildElementPatches>] {
 
     const setOrMovedChildrenPatches: Array<Patch> = [];
 
@@ -275,8 +281,8 @@ function diffKeyedChildren(
 }
 
 function diffNonKeyedChildren(
-    oldChildren: Array<VirtualNode | VirtualText>,
-    newChildren: Array<VirtualNode | VirtualText>): [Array<Patch>, Array<ChildElementPatches>] {
+    oldChildren: Array<VirtualNode | VirtualText | FragmentNode>,
+    newChildren: Array<VirtualNode | VirtualText | FragmentNode>): [Array<Patch>, Array<ChildElementPatches>] {
 
     const setChildrenPatches: Array<Patch> = [];
 
@@ -291,7 +297,7 @@ function diffNonKeyedChildren(
         if (isUndefinedOrNull(oldChild)) { // Add a child at that index
 
             setChildrenPatches.push(
-                new SetChildPatch(i, newChild) // Set it at the new index
+                new SetChildPatch(i, newChild as VirtualNode | VirtualText) // Set it at the new index
             );
         }
         else {
@@ -315,7 +321,10 @@ function diffNonKeyedChildren(
     return [setChildrenPatches, childrenPatches];
 }
 
-export default function diff(oldNode?: VirtualNode | VirtualText, newNode?: VirtualNode | VirtualText): ElementPatches {
+export default function diff(
+    oldNode?: VirtualNode | VirtualText | FragmentNode,
+    newNode?: VirtualNode | VirtualText | FragmentNode
+): ElementPatches {
 
     if (isUndefinedOrNull(newNode)) {
 
@@ -330,12 +339,37 @@ export default function diff(oldNode?: VirtualNode | VirtualText, newNode?: Virt
         }
         else {
 
-            return new ElementPatches(
-                /*patches*/
-                [new RemoveElementPatch()],
-                /*childrenPatches*/
-                []
-            );
+            if ((oldNode as FragmentNode).isFragmentNode) {
+
+                if ((oldNode as FragmentNode).children.length === 0) { // Nothing to remove
+
+                    return new ElementPatches(
+                        /*patches*/
+                        [],
+                        /*childrenPatches*/
+                        []
+                    );
+                }
+                else { // Remove all the children of the fragment
+
+                    return new ElementPatches(
+                        /*patches*/
+                        [new RemoveChildrenPatch()],
+                        /*childrenPatches*/
+                        []
+                    );
+                }
+            }
+            else {
+
+                return new ElementPatches(
+                    /*patches*/
+                    [new RemoveElementPatch()],
+                    /*childrenPatches*/
+                    []
+                );
+            }
+
         }
     }
 
@@ -357,7 +391,7 @@ export default function diff(oldNode?: VirtualNode | VirtualText, newNode?: Virt
 
                 return new ElementPatches(
                     /*patches*/
-                    [new ReplaceElementPatch(newNode!)],
+                    [new ReplaceElementPatch((newNode as VirtualNode | VirtualText)!)],
                     /*childrenPatches*/
                     []
                 );
@@ -366,7 +400,7 @@ export default function diff(oldNode?: VirtualNode | VirtualText, newNode?: Virt
 
                 const oldChildren = (oldNode as VirtualNode).children;
 
-                const newChildren = (newNode as VirtualNode).children;
+                const newChildren = (newNode as VirtualNode | FragmentNode).children;
 
                 // In certain cases with the children, it is more convenient to apply the patches to the parent
                 if (newChildren.length === 0) {
@@ -448,14 +482,163 @@ export default function diff(oldNode?: VirtualNode | VirtualText, newNode?: Virt
                 }
             }
         }
+        else if (isFragmentNode(oldNode!)) {
+
+            if ((oldNode as FragmentNode).children.length === 0) { // Nothing to replace
+
+                return new ElementPatches(
+                    /*patches*/
+                    [new SetElementPatch(newNode!)],
+                    /*childrenPatches*/
+                    []
+                );
+            }
+            else { // Remove all the children of the fragment
+
+                return new ElementPatches(
+                    /*patches*/
+                    [
+                        new RemoveChildrenPatch(),
+                        new SetElementPatch(newNode!)
+                    ],
+                    /*childrenPatches*/
+                    []
+                );
+            }
+        }
         else { // Old node is a virtual text
 
             return new ElementPatches(
                 /*patches*/
-                [new ReplaceElementPatch(newNode!)],
+                [new ReplaceElementPatch((newNode as VirtualNode | VirtualText)!)],
                 /*childrenPatches*/
                 []
             );
+        }
+    }
+    else if (isFragmentNode(newNode!)) {
+
+        if ((newNode as FragmentNode).children.length === 0) { // Nothing to replace
+
+            if (isVirtualNode(oldNode!)) {
+
+                return new ElementPatches(
+                    /*patches*/
+                    [new RemoveElementPatch()],
+                    /*childrenPatches*/
+                    []
+                );
+            }
+            else if (isFragmentNode(oldNode!)) {
+
+                if ((oldNode as FragmentNode).children.length === 0) {
+
+                    return new ElementPatches( // Nothing to change
+                        /*patches*/
+                        [],
+                        /*childrenPatches*/
+                        []
+                    );
+                }
+                else {
+
+                    return new ElementPatches(
+                        /*patches*/
+                        [new RemoveChildrenPatch()],
+                        /*childrenPatches*/
+                        []
+                    );
+                }
+            }
+            else { // Old node is a virtual text
+
+                return new ElementPatches(
+                    /*patches*/
+                    [new RemoveElementPatch()],
+                    /*childrenPatches*/
+                    []
+                );
+            }
+        }
+        else { // The fragment node has children
+
+            if (isVirtualNode(oldNode!)) {
+
+                return new ElementPatches(
+                    /*patches*/
+                    [
+                        new RemoveElementPatch(),
+                        new SetElementPatch(newNode!)
+                    ],
+                    /*childrenPatches*/
+                    []
+                );
+            }
+            else if (isFragmentNode(oldNode!)) {
+
+                const oldChildren = (oldNode as FragmentNode).children;
+
+                if (oldChildren.length === 0) { // Add the fragment
+
+                    return new ElementPatches(
+                        /*patches*/
+                        [new SetElementPatch(newNode!)],
+                        /*childrenPatches*/
+                        []
+                    );
+                }
+                else {
+
+                    const newChildren = (newNode as FragmentNode).children;
+
+                    let patches: Array<Patch>;
+
+                    let childrenPatches: Array<ChildElementPatches>;
+
+                    if (hasKeys(newChildren)) {
+
+                        [patches, childrenPatches] = diffKeyedChildren(oldChildren as any, newChildren as any);
+                    }
+                    else {
+
+                        [patches, childrenPatches] = diffNonKeyedChildren(oldChildren, newChildren);
+                    }
+
+                    // Remove the old children that do not appear in the new nodes
+                    const removeChildrenPatches: Array<Patch> = [];
+
+                    const childrenToRemoveCount: number = oldChildren!.length - newChildren.length;
+
+                    if (childrenToRemoveCount > 0) {
+
+                        removeChildrenPatches.push(
+                            new RemoveChildrenRangePatch(newChildren.length, childrenToRemoveCount)
+                        );
+                    }
+
+                    return new ElementPatches(
+                        /*patches*/
+                        [
+                            ...patches,
+                            ...removeChildrenPatches
+                        ],
+                        /*childrenPatches*/
+                        [...childrenPatches]
+                    );
+                }
+            }
+            else { // Old node is a virtual text
+
+                return new ElementPatches(
+                    /*patches*/
+                    [
+                        new RemoveElementPatch(),
+                        new SetElementPatch(newNode!)
+                    ],
+                    /*childrenPatches*/
+                    []
+                );
+            }
         }
     }
     else { // New node is a virtual text
@@ -464,10 +647,34 @@ export default function diff(oldNode?: VirtualNode | VirtualText, newNode?: Virt
 
             return new ElementPatches(
                 /*patches*/
-                [new ReplaceElementPatch(newNode!)],
+                [new ReplaceElementPatch((newNode as VirtualNode | VirtualText)!)],
                 /*childrenPatches*/
                 []
             );
+        }
+        else if (isFragmentNode(oldNode!)) {
+
+            if ((oldNode as FragmentNode).children.length === 0) { // Nothing to replace
+
+                return new ElementPatches(
+                    /*patches*/
+                    [new SetElementPatch(newNode!)],
+                    /*childrenPatches*/
+                    []
+                );
+            }
+            else { // Remove all the children of the fragment
+
+                return new ElementPatches(
+                    /*patches*/
+                    [
+                        new RemoveChildrenPatch(),
+                        new SetElementPatch(newNode!)
+                    ],
+                    /*childrenPatches*/
+                    []
+                );
+            }
         }
         else { // Old node is a virtual text
 

@@ -9,6 +9,7 @@ export default class RemoveChildrenPatch implements Patch {
 
         const { 
             node, 
+            parentNode,
             context,
             hooks
         } = options;
@@ -19,22 +20,26 @@ export default class RemoveChildrenPatch implements Patch {
 
         const removedChildrenElements: Array<Node> = [];
 
-        while (node!.firstChild) {
+        const n = node instanceof DocumentFragment ?
+            parentNode :
+            node;
 
-            const child = node!.firstChild;
+        while (n!.firstChild) {
+
+            const child = n!.firstChild;
 
             if (nodeWillDisconnect) {
 
                 nodeWillDisconnect(child);
             }
 
-            node!.removeChild(child);
+            n!.removeChild(child);
 
             removedChildrenElements.push(child);
         }
 
         context!.setNodeChanges(
-            node!,
+            n!,
             new NodeChanges({
                 removed: removedChildrenElements
             })

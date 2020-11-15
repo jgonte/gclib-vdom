@@ -5,6 +5,7 @@ import ElementPatches from "../src/patches/ElementPatches";
 import VirtualNode from "../src/nodes/VirtualNode";
 import VirtualText from "../src/nodes/VirtualText";
 import { NodeChanges } from "../src/patches/Patch";
+import { FragmentNode, Fragment } from "../src/gclib-vdom";
 
 function comparePatches(patches: ElementPatches, expected: string): void {
 
@@ -292,6 +293,307 @@ describe("diff tests", () => {
         }));
     });
 
+    it("diff empty fragment node to undefined", () => {
+
+        const oldNode = h(Fragment as any, null);
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element).toBeInstanceOf(DocumentFragment);
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = undefined;
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches: [],
+            childrenPatches: []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
+
+        expect(shadowRoot.childNodes.length).toEqual(0); // Removed
+    });
+
+    it("diff undefined to empty fragment node", () => {
+
+        const oldNode = undefined;
+
+        const newNode = h(Fragment as any, null);
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (SetElementPatch) {
+                    newNode:
+                    (FragmentNode) {
+                        children: [],
+                        isFragmentNode: true
+                    }
+                }
+            ],
+            childrenPatches: []
+        }`);
+
+        const shadowRoot = createShadowRoot();
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, undefined, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(0); // Fragment has no children, therefore no element was added
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
+    });
+
+    it("diff fragment node to undefined", () => {
+
+        const oldNode = h(Fragment as any,
+            null,
+            h("td", null, "Hello"),
+            h("td", null, "World")
+        );
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        const children = Array.from(element.childNodes);
+
+        expect(element).toBeInstanceOf(DocumentFragment);
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = undefined;
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (RemoveChildrenPatch) {}
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenNthCalledWith(1, children[0]);
+
+        expect(spyNodeWillDisconnect).toHaveBeenNthCalledWith(2, children[1]);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            removed: children
+        }));
+
+        expect(shadowRoot.childNodes.length).toEqual(0); // Removed
+    });
+
+    it("diff fragment node to empty fragment node", () => {
+
+        const oldNode = h(Fragment as any,
+            null,
+            h("td", null, "Hello"),
+            h("td", null, "World")
+        );
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        const children = Array.from(element.childNodes);
+
+        expect(element).toBeInstanceOf(DocumentFragment);
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h(Fragment as any, null);
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (RemoveChildrenPatch) {}
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenNthCalledWith(1, children[0]);
+
+        expect(spyNodeWillDisconnect).toHaveBeenNthCalledWith(2, children[1]);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            removed: children
+        }));
+
+        expect(shadowRoot.childNodes.length).toEqual(0); // Removed
+    });
+
+    it("diff undefined to fragment node", () => {
+
+        const oldNode = undefined;
+
+        const newNode = h(Fragment as any,
+            null,
+            h("td", null, "Hello"),
+            h("td", null, "World")
+        );
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (SetElementPatch) {
+                    newNode:
+                    (FragmentNode) {
+                        children:
+                        [
+                            (VirtualNode) {
+                                name: 'td',
+                                props: null,
+                                children:
+                                [
+                                    (VirtualText) {
+                                        text: 'Hello'
+                                    }
+                                ],
+                                isVirtualNode: true
+                            },
+                            (VirtualNode) {
+                                name: 'td',
+                                props: null,
+                                children:
+                                [
+                                    (VirtualText) {
+                                        text: 'World'
+                                    }
+                                ],
+                                isVirtualNode: true
+                            }
+                        ],
+                        isFragmentNode: true
+                    }
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const shadowRoot = createShadowRoot();
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, undefined, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(2); // The two children of the fragment have been added
+
+        const firstChild = shadowRoot.childNodes[0]! as HTMLElement;
+
+        expect(firstChild.outerHTML).toEqual('<td>Hello</td>');
+
+        const secondChild = shadowRoot.childNodes[1]! as HTMLElement;
+
+        expect(secondChild.outerHTML).toEqual('<td>World</td>');
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            inserted: Array.from(shadowRoot.childNodes)
+        }));
+    });
+
     it("diff virtual text to virtual node", () => {
 
         const oldNode = new VirtualText('some text');
@@ -341,19 +643,24 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, element, hooks);
 
+        expect(shadowRoot.childNodes.length).toEqual(1); // Replaced
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<span>Some other text</span>');
+
         expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
 
         expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
 
         expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
 
-        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(shadowRoot.childNodes.length).toEqual(1); // Replaced
-
-        const child = shadowRoot.firstChild! as HTMLElement;
-
-        expect(child.outerHTML).toEqual('<span>Some other text</span>');
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            inserted: [child],
+            removed: [element]
+        }));
     });
 
     it("diff virtual node to virtual text", () => {
@@ -414,6 +721,652 @@ describe("diff tests", () => {
         expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
             inserted: [child],
             removed: [element]
+        }));
+    });
+
+    it("diff empty fragment node to virtual node", () => {
+
+        const oldNode = h(Fragment as any, null);
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element).toBeInstanceOf(DocumentFragment);
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = new VirtualNode('span', null, [new VirtualText('Some text')]);
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (SetElementPatch) {
+                    newNode:
+                    (VirtualNode) {
+                        name: 'span',
+                        props: null,
+                        children:
+                        [
+                            (VirtualText) {
+                                text: 'Some text'
+                            }
+                        ],
+                        isVirtualNode: true
+                    }
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // Added
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<span>Some text</span>');
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            inserted: [child]
+        }));
+    });
+
+    it("diff empty fragment node to virtual text", () => {
+
+        const oldNode = h(Fragment as any, null);
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element).toBeInstanceOf(DocumentFragment);
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = new VirtualText('Some text');
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (SetElementPatch) {
+                    newNode:
+                    (VirtualText) {
+                        text: 'Some text'
+                    }
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // Added
+
+        const child = shadowRoot.firstChild! as Text;
+
+        expect(child.textContent).toEqual('Some text');
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            inserted: [child]
+        }));
+    });
+
+    it("diff empty fragment node to fragment node", () => {
+
+        const oldNode = h(Fragment as any, null);
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element).toBeInstanceOf(DocumentFragment);
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h(Fragment as any,
+            null,
+            h("td", null, "Hello"),
+            h("td", null, "World")
+        );
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (SetElementPatch) {
+                    newNode:
+                    (FragmentNode) {
+                        children:
+                        [
+                            (VirtualNode) {
+                                name: 'td',
+                                props: null,
+                                children:
+                                [
+                                    (VirtualText) {
+                                        text: 'Hello'
+                                    }
+                                ],
+                                isVirtualNode: true
+                            },
+                            (VirtualNode) {
+                                name: 'td',
+                                props: null,
+                                children:
+                                [
+                                    (VirtualText) {
+                                        text: 'World'
+                                    }
+                                ],
+                                isVirtualNode: true
+                            }
+                        ],
+                        isFragmentNode: true
+                    }
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(2); // Added
+
+        expect(shadowRoot.innerHTML).toEqual('<td>Hello</td><td>World</td>');
+
+        const newChildren = Array.from(shadowRoot.childNodes);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            inserted: newChildren
+        }));
+    });
+
+    it("diff fragment node to virtual node", () => {
+
+        const oldNode = h(Fragment as any,
+            null,
+            h("td", null, "Hello"),
+            h("td", null, "World")
+        );
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        const children = Array.from(element.childNodes);
+
+        expect(element).toBeInstanceOf(DocumentFragment);
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = new VirtualNode('span', null, [new VirtualText('Some text')]);
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (RemoveChildrenPatch) {},
+                (SetElementPatch) {
+                    newNode:
+                    (VirtualNode) {
+                        name: 'span',
+                        props: null,
+                        children:
+                        [
+                            (VirtualText) {
+                                text: 'Some text'
+                            }
+                        ],
+                        isVirtualNode: true
+                    }
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // Replaced
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<span>Some text</span>');
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            removed: children,
+            inserted: [child]
+        }));
+    });
+
+    it("diff virtual node to empty fragment node", () => {
+
+        const oldNode = new VirtualNode('span', null, [new VirtualText('Some text')]);
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h(Fragment as any, null);
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (RemoveElementPatch) {}
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(0); // Removed original node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            removed: [element]
+        }));
+    });
+
+    it("diff virtual node to fragment node", () => {
+
+        const oldNode = new VirtualNode('span', null, [new VirtualText('Some text')]);
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h(Fragment as any,
+            null,
+            h("td", null, "Hello"),
+            h("td", null, "World")
+        );
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (RemoveElementPatch) {},
+                (SetElementPatch) {
+                    newNode:
+                    (FragmentNode) {
+                        children:
+                        [
+                            (VirtualNode) {
+                                name: 'td',
+                                props: null,
+                                children:
+                                [
+                                    (VirtualText) {
+                                        text: 'Hello'
+                                    }
+                                ],
+                                isVirtualNode: true
+                            },
+                            (VirtualNode) {
+                                name: 'td',
+                                props: null,
+                                children:
+                                [
+                                    (VirtualText) {
+                                        text: 'World'
+                                    }
+                                ],
+                                isVirtualNode: true
+                            }
+                        ],
+                        isFragmentNode: true
+                    }
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(2); // Replaced by the 2 nodes
+
+        expect(shadowRoot.innerHTML).toEqual('<td>Hello</td><td>World</td>');
+
+        const newChildren = Array.from(shadowRoot.childNodes);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            removed: [element],
+            inserted: newChildren
+        }));
+    });
+
+    it("diff fragment node to virtual text", () => {
+
+        const oldNode = h(Fragment as any,
+            null,
+            h("td", null, "Hello"),
+            h("td", null, "World")
+        );
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        const children = Array.from(element.childNodes);
+
+        expect(element).toBeInstanceOf(DocumentFragment);
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = new VirtualText('Some text');
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (RemoveChildrenPatch) {},
+                (SetElementPatch) {
+                    newNode:
+                    (VirtualText) {
+                        text: 'Some text'
+                    }
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // Replaced
+
+        const child = shadowRoot.firstChild! as Text;
+
+        expect(child.textContent).toEqual('Some text');
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            removed: children,
+            inserted: [child]
+        }));
+    });
+
+    it("diff virtual text to empty fragment node", () => {
+
+        const oldNode = new VirtualText('Some text');
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h(Fragment as any, null);
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (RemoveElementPatch) {}
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(0); // Removed original node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            removed: [element]
+        }));
+    });
+
+    it("diff virtual text to fragment node", () => {
+
+        const oldNode = new VirtualText('Some text');
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h(Fragment as any,
+            null,
+            h("td", null, "Hello"),
+            h("td", null, "World")
+        );
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (RemoveElementPatch) {},
+                (SetElementPatch) {
+                    newNode:
+                    (FragmentNode) {
+                        children:
+                        [
+                            (VirtualNode) {
+                                name: 'td',
+                                props: null,
+                                children:
+                                [
+                                    (VirtualText) {
+                                        text: 'Hello'
+                                    }
+                                ],
+                                isVirtualNode: true
+                            },
+                            (VirtualNode) {
+                                name: 'td',
+                                props: null,
+                                children:
+                                [
+                                    (VirtualText) {
+                                        text: 'World'
+                                    }
+                                ],
+                                isVirtualNode: true
+                            }
+                        ],
+                        isFragmentNode: true
+                    }
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(2); // Replaced by the 2 nodes
+
+        expect(shadowRoot.innerHTML).toEqual('<td>Hello</td><td>World</td>');
+
+        const newChildren = Array.from(shadowRoot.childNodes);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            removed: [element],
+            inserted: newChildren
         }));
     });
 
@@ -982,6 +1935,439 @@ describe("diff tests", () => {
         }));
     });
 
+    it("diff empty fragment node to empty fragment node", () => {
+
+        const oldNode = h(Fragment as any, null);
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        const children = Array.from(element.childNodes);
+
+        expect(element).toBeInstanceOf(DocumentFragment);
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h(Fragment as any, null);
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(0); // Nothing replaced
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(0);
+    });
+
+    it("diff empty fragment node to fragment node", () => {
+
+        const oldNode = h(Fragment as any, null);
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        const children = Array.from(element.childNodes);
+
+        expect(element).toBeInstanceOf(DocumentFragment);
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h(Fragment as any,
+            null,
+            h("td", null, "Hello"),
+            h("td", null, "World")
+        );
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (SetElementPatch) {
+                    newNode:
+                    (FragmentNode) {
+                        children:
+                        [
+                            (VirtualNode) {
+                                name: 'td',
+                                props: null,
+                                children:
+                                [
+                                    (VirtualText) {
+                                        text: 'Hello'
+                                    }
+                                ],
+                                isVirtualNode: true
+                            },
+                            (VirtualNode) {
+                                name: 'td',
+                                props: null,
+                                children:
+                                [
+                                    (VirtualText) {
+                                        text: 'World'
+                                    }
+                                ],
+                                isVirtualNode: true
+                            }
+                        ],
+                        isFragmentNode: true
+                    }
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(2); // The two children of the fragment have been added
+
+        const firstChild = shadowRoot.childNodes[0]! as HTMLElement;
+
+        expect(firstChild.outerHTML).toEqual('<td>Hello</td>');
+
+        const secondChild = shadowRoot.childNodes[1]! as HTMLElement;
+
+        expect(secondChild.outerHTML).toEqual('<td>World</td>');
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            inserted: Array.from(shadowRoot.childNodes)
+        }));
+    });
+
+    it("diff fragment node to fragment node no children keys", () => {
+
+        const oldNode = h(Fragment as any,
+            null,
+            h("td", null, "Hello"),
+            h("td", null, "World")
+        );
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        const children = Array.from(element.childNodes);
+
+        expect(element).toBeInstanceOf(DocumentFragment);
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h(Fragment as any,
+            null,
+            h("td", null, "Hello 1"),
+            h("td", null, "World 1")
+        );
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [],
+            childrenPatches:
+            [
+                (ChildElementPatches) {
+                    index: 0,
+                    patches:
+                    (ElementPatches) {
+                        patches:
+                        [],
+                        childrenPatches:
+                        [
+                            (ChildElementPatches) {
+                                index: 0,
+                                patches:
+                                (ElementPatches) {
+                                    patches:
+                                    [
+                                        (SetTextPatch) {
+                                            value:
+                                            (VirtualText) {
+                                                text: 'Hello 1'
+                                            }
+                                        }
+                                    ],
+                                    childrenPatches:
+                                    []
+                                }
+                            }
+                        ]
+                    }
+                },
+                (ChildElementPatches) {
+                    index: 1,
+                    patches:
+                    (ElementPatches) {
+                        patches:
+                        [],
+                        childrenPatches:
+                        [
+                            (ChildElementPatches) {
+                                index: 0,
+                                patches:
+                                (ElementPatches) {
+                                    patches:
+                                    [
+                                        (SetTextPatch) {
+                                            value:
+                                            (VirtualText) {
+                                                text: 'World 1'
+                                            }
+                                        }
+                                    ],
+                                    childrenPatches:
+                                    []
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(2); // The two children of the fragment have been kept
+
+        const firstChild = shadowRoot.childNodes[0]! as HTMLElement;
+
+        expect(firstChild.outerHTML).toEqual('<td>Hello 1</td>');
+
+        const secondChild = shadowRoot.childNodes[1]! as HTMLElement;
+
+        expect(secondChild.outerHTML).toEqual('<td>World 1</td>');
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(2);
+
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(1, firstChild.childNodes[0], new NodeChanges({
+            text: {
+                oldValue: 'Hello',
+                newValue: 'Hello 1'
+            }
+        }));
+
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(2, secondChild.childNodes[0], new NodeChanges({
+            text: {
+                oldValue: 'World',
+                newValue: 'World 1'
+            }
+        }));
+    });
+
+    it("diff fragment node to fragment node keyed children combination", () => {
+
+        const oldNode = h(Fragment as any,
+            null,
+            h('li', { key: '1' }, 'Text 1'),
+            h('li', { key: '2' }, 'Text 2'),
+            h('li', { key: '3' }, 'Text 3'),
+            h('li', { key: '4' }, 'Text 4'),
+            h('li', { key: '5' }, 'Text 5'),
+            h('li', { key: '6' }, 'Text 6'),
+            h('li', { key: '7' }, 'Text 7'),
+            h('li', { key: '8' }, 'Text 8'),
+            h('li', { key: '9' }, 'Text 9')
+        );
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        const oldChildren = Array.from(element.childNodes);
+
+        expect(element).toBeInstanceOf(DocumentFragment);
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h(Fragment as any,
+            null,
+            h('li', { key: '11' }, 'Text 11'), // preppend
+            h('li', { key: '8' }, 'Text 8'), // swap with 3
+            h('li', { key: '4' }, 'Text 4'),
+            h('li', { key: '12' }, 'Text 12'), // insert in the middle
+            h('li', { key: '7' }, 'Text 7'),
+            h('li', { key: '3' }, 'Text 3'), // swap with 8
+            h('li', { key: '13' }, 'Text 13'), // insert at the end
+        );
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (SetChildPatch) {
+                    index: 0,
+                    newNode:
+                    (VirtualNode) {
+                        name: 'li',
+                        props:
+                        {
+                            key: '11'
+                        },
+                        children:
+                        [
+                            (VirtualText) {
+                                text: 'Text 11'
+                            }
+                        ],
+                        isVirtualNode: true
+                    }
+                },
+                (MoveChildPatch) {
+                    from: 7,
+                    to: 1,
+                    offset: 0
+                },
+                (MoveChildPatch) {
+                    from: 3,
+                    to: 2,
+                    offset: 0
+                },
+                (SetChildPatch) {
+                    index: 3,
+                    newNode:
+                    (VirtualNode) {
+                        name: 'li',
+                        props:
+                        {
+                            key: '12'
+                        },
+                        children:
+                        [
+                            (VirtualText) {
+                                text: 'Text 12'
+                            }
+                        ],
+                        isVirtualNode: true
+                    }
+                },
+                (MoveChildPatch) {
+                    from: 6,
+                    to: 4,
+                    offset: 1
+                },
+                (MoveChildPatch) {
+                    from: 2,
+                    to: 5,
+                    offset: 0
+                },
+                (SetChildPatch) {
+                    index: 6,
+                    newNode:
+                    (VirtualNode) {
+                        name: 'li',
+                        props:
+                        {
+                            key: '13'
+                        },
+                        children:
+                        [
+                            (VirtualText) {
+                                text: 'Text 13'
+                            }
+                        ],
+                        isVirtualNode: true
+                    }
+                },
+                (RemoveChildrenRangePatch) {
+                    from: 7,
+                    count: 2
+                }
+            ],
+            childrenPatches: []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(7);
+
+        expect(shadowRoot.innerHTML).toEqual('<li key=\"11\">Text 11</li><li key=\"8\">Text 8</li><li key=\"4\">Text 4</li><li key=\"12\">Text 12</li><li key=\"7\">Text 7</li><li key=\"3\">Text 3</li><li key=\"13\">Text 13</li>');
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(7);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(7);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(6);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({ // ul
+            inserted: [shadowRoot.childNodes[0], shadowRoot.childNodes[3], shadowRoot.childNodes[6]],
+            moved: [oldChildren[7], oldChildren[3], oldChildren[6], oldChildren[2]], // from
+            removed: [oldChildren[0], oldChildren[4], oldChildren[1], oldChildren[5], oldChildren[8]]
+        }));
+    });
+
     it("diff a node with changed child image url and span text", () => {
 
         const oldNode = h('div', null,
@@ -1343,6 +2729,8 @@ describe("diff tests", () => {
 
         expect(element.outerHTML).toEqual('<div>Some text</div>');
 
+        const oldChildren = Array.from(element.childNodes);
+
         const shadowRoot = createShadowRoot();
 
         shadowRoot.appendChild(element);
@@ -1442,10 +2830,10 @@ describe("diff tests", () => {
 
         expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(1, element, new NodeChanges({ // div
-            inserted: [child.childNodes[0], child.childNodes[1]],
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(child, new NodeChanges({ // div
+            inserted: [child.childNodes[1], child.childNodes[0]],
+            removed: oldChildren
         }));
-
     });
 
     it("diff a node with children components modify children no key", () => {
@@ -1678,7 +3066,7 @@ describe("diff tests", () => {
         shadowRoot.appendChild(element);
 
         const newNode = h('ul', null,
-            h('li', { key: '3' }, 'Text 3'), // insert new 
+            h('li', { key: '3' }, 'Text 3'), // insert new
             h('li', { key: '1' }, 'Text 11') // change text
         );
 
@@ -1706,7 +3094,7 @@ describe("diff tests", () => {
                         isVirtualNode: true
                     }
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 0,
                     to: 1,
                     offset: 0
@@ -1799,7 +3187,7 @@ describe("diff tests", () => {
 
         const newNode = h('ul', null,
             h('li', { key: '1' }, 'Text 11'), // change text
-            h('li', { key: '3' }, 'Text 3') // append new 
+            h('li', { key: '3' }, 'Text 3') // append new
         );
 
         const patches = diff(oldNode, newNode);
@@ -1915,7 +3303,7 @@ describe("diff tests", () => {
         const newNode = h('ul', null,
             h('li', { key: '1' }, 'Text 1'), // insert at the beginning
             h('li', { key: '2' }, 'Text 2'),
-            h('li', { key: '3' }, 'Text 3'), // insert in the middle 
+            h('li', { key: '3' }, 'Text 3'), // insert in the middle
             h('li', { key: '4' }, 'Text 4'),
             h('li', { key: '5' }, 'Text 5') // insert at the end
         );
@@ -1944,7 +3332,7 @@ describe("diff tests", () => {
                         isVirtualNode: true
                     }
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 0,
                     to: 1,
                     offset: 0
@@ -1967,7 +3355,7 @@ describe("diff tests", () => {
                         isVirtualNode: true
                     }
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 1,
                     to: 3,
                     offset: 0
@@ -2099,12 +3487,12 @@ describe("diff tests", () => {
                         isVirtualNode: true
                     }
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 0,
                     to: 2,
                     offset: 0
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 1,
                     to: 3,
                     offset: 1
@@ -2145,12 +3533,12 @@ describe("diff tests", () => {
                         isVirtualNode: true
                     }
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 2,
                     to: 6,
                     offset: 0
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 3,
                     to: 7,
                     offset: 0
@@ -2258,7 +3646,7 @@ describe("diff tests", () => {
         (ElementPatches) {
             patches:
             [
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 1,
                     to: 0,
                     offset: 0
@@ -2404,7 +3792,7 @@ describe("diff tests", () => {
         (ElementPatches) {
             patches:
             [
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 2,
                     to: 1,
                     offset: 0
@@ -2473,7 +3861,7 @@ describe("diff tests", () => {
         const newNode = h('ul', null,
             //h('li', { key: '1' }, 'Text 1'), // Remove from the beginning
             h('li', { key: '2' }, 'Text 2'),
-            //h('li', { key: '3' }, 'Text 3'), // Remove from the middle 
+            //h('li', { key: '3' }, 'Text 3'), // Remove from the middle
             h('li', { key: '4' }, 'Text 4'),
             //h('li', { key: '5' }, 'Text 5') // Remove from the end
         );
@@ -2484,12 +3872,12 @@ describe("diff tests", () => {
         (ElementPatches) {
             patches:
             [
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 1,
                     to: 0,
                     offset: 0
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 3,
                     to: 1,
                     offset: 1
@@ -2573,22 +3961,22 @@ describe("diff tests", () => {
         (ElementPatches) {
             patches:
             [
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 2,
                     to: 0,
                     offset: 0
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 3,
                     to: 1,
                     offset: 1
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 6,
                     to: 2,
                     offset: 2
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 7,
                     to: 3,
                     offset: 3
@@ -2674,12 +4062,12 @@ describe("diff tests", () => {
         (ElementPatches) {
             patches:
             [
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 1,
                     to: 0,
                     offset: 0
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 0,
                     to: 1,
                     offset: 0
@@ -2770,7 +4158,7 @@ describe("diff tests", () => {
                         isVirtualNode: true
                     }
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 0,
                     to: 1,
                     offset: 0
@@ -2842,7 +4230,7 @@ describe("diff tests", () => {
         (ElementPatches) {
             patches:
             [
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 1,
                     to: 0,
                     offset: 0
@@ -2932,7 +4320,7 @@ describe("diff tests", () => {
         (ElementPatches) {
             patches:
             [
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 1,
                     to: 0,
                     offset: 0
@@ -2955,7 +4343,7 @@ describe("diff tests", () => {
                         isVirtualNode: true
                     }
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 0,
                     to: 2,
                     offset: 0
@@ -3027,12 +4415,12 @@ describe("diff tests", () => {
         (ElementPatches) {
             patches:
             [
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 2,
                     to: 0,
                     offset: 0
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 0,
                     to: 1,
                     offset: 0
@@ -3071,7 +4459,7 @@ describe("diff tests", () => {
 
         expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul     
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
             moved: [oldChildren[2], oldChildren[0]], // from
             removed: [oldChildren[1]]
         }));
@@ -3112,22 +4500,22 @@ describe("diff tests", () => {
         (ElementPatches) {
             patches:
             [
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 4,
                     to: 0,
                     offset: 0
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 3,
                     to: 1,
                     offset: 0
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 1,
                     to: 3,
                     offset: 0
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 0,
                     to: 4,
                     offset: 0
@@ -3162,7 +4550,7 @@ describe("diff tests", () => {
 
         expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul     
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
             moved: [oldChildren[4], oldChildren[3], oldChildren[1], oldChildren[0]] // from
         }));
     });
@@ -3200,7 +4588,7 @@ describe("diff tests", () => {
         (ElementPatches) {
             patches:
             [
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 3,
                     to: 0,
                     offset: 0
@@ -3223,7 +4611,7 @@ describe("diff tests", () => {
                         isVirtualNode: true
                     }
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 0,
                     to: 2,
                     offset: 0
@@ -3262,7 +4650,7 @@ describe("diff tests", () => {
 
         expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul 
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
             inserted: [element.childNodes[1]],
             moved: [oldChildren[3], oldChildren[0]], // from
             removed: [oldChildren[1], oldChildren[2]]
@@ -3328,12 +4716,12 @@ describe("diff tests", () => {
                         isVirtualNode: true
                     }
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 7,
                     to: 1,
                     offset: 0
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 3,
                     to: 2,
                     offset: 0
@@ -3356,12 +4744,12 @@ describe("diff tests", () => {
                         isVirtualNode: true
                     }
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 6,
                     to: 4,
                     offset: 1
                 },
-                (MoveElementPatch) {
+                (MoveChildPatch) {
                     from: 2,
                     to: 5,
                     offset: 0
@@ -3418,7 +4806,7 @@ describe("diff tests", () => {
 
         expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul 
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
             inserted: [element.childNodes[0], element.childNodes[3], element.childNodes[6]],
             moved: [oldChildren[7], oldChildren[3], oldChildren[6], oldChildren[2]], // from
             removed: [oldChildren[0], oldChildren[4], oldChildren[1], oldChildren[5], oldChildren[8]]
@@ -3511,7 +4899,7 @@ describe("diff tests", () => {
                 oldValue: '5',
                 newValue: '6'
             }
-        }));       
+        }));
     });
 
 });
