@@ -35,9 +35,11 @@ function diffAttributes(oldAttributes?: any | null, newAttributes?: any | null):
 
             if (i > -1) { // There is an old attribute with the same name
 
-                if (v !== oldAttributes[k]) {
+                const oldValue = oldAttributes[k];
 
-                    patches.push(new SetAttributePatch(k, v));
+                if (v !== oldValue) {
+
+                    patches.push(new SetAttributePatch(k, oldValue, v));
                 }
 
                 oldAttributeNames.splice(i, 1); // Remove the name of the attribute to not to create a RemoveAttributePatch for it
@@ -54,7 +56,9 @@ function diffAttributes(oldAttributes?: any | null, newAttributes?: any | null):
         // Remove old attributes
         for (const k of oldAttributeNames) {
 
-            patches.push(new RemoveAttributePatch(k));
+            const oldValue = oldAttributes[k];
+
+            patches.push(new RemoveAttributePatch(k, oldValue));
         }
     }
 

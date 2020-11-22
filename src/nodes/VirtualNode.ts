@@ -1,4 +1,4 @@
-import { createElement } from "./helpers/createElement";
+import { createDOMElement } from "./helpers/createDOMElement";
 import VirtualText from "./VirtualText";
 import { LifecycleHooks } from "../patches/Patch";
 import { FragmentNode } from "../gclib-vdom";
@@ -40,7 +40,7 @@ export default class VirtualNode {
 
         const { name, props, children} = this;
 
-        const element = createElement(name, props) as CustomElementLike;
+        const element = createDOMElement(name, props) as CustomElementLike;
         
         for (const child of children) {
 

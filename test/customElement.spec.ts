@@ -19,6 +19,8 @@ describe("custom element tests", () => {
 
                 return [];
             }
+
+            attributeChangedCallback() {}
         }
 
         customElements.define('my-component', MyComponent);

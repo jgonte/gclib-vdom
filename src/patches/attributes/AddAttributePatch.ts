@@ -1,4 +1,5 @@
 import { Patch, PatchOptions, NodeChanges } from "../Patch";
+import setAttribute from "../../nodes/helpers/setAttribute";
 
 /**
  * Patch to add an attribute to the DOM element
@@ -26,16 +27,19 @@ export default class AddAttributePatch implements Patch {
             context 
         } = options;
 
-        const newValue = this.value.toString();
+        const {
+            name,
+            value
+        } = this;
 
-        (node as HTMLElement).setAttribute(this.name, newValue);
-
+        setAttribute(node as HTMLElement, name, value);
+        
         context!.setNodeChanges(
             node!,
             new NodeChanges({
                 attributes: [{
-                    key: this.name,
-                    newValue
+                    key: name,
+                    newValue: value
                 }]
             })
         );

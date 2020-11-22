@@ -1,7 +1,10 @@
 import { Patch, PatchOptions, NodeChanges } from "../Patch";
+import { isUndefinedOrNull } from "../../utils/utils";
+import removeAttribute from "../../nodes/helpers/removeAttribute";
+import replaceAttribute from "../../nodes/helpers/replaceAttribute";
 
 /**
- * Patch to remove an attribute from the DOM element
+ * Patch to replace an attribute from the DOM element
  */
 export default class SetAttributePatch implements Patch {
     
@@ -12,10 +15,15 @@ export default class SetAttributePatch implements Patch {
          */
         public name: string,
 
-         /**
+        /**
+         * The old value of the attribute
+         */
+        public oldValue: any,
+
+        /**
          * The new value of the attribute
          */
-        public value: any
+        public newValue: any
 
     ) {}
 
@@ -26,17 +34,26 @@ export default class SetAttributePatch implements Patch {
             context 
         } = options;
 
-        const oldValue = (node as HTMLElement).getAttribute(this.name);
+        const {
+            name,
+            oldValue,
+            newValue
+        } = this;
 
-        const newValue = this.value.toString();
+        if (isUndefinedOrNull(newValue)) {
 
-        (node as HTMLElement).setAttribute(this.name, newValue);
+            removeAttribute(node as HTMLElement, name)
+        }
+        else {
+
+            replaceAttribute(node as HTMLElement, name, newValue);
+        }
 
         context!.setNodeChanges(
             node!,
             new NodeChanges({
                 attributes: [{
-                    key: this.name,
+                    key: name,
                     oldValue,
                     newValue
                 }]

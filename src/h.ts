@@ -13,11 +13,17 @@ export default function h(
     attributes: object | null = {},
     ...children: Array<VirtualNode | FragmentNode | string | number | boolean>): VirtualNode {
 
+    // Extract the children if an array was passed
+    if (Array.isArray(children[0])) {
+
+        children = children[0];
+    }
+
     const childrenNodes: Array<VirtualNode | FragmentNode | VirtualText> = [];
 
     children.forEach(child => {
 
-        if (child === null) {
+        if (child === null) { // Do not alter the order of these tests
 
             // Do nothing
         }
@@ -41,7 +47,7 @@ export default function h(
 
     if (typeof name === 'string') {
 
-        return new VirtualNode(name, attributes, childrenNodes); 
+        return new VirtualNode(name, attributes, childrenNodes);
     }
     else {
 

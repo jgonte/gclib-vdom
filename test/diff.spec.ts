@@ -1562,22 +1562,26 @@ describe("diff tests", () => {
 
         const patches = diff(oldNode, newNode);
 
-        comparePatches(patches, `(ElementPatches) {
+        comparePatches(patches, `
+        (ElementPatches) {
             patches:
             [
                 (SetAttributePatch) {
                     name: 'id',
-                    value: 'myElement2'
+                    oldValue: 'myElement1',
+                    newValue: 'myElement2'
                 },
                 (AddAttributePatch) {
                     name: 'href',
                     value: 'http://someurl.com'
                 },
                 (RemoveAttributePatch) {
-                    name: 'class'
+                    name: 'class',
+                    oldValue: 'class1 class2'
                 }
             ],
-            childrenPatches: []
+            childrenPatches:
+            []
         }`);
 
         const {
@@ -1624,6 +1628,563 @@ describe("diff tests", () => {
         expect(child.outerHTML).toEqual('<div id=\"myElement2\" href=\"http://someurl.com\"></div>');
 
         expect(child).toEqual(element); // Kept the same node
+    });
+
+    it("diff same node type add event listener", () => {
+
+        const oldNode = h('span', null, 'Some text');
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.outerHTML).toEqual('<span>Some text</span>');
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const onClick = () => alert('clicked');
+
+        const newNode = h('span', { onClick }, 'Some text');
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (AddAttributePatch) {
+                    name: 'onClick',
+                    value: 'function () { return alert('clicked'); }'
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({
+            attributes: [{
+                key: 'onClick',
+                newValue: onClick
+            }]
+        }));
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<span>Some text</span>');
+
+        expect(child).toEqual(element); // Kept the same node
+
+        // Test the listener was added
+        const listener = (element as any)._listeners['click'];
+
+        expect(listener).toEqual([onClick]);
+
+        // Test the tracked listener was added
+        const trackedListener = (element as any)._trackedListeners['onClick'];
+
+        expect(trackedListener).toEqual({
+            eventName: 'click',
+            value: onClick,
+            useCapture: false
+        });
+    });
+
+    it("diff same node type add event listener with capture", () => {
+
+        const oldNode = h('span', null, 'Some text');
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.outerHTML).toEqual('<span>Some text</span>');
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const onClick = () => alert('clicked');
+
+        const newNode = h('span', { onClick_capture: onClick }, 'Some text');
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (AddAttributePatch) {
+                    name: 'onClick_capture',
+                    value: 'function () { return alert('clicked'); }'
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({
+            attributes: [{
+                key: 'onClick_capture',
+                newValue: onClick
+            }]
+        }));
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<span>Some text</span>');
+
+        expect(child).toEqual(element); // Kept the same node
+
+        // Test the listener was added
+        const listener = (element as any)._listeners['click'];
+
+        expect(listener).toEqual([onClick]);
+
+        // Test the tracked listener was added
+        const trackedListener = (element as any)._trackedListeners['onClick_capture'];
+
+        expect(trackedListener).toEqual({
+            eventName: 'click',
+            value: onClick,
+            useCapture: true
+        });
+    });
+
+    it("diff same node type add function to be bound", () => {
+
+        const oldNode = h('span', null, 'Some text');
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.outerHTML).toEqual('<span>Some text</span>');
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const onSomeAction = () => alert('something happened!');
+
+        const newNode = h('span', { onSomeAction }, 'Some text');
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (AddAttributePatch) {
+                    name: 'onSomeAction',
+                    value: 'function () { return alert('something happened!'); }'
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({
+            attributes: [{
+                key: 'onSomeAction',
+                newValue: onSomeAction
+            }]
+        }));
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<span>Some text</span>');
+
+        expect(child).toEqual(element); // Kept the same node
+
+        // Test no listener was added
+        expect((element as any)._listeners).toEqual({});
+
+        // Test no tracked listener was added
+        expect((element as any)._trackedListeners).toEqual(undefined);
+
+        // Test the function is attached and bound to the element
+        expect((element as any).onSomeAction.name).toEqual('bound onSomeAction');
+    });
+
+    it("diff same node type remove event listener", () => {
+
+        const onClick = () => alert('clicked');
+
+        const oldNode = h('span', { onClick }, 'Some text');
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.outerHTML).toEqual('<span>Some text</span>');
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h('span', null, 'Some text');
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (RemoveAttributePatch) {
+                    name: 'onClick',
+                    oldValue: 'function () { return alert('clicked'); }'
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({
+            attributes: [{
+                key: 'onClick',
+                oldValue: onClick
+            }]
+        }));
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<span>Some text</span>');
+
+        expect(child).toEqual(element); // Kept the same node
+
+        // Test the listener was removed
+        const listener = (element as any)._listeners['click'];
+
+        expect(listener).toEqual([]);
+
+        // Test the tracked listener was removed
+        expect((element as any)._trackedListeners['onClick']).toBe(undefined);
+    });
+
+    it("diff same node type remove event listener with capture", () => {
+
+        const onClick = () => alert('clicked');
+
+        const oldNode = h('span', { onClick_capture: onClick }, 'Some text');
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.outerHTML).toEqual('<span>Some text</span>');
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h('span', null, 'Some text');
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (RemoveAttributePatch) {
+                    name: 'onClick_capture',
+                    oldValue: 'function () { return alert('clicked'); }'
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({
+            attributes: [{
+                key: 'onClick_capture',
+                oldValue: onClick
+            }]
+        }));
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<span>Some text</span>');
+
+        expect(child).toEqual(element); // Kept the same node
+
+        // Test the listener was removed
+        const listener = (element as any)._listeners['click'];
+
+        expect(listener).toEqual([]);
+
+        // Test the tracked listener was removed
+        expect((element as any)._trackedListeners['onClick_capture']).toBe(undefined);
+    });
+
+    it("diff same node type remove event listener by setting the attribute to null", () => {
+
+        const onClick = () => alert('clicked');
+
+        const oldNode = h('span', { onClick }, 'Some text');
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.outerHTML).toEqual('<span>Some text</span>');
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h('span', { onClick: null }, 'Some text');
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (SetAttributePatch) {
+                    name: 'onClick',
+                    oldValue: 'function () { return alert('clicked'); }',
+                    newValue: null
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({
+            attributes: [{
+                key: 'onClick',
+                oldValue: onClick,
+                newValue: null
+            }]
+        }));
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<span>Some text</span>');
+
+        expect(child).toEqual(element); // Kept the same node
+
+        // Test the listener was removed
+        const listener = (element as any)._listeners['click'];
+
+        expect(listener).toEqual([]);
+
+        // Test the tracked listener was removed
+        expect((element as any)._trackedListeners['onClick']).toBe(undefined);
+    });
+
+    it("diff same node type replace event listener", () => {
+
+        const onOldClick = () => alert('old clicked');
+
+        const oldNode = h('span', { onClick: onOldClick }, 'Some text');
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.outerHTML).toEqual('<span>Some text</span>');
+
+        // Test the listener was replaced
+        let listener = (element as any)._listeners['click'];
+
+        expect(listener).toEqual([onOldClick]);
+
+        // Test the tracked listener was replaced
+        let trackedListener = (element as any)._trackedListeners['onClick'];
+
+        expect(trackedListener).toEqual({
+            eventName: 'click',
+            value: onOldClick,
+            useCapture: false
+        });
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const onNewClick = () => alert('new clicked');
+
+        const newNode = h('span', { onClick: onNewClick }, 'Some text');
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (SetAttributePatch) {
+                    name: 'onClick',
+                    oldValue: 'function () { return alert('old clicked'); }',
+                    newValue: 'function () { return alert('new clicked'); }'
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({
+            attributes: [{
+                key: 'onClick',
+                oldValue: onOldClick,
+                newValue: onNewClick
+            }]
+        }));
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<span>Some text</span>');
+
+        expect(child).toEqual(element); // Kept the same node
+
+        // Test the listener was replaced
+        listener = (element as any)._listeners['click'];
+
+        expect(listener).toEqual([onNewClick]);
+
+        // Test the tracked listener was replaced
+        trackedListener = (element as any)._trackedListeners['onClick'];
+
+        expect(trackedListener).toEqual({
+            eventName: 'click',
+            value: onNewClick,
+            useCapture: false
+        });
     });
 
     it("diff same node type with different text", () => {
@@ -2415,24 +2976,28 @@ describe("diff tests", () => {
                         [
                             (SetAttributePatch) {
                                 name: 'src',
-                                value: 'http://images/newImage.gif'
+                                oldValue: 'http://images/image.gif',
+                                newValue: 'http://images/newImage.gif'
                             }
                         ],
-                        childrenPatches: []
+                        childrenPatches:
+                        []
                     }
                 },
                 (ChildElementPatches) {
                     index: 1,
                     patches:
                     (ElementPatches) {
-                        patches: [],
+                        patches:
+                        [],
                         childrenPatches:
                         [
                             (ChildElementPatches) {
                                 index: 0,
                                 patches:
                                 (ElementPatches) {
-                                    patches: [],
+                                    patches:
+                                    [],
                                     childrenPatches:
                                     [
                                         (ChildElementPatches) {
@@ -2448,7 +3013,8 @@ describe("diff tests", () => {
                                                         }
                                                     }
                                                 ],
-                                                childrenPatches: []
+                                                childrenPatches:
+                                                []
                                             }
                                         }
                                     ]
@@ -2537,7 +3103,8 @@ describe("diff tests", () => {
 
         comparePatches(patches, `
         (ElementPatches) {
-            patches: [],
+            patches:
+            [],
             childrenPatches:
             [
                 (ChildElementPatches) {
@@ -2548,17 +3115,20 @@ describe("diff tests", () => {
                         [
                             (SetAttributePatch) {
                                 name: 'src',
-                                value: 'http://images/newImage.gif'
+                                oldValue: 'http://images/image.gif',
+                                newValue: 'http://images/newImage.gif'
                             }
                         ],
-                        childrenPatches: []
+                        childrenPatches:
+                        []
                     }
                 },
                 (ChildElementPatches) {
                     index: 1,
                     patches:
                     (ElementPatches) {
-                        patches: [],
+                        patches:
+                        [],
                         childrenPatches:
                         [
                             (ChildElementPatches) {
@@ -2574,7 +3144,8 @@ describe("diff tests", () => {
                                             }
                                         }
                                     ],
-                                    childrenPatches: []
+                                    childrenPatches:
+                                    []
                                 }
                             }
                         ]
