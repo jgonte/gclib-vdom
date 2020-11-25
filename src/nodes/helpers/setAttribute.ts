@@ -1,5 +1,7 @@
 import isStandardEvent from "./isStandardEvent";
 import { isUndefinedOrNull } from "../../utils/utils";
+import getCSSClass from "./getCSSClass";
+import getCSSStyle from "./getCSSStyle";
 
 export default function setAttribute(element: HTMLElement, name: string, value: any) {
 
@@ -35,11 +37,34 @@ export default function setAttribute(element: HTMLElement, name: string, value: 
 
         if (name === 'class') {
 
-            // Do not set the attribute is there is no value
-            if (!isUndefinedOrNull(value) &&
-                value.toString() !== '') {
+            if (isUndefinedOrNull(value)) {
+
+                return;
+            }
+
+            if (typeof value === 'string' && value !== '') {
 
                 element.setAttribute(name, value);
+            }
+            else if (typeof value === 'object') {
+
+                element.setAttribute(name, getCSSClass(value));
+            }
+        }
+        else if (name === 'style') {
+
+            if (isUndefinedOrNull(value)) {
+
+                return;
+            }
+
+            if (typeof value === 'string' && value !== '') {
+
+                element.setAttribute(name, value);
+            }
+            else if (typeof value === 'object') {
+
+                element.setAttribute(name, getCSSStyle(value));
             }
         }
         else { // ECMAScript calls the toString() method of the value to set the attribute

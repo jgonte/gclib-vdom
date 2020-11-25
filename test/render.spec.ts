@@ -1,5 +1,6 @@
 import h from "../src/h";
 import { Fragment } from "../src/nodes/FragmentNode";
+import { VirtualNode, VirtualText } from "../src/gclib-vdom";
 
 describe("render tests", () => {
 
@@ -72,20 +73,6 @@ describe("render tests", () => {
         expect(element.outerHTML).toEqual('<svg><use href=\"http://icons/icons.svg#my-icon\"/></svg>');
     });
 
-    // it("creates an externally linked svg element with xlink:href", () => {
-
-    //     const node = h('svg', null,
-
-    //         h('use', {
-    //             xlinkHref: 'http://icons/icons.svg#my-icon'
-    //         })
-    //     );
-
-    //     const element = node.render();
-
-    //     expect(element.outerHTML).toEqual('<svg><use xlink:href=\"http://icons/icons.svg#my-icon\"/></svg>');
-    // });
-
     it("creates an element from a virtual node with a undefined class", () => {
 
         const node = h('div', {
@@ -106,6 +93,65 @@ describe("render tests", () => {
         const element = node.render();
 
         expect(element.outerHTML).toEqual('<div>Some text</div>');
+    });
+
+    it("creates an element from a virtual node with an object class", () => {
+
+        const visible = true;
+
+        const count: number = 4;
+
+        const node = h('div', {
+            class: {
+                'visible': visible,
+                'three': count === 3,
+                'four': count === 4
+            }
+        }, 'Some text');
+
+        const element = node.render();
+
+        expect(element.outerHTML).toEqual('<div class=\"visible four\">Some text</div>');
+    });
+
+    it("creates an element from a virtual node with a undefined style", () => {
+
+        const node = h('div', {
+            style: undefined
+        }, 'Some text');
+
+        const element = node.render();
+
+        expect(element.outerHTML).toEqual('<div>Some text</div>');
+    });
+
+    it("creates an element from a virtual node with a null style", () => {
+
+        const node = h('div', {
+            style: null
+        }, 'Some text');
+
+        const element = node.render();
+
+        expect(element.outerHTML).toEqual('<div>Some text</div>');
+    });
+
+    it("creates an element from a virtual node with a style object", () => {
+
+        const style = {
+            width: '1px',
+            height: '1px',
+            backgroundColor: 'red',
+            transform: 'rotateZ(45deg)',
+        };
+
+        const node = h('div', {
+            style
+        }, 'Some text');
+
+        const element = node.render();
+
+        expect(element.outerHTML).toEqual('<div style=\"width:1px;height:1px;background-color:red;transform:rotateZ(45deg);\">Some text</div>');
     });
 
     it("creates an element from a virtual node with an empty class", () => {
@@ -256,4 +302,23 @@ describe("render tests", () => {
 
         expect(element.outerHTML).toEqual('<thead><tr><th>Title 1</th><th>Title 2</th><th>Title 3</th></tr></thead>');
     });
+
+    // it("creates a component", () => {
+
+    //     class MyComponent extends FunctionalComponent {
+
+    //         value: string = "Some text"
+
+    //         render(): VirtualNode | VirtualText {
+                
+    //             return h('span', null, this.value);
+    //         }
+    //     }
+
+    //     const node = h(MyComponent, null);
+
+    //     const element = node.render();
+
+    //     expect(element.outerHTML).toEqual('<span>Some text</span>');
+    // });
 });
