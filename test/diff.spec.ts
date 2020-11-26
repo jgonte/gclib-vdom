@@ -293,6 +293,78 @@ describe("diff tests", () => {
         }));
     });
 
+    it("diff undefined to functional component", () => {
+
+        const oldNode = undefined;
+
+        class MyComponent {
+
+            value: string = "Some text"
+
+            render(): VirtualNode | VirtualText {
+                
+                return h('span', null, this.value);
+            }
+        }
+
+        const newNode = h(MyComponent as any, null);
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (SetElementPatch) {
+                    newNode:
+                    (VirtualNode) {
+                        name: 'span',
+                        props: null,
+                        children:
+                        [
+                            (VirtualText) {
+                                text: 'Some text'
+                            }
+                        ],
+                        isVirtualNode: true
+                    }
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const shadowRoot = createShadowRoot();
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, undefined, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // Added
+
+        const element = shadowRoot.firstChild! as HTMLElement;
+
+        expect(element.outerHTML).toEqual('<span>Some text</span>');
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot, new NodeChanges({
+            inserted: [element]
+        }));
+    });
+
     it("diff empty fragment node to undefined", () => {
 
         const oldNode = h(Fragment as any, null);

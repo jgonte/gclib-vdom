@@ -303,22 +303,22 @@ describe("render tests", () => {
         expect(element.outerHTML).toEqual('<thead><tr><th>Title 1</th><th>Title 2</th><th>Title 3</th></tr></thead>');
     });
 
-    // it("creates a component", () => {
+    it("creates a component", () => {
 
-    //     class MyComponent extends FunctionalComponent {
+        class MyComponent {
 
-    //         value: string = "Some text"
+            value: string = "Some text"
 
-    //         render(): VirtualNode | VirtualText {
+            render(): VirtualNode | VirtualText {
                 
-    //             return h('span', null, this.value);
-    //         }
-    //     }
+                return h('span', null, this.value);
+            }
+        }
 
-    //     const node = h(MyComponent, null);
+        const node = h(MyComponent as any, null);
 
-    //     const element = node.render();
-
-    //     expect(element.outerHTML).toEqual('<span>Some text</span>');
-    // });
+        const element = node.render();
+        
+        expect(element.outerHTML).toEqual('<span>Some text</span>');
+    });
 });

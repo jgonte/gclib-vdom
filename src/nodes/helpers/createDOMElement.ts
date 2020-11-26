@@ -30,12 +30,12 @@ export function createDOMElement(
 
         return element;
     }
-    else if (typeof name === 'function') { // Component
+    // else if (typeof name === 'function') { // Component
 
-        const component = new (name as FunctionConstructor)() as any;
+    //     const component = new (name as FunctionConstructor)() as any;
 
-        return component.render().render();
-    }
+    //     return component.render().render();
+    // }
     else {
 
         throw new Error(`createDOMElement is not implemented for name: ${JSON.stringify(name)}`);

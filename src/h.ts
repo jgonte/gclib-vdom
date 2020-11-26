@@ -51,6 +51,13 @@ export default function h(
     }
     else {
 
-        return new FragmentNode(childrenNodes as any) as any;
+        if (name.name === 'Fragment') {
+
+            return new FragmentNode(childrenNodes as any) as any;
+        }
+        else { // It is a component
+
+            return new (name as any)(attributes, childrenNodes).render();
+        }    
     }
 }
