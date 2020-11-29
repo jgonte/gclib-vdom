@@ -1,5 +1,6 @@
 import { Patch, PatchOptions, NodeChanges } from "../Patch";
-import { VirtualNode, VirtualText } from "../../gclib-vdom";
+import VirtualNode from "../../nodes/VirtualNode";
+import VirtualText from "../../nodes/VirtualText";
 
 /**
  * Patch to replace the element in the DOM

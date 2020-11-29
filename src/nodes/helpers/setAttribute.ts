@@ -3,7 +3,12 @@ import { isUndefinedOrNull } from "../../utils/utils";
 import getCSSClass from "./getCSSClass";
 import getCSSStyle from "./getCSSStyle";
 
-export default function setAttribute(element: HTMLElement, name: string, value: any) {
+export default function setAttribute(element: Element, name: string, value: any) {
+
+    if (isUndefinedOrNull(value)) { // Do not set undefined or null attributes
+
+        return;
+    }
 
     if (typeof value === 'function') {
 
@@ -37,39 +42,29 @@ export default function setAttribute(element: HTMLElement, name: string, value: 
 
         if (name === 'class') {
 
-            if (isUndefinedOrNull(value)) {
+            if (typeof value === 'object') {
+
+                value = getCSSClass(value);
+            }
+
+            if (value.trim() === '') {
 
                 return;
-            }
-
-            if (typeof value === 'string' && value !== '') {
-
-                element.setAttribute(name, value);
-            }
-            else if (typeof value === 'object') {
-
-                element.setAttribute(name, getCSSClass(value));
             }
         }
         else if (name === 'style') {
 
-            if (isUndefinedOrNull(value)) {
+            if (typeof value === 'object') {
+
+                value = getCSSStyle(value);
+            }
+
+            if (value.trim() === '') {
 
                 return;
             }
-
-            if (typeof value === 'string' && value !== '') {
-
-                element.setAttribute(name, value);
-            }
-            else if (typeof value === 'object') {
-
-                element.setAttribute(name, getCSSStyle(value));
-            }
         }
-        else { // ECMAScript calls the toString() method of the value to set the attribute
 
-            element.setAttribute(name, value);
-        }
+        element.setAttribute(name, value);
     }
 }

@@ -11,17 +11,17 @@ export default function removeAttribute(element: HTMLElement, name: string): voi
         // Track the listener so it can be removed if necessary
         const trackedListeners = (element as any)._trackedListeners;
 
-        if (typeof trackedListeners === 'undefined') {
+        // if (typeof trackedListeners === 'undefined') {
 
-            return;
-        }
+        //     return;
+        // }
 
         const trackedListener = trackedListeners[name];
 
-        if (typeof trackedListener === 'undefined') {
+        // if (typeof trackedListener === 'undefined') {
 
-            return;
-        }
+        //     return;
+        // }
 
         const {
             eventName,

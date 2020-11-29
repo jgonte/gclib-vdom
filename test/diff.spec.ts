@@ -302,7 +302,7 @@ describe("diff tests", () => {
             value: string = "Some text"
 
             render(): VirtualNode | VirtualText {
-                
+
                 return h('span', null, this.value);
             }
         }
@@ -424,12 +424,15 @@ describe("diff tests", () => {
                 (SetElementPatch) {
                     newNode:
                     (FragmentNode) {
-                        children: [],
+                        props: null,
+                        children:
+                        [],
                         isFragmentNode: true
                     }
                 }
             ],
-            childrenPatches: []
+            childrenPatches:
+            []
         }`);
 
         const shadowRoot = createShadowRoot();
@@ -583,8 +586,22 @@ describe("diff tests", () => {
 
         const oldNode = undefined;
 
+        const open = false;
+
         const newNode = h(Fragment as any,
-            null,
+            {
+                'aria-hidden': open ? 'false' : 'true',
+                class: {
+                    'todo-list': true,
+                    'is-open': open
+                },
+                style: {
+                    width: '1px',
+                    height: '1px',
+                    backgroundColor: 'red',
+                    transform: 'rotateZ(45deg)'
+                }
+            },
             h("td", null, "Hello"),
             h("td", null, "World")
         );
@@ -598,6 +615,22 @@ describe("diff tests", () => {
                 (SetElementPatch) {
                     newNode:
                     (FragmentNode) {
+                        props:
+                        {
+                            aria-hidden: 'true',
+                            class:
+                            {
+                                todo-list: true,
+                                is-open: false
+                            },
+                            style:
+                            {
+                                width: '1px',
+                                height: '1px',
+                                backgroundColor: 'red',
+                                transform: 'rotateZ(45deg)'
+                            }
+                        },
                         children:
                         [
                             (VirtualNode) {
@@ -652,6 +685,8 @@ describe("diff tests", () => {
         const secondChild = shadowRoot.childNodes[1]! as HTMLElement;
 
         expect(secondChild.outerHTML).toEqual('<td>World</td>');
+
+        expect(shadowRoot.host.outerHTML).toEqual('<div aria-hidden=\"true\" class=\"todo-list\" style=\"width:1px;height:1px;background-color:red;transform:rotateZ(45deg);\"></div>');
 
         expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
 
@@ -940,7 +975,9 @@ describe("diff tests", () => {
         shadowRoot.appendChild(element);
 
         const newNode = h(Fragment as any,
-            null,
+            {
+                'open': true
+            },
             h("td", null, "Hello"),
             h("td", null, "World")
         );
@@ -954,6 +991,10 @@ describe("diff tests", () => {
                 (SetElementPatch) {
                     newNode:
                     (FragmentNode) {
+                        props:
+                        {
+                            open: true
+                        },
                         children:
                         [
                             (VirtualNode) {
@@ -1000,6 +1041,8 @@ describe("diff tests", () => {
         expect(shadowRoot.childNodes.length).toEqual(2); // Added
 
         expect(shadowRoot.innerHTML).toEqual('<td>Hello</td><td>World</td>');
+
+        expect(shadowRoot.host.outerHTML).toEqual('<div open=\"true\"></div>');
 
         const newChildren = Array.from(shadowRoot.childNodes);
 
@@ -1155,7 +1198,9 @@ describe("diff tests", () => {
         shadowRoot.appendChild(element);
 
         const newNode = h(Fragment as any,
-            null,
+            {
+                open: true
+            },
             h("td", null, "Hello"),
             h("td", null, "World")
         );
@@ -1170,6 +1215,10 @@ describe("diff tests", () => {
                 (SetElementPatch) {
                     newNode:
                     (FragmentNode) {
+                        props:
+                        {
+                            open: true
+                        },
                         children:
                         [
                             (VirtualNode) {
@@ -1216,6 +1265,8 @@ describe("diff tests", () => {
         expect(shadowRoot.childNodes.length).toEqual(2); // Replaced by the 2 nodes
 
         expect(shadowRoot.innerHTML).toEqual('<td>Hello</td><td>World</td>');
+
+        expect(shadowRoot.host.outerHTML).toEqual('<div open=\"true\"></div>');
 
         const newChildren = Array.from(shadowRoot.childNodes);
 
@@ -1364,7 +1415,12 @@ describe("diff tests", () => {
         shadowRoot.appendChild(element);
 
         const newNode = h(Fragment as any,
-            null,
+            {
+                class: {
+                    'my-class': true,
+                    enabled: true
+                }
+            },
             h("td", null, "Hello"),
             h("td", null, "World")
         );
@@ -1379,6 +1435,14 @@ describe("diff tests", () => {
                 (SetElementPatch) {
                     newNode:
                     (FragmentNode) {
+                        props:
+                        {
+                            class:
+                            {
+                                my-class: true,
+                                enabled: true
+                            }
+                        },
                         children:
                         [
                             (VirtualNode) {
@@ -1425,6 +1489,8 @@ describe("diff tests", () => {
         expect(shadowRoot.childNodes.length).toEqual(2); // Replaced by the 2 nodes
 
         expect(shadowRoot.innerHTML).toEqual('<td>Hello</td><td>World</td>');
+
+        expect(shadowRoot.host.outerHTML).toEqual('<div class=\"my-class enabled\"></div>');
 
         const newChildren = Array.from(shadowRoot.childNodes);
 
@@ -2632,7 +2698,12 @@ describe("diff tests", () => {
         shadowRoot.appendChild(element);
 
         const newNode = h(Fragment as any,
-            null,
+            {
+                class: {
+                    'my-class': true,
+                    enabled: true
+                }
+            },
             h("td", null, "Hello"),
             h("td", null, "World")
         );
@@ -2646,6 +2717,14 @@ describe("diff tests", () => {
                 (SetElementPatch) {
                     newNode:
                     (FragmentNode) {
+                        props:
+                        {
+                            class:
+                            {
+                                my-class: true,
+                                enabled: true
+                            }
+                        },
                         children:
                         [
                             (VirtualNode) {
@@ -2698,6 +2777,8 @@ describe("diff tests", () => {
         const secondChild = shadowRoot.childNodes[1]! as HTMLElement;
 
         expect(secondChild.outerHTML).toEqual('<td>World</td>');
+
+        expect(shadowRoot.host.outerHTML).toEqual('<div class=\"my-class enabled\"></div>');
 
         expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
 

@@ -1,4 +1,4 @@
-import VirtualNode from "./VirtualText";
+import VirtualNode from "./VirtualNode";
 import VirtualText from "./VirtualText";
 
 export class Fragment {}
@@ -10,10 +10,14 @@ export default class FragmentNode {
     constructor(
 
         /**
-         * The children of the element or the text
+         * The props to be applied to the parent element
+         */
+        public props: any | null,
+
+        /**
+         * The children of the element
          */
         public children: (VirtualNode | VirtualText)[]
-
     ) { }
 
     render(): DocumentFragment {

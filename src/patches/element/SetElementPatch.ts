@@ -1,7 +1,9 @@
 import { Patch, PatchOptions, NodeChanges } from "../Patch";
 import VirtualNode from "../../nodes/VirtualNode";
 import VirtualText from "../../nodes/VirtualText";
-import { FragmentNode } from "../../gclib-vdom";
+import FragmentNode from "../../nodes/FragmentNode";
+import { isUndefinedOrNull } from "../../utils/utils";
+import setAttributes from "../../nodes/helpers/setAttributes";
 
 /**
  * Patch to set a new child when the parent node is empty
@@ -34,6 +36,24 @@ export default class SetElementPatch implements Patch {
         // If it is a fragment node, then call the will connect event for each of the child nodes of the fragment
         if (newNode instanceof DocumentFragment) {
 
+            // If the newNode has props, then set them in the parent node
+            if (!isUndefinedOrNull((this.newNode as FragmentNode).props)) {
+
+                if (parentNode instanceof ShadowRoot) {
+
+                    setAttributes(parentNode.host as any, (this.newNode as FragmentNode).props);
+                }
+                else if (parentNode instanceof Document || parentNode instanceof DocumentFragment) {
+
+                    throw new Error('Cannot apply properties to Document or DocumentFragment')
+                }
+                else {
+
+                    setAttributes(parentNode as any, (this.newNode as FragmentNode).props);
+                }    
+            }
+
+            // Set the children
             const childNodes = Array.from(newNode.childNodes);
 
             if (childNodes.length > 0) {

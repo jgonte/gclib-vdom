@@ -1,6 +1,9 @@
 import VirtualNode from "./nodes/VirtualNode"
 import VirtualText from "./nodes/VirtualText";
-import FragmentNode, { Fragment } from "./nodes/FragmentNode";
+import FragmentNode from "./nodes/FragmentNode";
+import { isUndefinedOrNull } from "./utils/utils";
+import getCSSClass from "./nodes/helpers/getCSSClass";
+import getCSSStyle from "./nodes/helpers/getCSSStyle";
 
 /**
  * Creates a virtual node
@@ -10,8 +13,22 @@ import FragmentNode, { Fragment } from "./nodes/FragmentNode";
  */
 export default function h(
     name: string | FunctionConstructor,
-    attributes: object | null = {},
+    attributes: any = {},
     ...children: Array<VirtualNode | FragmentNode | string | number | boolean>): VirtualNode {
+
+    // if (attributes !== null) {
+
+    //     // Stringify the class and style attributes if any
+    //     if (!isUndefinedOrNull(attributes.class) && typeof attributes.class === 'object') {
+
+    //         attributes.class = getCSSClass(attributes.class);
+    //     }
+
+    //     if (!isUndefinedOrNull(attributes.style) && typeof attributes.style === 'object') {
+
+    //         attributes.style = getCSSStyle(attributes.style);
+    //     }
+    // }
 
     // Extract the children if an array was passed
     if (Array.isArray(children[0])) {
@@ -23,7 +40,8 @@ export default function h(
 
     children.forEach(child => {
 
-        if (child === null) { // Do not alter the order of these tests
+        // Do not alter the order of these tests
+        if (child === null) {
 
             // Do nothing
         }
@@ -53,11 +71,11 @@ export default function h(
 
         if (name.name === 'Fragment') {
 
-            return new FragmentNode(childrenNodes as any) as any;
+            return new FragmentNode(attributes, childrenNodes as any) as any;
         }
         else { // It is a component
 
             return new (name as any)(attributes, childrenNodes).render();
-        }    
+        }
     }
 }

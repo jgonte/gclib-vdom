@@ -4,6 +4,7 @@ import FragmentNode, { Fragment } from './nodes/FragmentNode';
 import h from './h';
 import ElementPatches from './patches/ElementPatches';
 import mount from './nodes/helpers/mount';
+import setAttributes from './nodes/helpers/setAttributes';
 
 export {
     VirtualNode,
@@ -12,5 +13,6 @@ export {
     Fragment,
     h,
     ElementPatches,
-    mount
+    mount,
+    setAttributes
 }

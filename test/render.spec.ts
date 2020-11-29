@@ -142,7 +142,7 @@ describe("render tests", () => {
             width: '1px',
             height: '1px',
             backgroundColor: 'red',
-            transform: 'rotateZ(45deg)',
+            transform: 'rotateZ(45deg)'
         };
 
         const node = h('div', {
@@ -245,8 +245,22 @@ describe("render tests", () => {
 
     it("creates a Fragment with two children", () => {
 
+        const open = false;
+
         const node = h(Fragment as any,
-            null,
+            {
+                'aria-hidden': open ? 'false' : 'true',
+                class: {
+                    'todo-list': true,
+                    'is-open': open
+                },
+                style: {
+                    width: '1px',
+                    height: '1px',
+                    backgroundColor: 'red',
+                    transform: 'rotateZ(45deg)'
+                }
+            },
             h("td", null, "Hello"),
             h("td", null, "World")
         );
@@ -256,6 +270,8 @@ describe("render tests", () => {
         var div = document.createElement('div');
 
         div.appendChild(element);
+
+        // Notice that the properties of the fragment were not set in the parent div since that is done in nodeDidConnect
 
         expect(div.outerHTML).toEqual('<div><td>Hello</td><td>World</td></div>');
     });
@@ -309,16 +325,30 @@ describe("render tests", () => {
 
             value: string = "Some text"
 
+            open: boolean = false;
+
             render(): VirtualNode | VirtualText {
-                
-                return h('span', null, this.value);
+
+                return h('span', {
+                    'aria-hidden': this.open ? 'false' : 'true',
+                    class: {
+                        'todo-list': true,
+                        'is-open': this.open
+                    },
+                    style: {
+                        width: '1px',
+                        height: '1px',
+                        backgroundColor: 'red',
+                        transform: 'rotateZ(45deg)'
+                    }
+                }, this.value);
             }
         }
 
         const node = h(MyComponent as any, null);
 
         const element = node.render();
-        
-        expect(element.outerHTML).toEqual('<span>Some text</span>');
+
+        expect(element.outerHTML).toEqual('<span aria-hidden=\"true\" class=\"todo-list\" style=\"width:1px;height:1px;background-color:red;transform:rotateZ(45deg);\">Some text</span>');
     });
 });
