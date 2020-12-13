@@ -603,7 +603,8 @@ describe("diff tests", () => {
                 }
             },
             h("td", null, "Hello"),
-            h("td", null, "World")
+            h("td", null, "World"),
+            h("style", null, "@import './import1.css'")
         );
 
         const patches = diff(oldNode, newNode);
@@ -654,6 +655,17 @@ describe("diff tests", () => {
                                     }
                                 ],
                                 isVirtualNode: true
+                            },
+                            (VirtualNode) {
+                                name: 'style',
+                                props: null,
+                                children:
+                                [
+                                    (VirtualText) {
+                                        text: '@import './import1.css''
+                                    }
+                                ],
+                                isVirtualNode: true
                             }
                         ],
                         isFragmentNode: true
@@ -676,7 +688,7 @@ describe("diff tests", () => {
 
         patches.applyPatches(shadowRoot, undefined, hooks);
 
-        expect(shadowRoot.childNodes.length).toEqual(2); // The two children of the fragment have been added
+        expect(shadowRoot.childNodes.length).toEqual(3); // The three children of the fragment have been added
 
         const firstChild = shadowRoot.childNodes[0]! as HTMLElement;
 
@@ -686,11 +698,15 @@ describe("diff tests", () => {
 
         expect(secondChild.outerHTML).toEqual('<td>World</td>');
 
+        const thirdChild = shadowRoot.childNodes[2]! as HTMLElement;
+
+        expect(thirdChild.outerHTML).toEqual("<style>@import './import1.css'</style>");
+
         expect(shadowRoot.host.outerHTML).toEqual('<div aria-hidden=\"true\" class=\"todo-list\" style=\"width:1px;height:1px;background-color:red;transform:rotateZ(45deg);\"></div>');
 
-        expect(spyNodeWillConnect).toHaveBeenCalledTimes(2);
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(3);
 
-        expect(spyNodeDidConnect).toHaveBeenCalledTimes(2);
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(3);
 
         expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
 
@@ -3079,6 +3095,108 @@ describe("diff tests", () => {
             inserted: [shadowRoot.childNodes[0], shadowRoot.childNodes[3], shadowRoot.childNodes[6]],
             moved: [oldChildren[7], oldChildren[3], oldChildren[6], oldChildren[2]], // from
             removed: [oldChildren[0], oldChildren[4], oldChildren[1], oldChildren[5], oldChildren[8]]
+        }));
+    });
+
+    it("diff fragment node to fragment node change child attribute", () => {
+
+        const oldNode = h(
+            Fragment as any,
+            {
+                class: 'my-class'
+            },
+            h("svg", { role: "img" },
+                h("use", { href: "my-path" })
+            )
+        );
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element).toBeInstanceOf(DocumentFragment);
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h(
+            Fragment as any,
+            {
+                class: 'my-class'
+            },
+            h("svg", { role: "img" },
+                h("use", { href: "my-new-path" })
+            )
+        )
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [],
+            childrenPatches:
+            [
+                (ChildElementPatches) {
+                    index: 0,
+                    patches:
+                    (ElementPatches) {
+                        patches:
+                        [],
+                        childrenPatches:
+                        [
+                            (ChildElementPatches) {
+                                index: 0,
+                                patches:
+                                (ElementPatches) {
+                                    patches:
+                                    [
+                                        (SetAttributePatch) {
+                                            name: 'href',
+                                            oldValue: 'my-path',
+                                            newValue: 'my-new-path'
+                                        }
+                                    ],
+                                    childrenPatches:
+                                    []
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.innerHTML).toEqual('<svg role=\"img\"><use href=\"my-new-path\"/></svg>');
+
+        //expect(shadowRoot.host.className).toEqual('my-class');
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot!.firstChild!.firstChild!, new NodeChanges({
+            attributes: [
+                {
+                    key: 'href',
+                    oldValue: 'my-path',
+                    newValue: 'my-new-path'
+                }
+            ]
         }));
     });
 

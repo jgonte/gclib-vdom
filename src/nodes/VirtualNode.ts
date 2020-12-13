@@ -12,6 +12,8 @@ export default class VirtualNode {
 
     isVirtualNode: boolean = true;
 
+    element?: Node;
+
     constructor(
 
         /**
@@ -49,6 +51,8 @@ export default class VirtualNode {
                 element.appendChild(child.render());
             }
         }
+
+        this.element = element;
 
         return element;
     }

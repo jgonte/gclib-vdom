@@ -47,9 +47,9 @@ export default function setAttribute(element: Element, name: string, value: any)
                 value = getCSSClass(value);
             }
 
-            if (value.trim() === '') {
+            if (value.trim() !== '') {
 
-                return;
+                element.className = value;
             }
         }
         else if (name === 'style') {
@@ -59,12 +59,14 @@ export default function setAttribute(element: Element, name: string, value: any)
                 value = getCSSStyle(value);
             }
 
-            if (value.trim() === '') {
+            if (value.trim() !== '') {
 
-                return;
+                element.setAttribute(name, value);           
             }
         }
+        else {
 
-        element.setAttribute(name, value);
+            element.setAttribute(name, value);
+        }      
     }
 }

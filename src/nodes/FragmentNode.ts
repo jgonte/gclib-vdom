@@ -7,6 +7,8 @@ export default class FragmentNode {
 
     isFragmentNode: boolean = true;
 
+    element?: Node;
+
     constructor(
 
         /**
@@ -33,6 +35,8 @@ export default class FragmentNode {
                 documentFragment.appendChild(child.render());
             }
         }
+
+        this.element = documentFragment;
 
         return documentFragment;
     }

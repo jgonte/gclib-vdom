@@ -292,7 +292,7 @@ describe("render tests", () => {
         expect(element.outerHTML).toEqual('<div><td>Hello</td><td>World</td></div>');
     });
 
-    it("creates an element with a Fragment with two children", () => {
+    it("creates an element with an array of children being passed to h", () => {
 
         const columns = [
             {

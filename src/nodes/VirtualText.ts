@@ -1,5 +1,7 @@
 export default class VirtualText {
 
+    element?: Node;
+
     constructor(
 
         /**
@@ -11,7 +13,11 @@ export default class VirtualText {
 
     render(): Text {
 
-        return document.createTextNode(this.text.toString());
+        const element = document.createTextNode(this.text.toString());
+
+        this.element = element;
+
+        return element;
     }
 
 }

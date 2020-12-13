@@ -564,7 +564,7 @@ export default function diff(
                 );
             }
         }
-        else { // The fragment node has children
+        else { // The new fragment node has children
 
             if (isVirtualNode(oldNode!)) {
 
@@ -591,7 +591,10 @@ export default function diff(
                         []
                     );
                 }
-                else {
+                else { // The old node fragment and the new one both has children: compare their children
+
+                    // Assign the old node's element so we can keep track of the parent
+                    newNode!.element = oldNode!.element;
 
                     const newChildren = (newNode as FragmentNode).children;
 
