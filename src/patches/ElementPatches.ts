@@ -1,7 +1,6 @@
 import { Patch, LifecycleHooks } from "./Patch";
 import ChildElementPatches from "./ChildElementPatches";
 import PatchingContext from "./helpers/PatchingContext";
-import { isUndefinedOrNull } from "../utils/utils";
 
 /**
  * Contains the patches that are applied to an element and its children
@@ -45,7 +44,7 @@ export default class ElementPatches {
             parentNode :
             node;
 
-        if (!isUndefinedOrNull(n)) {
+        if (n !== undefined && n !== null) {
 
             for (let i = 0; i < this.childrenPatches.length; ++i) {
 

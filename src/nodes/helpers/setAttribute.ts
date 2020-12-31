@@ -1,11 +1,10 @@
 import isStandardEvent from "./isStandardEvent";
-import { isUndefinedOrNull } from "../../utils/utils";
 import getCSSClass from "./getCSSClass";
 import getCSSStyle from "./getCSSStyle";
 
 export default function setAttribute(element: Element, name: string, value: any) {
 
-    if (isUndefinedOrNull(value)) { // Do not set undefined or null attributes
+    if (value === undefined || value === null) { // Do not set undefined or null attributes
 
         return;
     }

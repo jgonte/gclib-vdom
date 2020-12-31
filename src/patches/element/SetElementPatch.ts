@@ -2,7 +2,6 @@ import { Patch, PatchOptions, NodeChanges } from "../Patch";
 import VirtualNode from "../../nodes/VirtualNode";
 import VirtualText from "../../nodes/VirtualText";
 import FragmentNode from "../../nodes/FragmentNode";
-import { isUndefinedOrNull } from "../../utils/utils";
 import setAttributes from "../../nodes/helpers/setAttributes";
 
 /**
@@ -31,17 +30,19 @@ export default class SetElementPatch implements Patch {
             nodeDidConnect
         } = hooks || {};
 
+        const { props } = (this.newNode as FragmentNode);
+
         const newNode = this.newNode.render();
 
         // If it is a fragment node, then call the will connect event for each of the child nodes of the fragment
         if (newNode instanceof DocumentFragment) {
 
             // If the newNode has props, then set them in the parent node
-            if (!isUndefinedOrNull((this.newNode as FragmentNode).props)) {
+            if (props !== undefined && props !== null) {
 
                 if (parentNode instanceof ShadowRoot) {
 
-                    setAttributes(parentNode.host as any, (this.newNode as FragmentNode).props);
+                    setAttributes(parentNode.host as any, props);
                 }
                 else if (parentNode instanceof Document || parentNode instanceof DocumentFragment) {
 
@@ -49,8 +50,8 @@ export default class SetElementPatch implements Patch {
                 }
                 else {
 
-                    setAttributes(parentNode as any, (this.newNode as FragmentNode).props);
-                }    
+                    setAttributes(parentNode as any, props);
+                }
             }
 
             // Set the children
@@ -61,21 +62,21 @@ export default class SetElementPatch implements Patch {
                 if (nodeWillConnect) {
 
                     for (let i = 0; i < childNodes.length; ++i) {
-    
-                        nodeWillConnect(childNodes[i]);                 
-                    }   
+
+                        nodeWillConnect(childNodes[i]);
+                    }
                 }
-    
+
                 parentNode.appendChild(newNode);
-    
+
                 if (nodeDidConnect) {
-    
+
                     for (let i = 0; i < childNodes.length; ++i) {
-    
-                        nodeDidConnect(childNodes[i]);                 
-                    }   
+
+                        nodeDidConnect(childNodes[i]);
+                    }
                 }
-    
+
                 context!.setNodeChanges(
                     parentNode,
                     new NodeChanges({

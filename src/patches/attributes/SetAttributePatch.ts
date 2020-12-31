@@ -1,5 +1,4 @@
 import { Patch, PatchOptions, NodeChanges } from "../Patch";
-import { isUndefinedOrNull } from "../../utils/utils";
 import removeAttribute from "../../nodes/helpers/removeAttribute";
 import replaceAttribute from "../../nodes/helpers/replaceAttribute";
 
@@ -40,7 +39,7 @@ export default class SetAttributePatch implements Patch {
             newValue
         } = this;
 
-        if (isUndefinedOrNull(newValue)) {
+        if (newValue === undefined || newValue === null) {
 
             removeAttribute(node as HTMLElement, name)
         }

@@ -40,4 +40,9 @@ export default class FragmentNode {
 
         return documentFragment;
     }
+
+    appendChildNode(vNode: VirtualNode | VirtualText) {
+
+        this.children.push(vNode);
+    }
 }
