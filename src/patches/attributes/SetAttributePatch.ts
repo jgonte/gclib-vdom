@@ -29,8 +29,9 @@ export default class SetAttributePatch implements Patch {
     applyPatch(options: PatchOptions): void {
         
         const { 
-            node, 
-            context 
+            node,
+            context,
+            parentNode
         } = options;
 
         const {
@@ -39,17 +40,21 @@ export default class SetAttributePatch implements Patch {
             newValue
         } = this;
 
+        const n = node instanceof DocumentFragment ?
+            (parentNode as any).host :
+            node
+
         if (newValue === undefined || newValue === null) {
 
-            removeAttribute(node as HTMLElement, name)
+            removeAttribute(n as HTMLElement, name)
         }
         else {
 
-            replaceAttribute(node as HTMLElement, name, newValue);
+            replaceAttribute(n as HTMLElement, name, newValue);
         }
 
         context!.setNodeChanges(
-            node!,
+            n!,
             new NodeChanges({
                 attributes: [{
                     key: name,

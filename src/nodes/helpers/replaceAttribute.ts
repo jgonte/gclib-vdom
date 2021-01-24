@@ -1,3 +1,5 @@
+import getCSSClass from "./getCSSClass";
+import getCSSStyle from "./getCSSStyle";
 import isStandardEvent from "./isStandardEvent";
 
 export default function replaceAttribute(element: HTMLElement, name: string, newValue: any) {
@@ -37,6 +39,33 @@ export default function replaceAttribute(element: HTMLElement, name: string, new
     }
     else {
 
-        element.setAttribute(name, newValue);
+        if (name === 'class') {
+
+            if (typeof newValue === 'object') {
+
+                newValue = getCSSClass(newValue);
+            }
+
+            if (newValue.trim() !== '') {
+
+                element.className = newValue;
+            }
+        }
+        else if (name === 'style') {
+
+            if (typeof newValue === 'object') {
+
+                newValue = getCSSStyle(newValue);
+            }
+
+            if (newValue.trim() !== '') {
+
+                element.setAttribute(name, newValue);           
+            }
+        }
+        else {
+
+            element.setAttribute(name, newValue);
+        }
     }
 }

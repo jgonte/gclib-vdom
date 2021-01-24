@@ -41,7 +41,7 @@ export interface NodeChangesConfig {
 export class NodeChanges {
 
     /**
-     * The text cahnged in the node
+     * The text changed in the node
      */
     text?: TextChangeConfig;
 

@@ -3200,6 +3200,86 @@ describe("diff tests", () => {
         }));
     });
 
+    it("diff fragment node to fragment node change class", () => {
+
+        const oldNode = h(
+            Fragment as any,
+            {
+                class: 'default'
+            },
+            h("svg", { role: "img" },
+                h("use", { href: "my-path" })
+            )
+        );
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element).toBeInstanceOf(DocumentFragment);
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h(
+            Fragment as any,
+            {
+                class: 'primary'
+            },
+            h("svg", { role: "img" },
+                h("use", { href: "my-path" })
+            )
+        );
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (SetAttributePatch) {
+                    name: 'class',
+                    oldValue: 'default',
+                    newValue: 'primary'
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.innerHTML).toEqual('<svg role=\"img\"><use href=\"my-path\"/></svg>');
+
+        expect(shadowRoot.host.outerHTML).toEqual('<div class=\"primary\"></div>');
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot!.host, new NodeChanges({
+            attributes: [
+                {
+                    key: 'class',
+                    oldValue: 'default',
+                    newValue: 'primary'
+                }
+            ]
+        }));
+    });
+
     it("diff a node with changed child image url and span text", () => {
 
         const oldNode = h('div', null,

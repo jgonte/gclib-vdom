@@ -1,7 +1,6 @@
 import VirtualNode from "./nodes/VirtualNode"
 import VirtualText from "./nodes/VirtualText";
 import FragmentNode from "./nodes/FragmentNode";
-import { isUndefinedOrNull } from "./utils/utils";
 import getCSSClass from "./nodes/helpers/getCSSClass";
 import getCSSStyle from "./nodes/helpers/getCSSStyle";
 

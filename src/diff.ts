@@ -626,6 +626,7 @@ export default function diff(
                     return new ElementPatches(
                         /*patches*/
                         [
+                            ...diffAttributes((oldNode as FragmentNode).props, (newNode as FragmentNode).props),
                             ...patches,
                             ...removeChildrenPatches
                         ],
