@@ -13,21 +13,7 @@ import getCSSStyle from "./nodes/helpers/getCSSStyle";
 export default function h(
     name: string | FunctionConstructor,
     attributes: any = {},
-    ...children: Array<VirtualNode | FragmentNode | string | number | boolean>): VirtualNode {
-
-    // if (attributes !== null) {
-
-    //     // Stringify the class and style attributes if any
-    //     if (!isUndefinedOrNull(attributes.class) && typeof attributes.class === 'object') {
-
-    //         attributes.class = getCSSClass(attributes.class);
-    //     }
-
-    //     if (!isUndefinedOrNull(attributes.style) && typeof attributes.style === 'object') {
-
-    //         attributes.style = getCSSStyle(attributes.style);
-    //     }
-    // }
+    ...children: Array<VirtualNode | VirtualText | FragmentNode | string | number | boolean>): VirtualNode {
 
     // Extract the children if an array was passed
     if (Array.isArray(children[0])) {
@@ -48,10 +34,14 @@ export default function h(
 
             childrenNodes.push(child as VirtualNode);
         }
+        else if ((child as VirtualText).isVirtualText) {
+
+            childrenNodes.push(child as VirtualText);
+        }
         else if ((child as FragmentNode).isFragmentNode) {
 
             childrenNodes.push(child as FragmentNode);
-        }
+        }     
         else if (typeof child === 'object') {
 
             throw new Error('Invalid object');

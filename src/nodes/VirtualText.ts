@@ -1,5 +1,7 @@
 export default class VirtualText {
 
+    isVirtualText: boolean = true;
+
     element?: Node;
 
     constructor(

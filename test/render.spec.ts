@@ -162,7 +162,8 @@ describe("render tests", () => {
 
         const element = node.render();
 
-        expect(element.outerHTML).toEqual('<div child=\"[object Object]\"></div>'); // Property is an object so that is expected by default
+        // Property is an object so it is serialized to JSON
+        expect(element.outerHTML).toEqual('<div child=\"{&#x22;name&#x22;:&#x22;span&#x22;,&#x22;props&#x22;:null,&#x22;children&#x22;:[{&#x22;text&#x22;:&#x22;My title&#x22;,&#x22;isVirtualText&#x22;:true}],&#x22;isVirtualNode&#x22;:true}\"></div>'); 
     });
 
     it("creates an element with event no capture", () => {
@@ -179,7 +180,6 @@ describe("render tests", () => {
         const trackedListener = (element as any)._trackedListeners['onClick'];
 
         const {
-
             eventName,
             value,
             useCapture

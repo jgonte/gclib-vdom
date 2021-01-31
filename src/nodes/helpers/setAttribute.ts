@@ -32,9 +32,16 @@ export default function setAttribute(element: Element, name: string, value: any)
                 useCapture
             };
         }
-        else { // Other function to call, bind it to the element
+        else { // Other function to call
 
-            (element as any)[name] = (value as Function).bind(element);
+            if ((element as any).setProperty !== undefined) {
+
+                (element as any).setProperty(name, value); // Pass the value through
+            }
+            else { // Bind it to the element
+
+                (element as any)[name] = (value as Function).bind(element);
+            }
         }
     }
     else { // Not a function
@@ -63,9 +70,25 @@ export default function setAttribute(element: Element, name: string, value: any)
                 element.setAttribute(name, value);           
             }
         }
-        else {
+        else { // Not class and not style
 
-            element.setAttribute(name, value);
+            if (typeof value === 'object') { // setAttribute expects a string
+
+                if ((element as any).setProperty !== undefined) {
+
+                    (element as any).setProperty(name, value); // Pass the value through
+                }
+                else { // Serialize to JSON (function calls are lost in the process)
+
+                    value = JSON.stringify(value);
+
+                    element.setAttribute(name, value);
+                }        
+            }
+            else {
+
+                element.setAttribute(name, value);
+            }         
         }      
     }
 }

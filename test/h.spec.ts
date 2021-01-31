@@ -71,7 +71,10 @@ describe("h tests", () => {
 
         expect(grandChild.props).toEqual(null);
 
-        expect(grandChild.children).toEqual([{ "text": "Some text" }]);
+        expect(grandChild.children).toEqual([{
+            "isVirtualText": true,
+            "text": "Some text" 
+        }]);
     });
 
     it("creates a virtual node with the name of the element, props and children", () => {
@@ -111,7 +114,10 @@ describe("h tests", () => {
 
         expect(child.props).toEqual(null);
 
-        expect(child.children).toEqual([{ "text": "Some text" }]);
+        expect(child.children).toEqual([{
+            "isVirtualText": true,
+            "text": "Some text" 
+        }]);
     });
 
     it("creates a virtual node with the name of the element, props and children", () => {
@@ -138,7 +144,10 @@ describe("h tests", () => {
 
         expect(child.props).toEqual(null);
 
-        expect(child.children).toEqual([{ "text": "Counter" }]);
+        expect(child.children).toEqual([{
+            "isVirtualText": true,
+            "text": "Counter" 
+        }]);
 
         child = (node.children as VirtualText[])![1];
 
@@ -150,6 +159,9 @@ describe("h tests", () => {
 
         expect(child.props).toEqual({ click: increment });
 
-        expect(child.children).toEqual([{ "text": "Increment" }]);
+        expect(child.children).toEqual([{
+            "isVirtualText": true,
+            "text": "Increment"
+        }]);
     });
 });

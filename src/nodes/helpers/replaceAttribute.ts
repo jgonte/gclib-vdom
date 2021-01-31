@@ -46,10 +46,7 @@ export default function replaceAttribute(element: HTMLElement, name: string, new
                 newValue = getCSSClass(newValue);
             }
 
-            if (newValue.trim() !== '') {
-
-                element.className = newValue;
-            }
+            element.className = newValue.trim();
         }
         else if (name === 'style') {
 
@@ -58,9 +55,13 @@ export default function replaceAttribute(element: HTMLElement, name: string, new
                 newValue = getCSSStyle(newValue);
             }
 
-            if (newValue.trim() !== '') {
+            if (newValue.trim() === '') {
 
-                element.setAttribute(name, newValue);           
+                element.removeAttribute(name);
+            }
+            else {
+
+                element.setAttribute(name, newValue);
             }
         }
         else {

@@ -146,7 +146,8 @@ describe("diff tests", () => {
                 (SetElementPatch) {
                     newNode:
                     (VirtualText) {
-                        text: 'someText'
+                        text: 'someText',
+                        isVirtualText: true
                     }
                 }
             ],
@@ -323,7 +324,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Some text'
+                                text: 'Some text',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -640,7 +642,8 @@ describe("diff tests", () => {
                                 children:
                                 [
                                     (VirtualText) {
-                                        text: 'Hello'
+                                        text: 'Hello',
+                                        isVirtualText: true
                                     }
                                 ],
                                 isVirtualNode: true
@@ -651,7 +654,8 @@ describe("diff tests", () => {
                                 children:
                                 [
                                     (VirtualText) {
-                                        text: 'World'
+                                        text: 'World',
+                                        isVirtualText: true
                                     }
                                 ],
                                 isVirtualNode: true
@@ -662,7 +666,8 @@ describe("diff tests", () => {
                                 children:
                                 [
                                     (VirtualText) {
-                                        text: '@import './import1.css''
+                                        text: '@import './import1.css'',
+                                        isVirtualText: true
                                     }
                                 ],
                                 isVirtualNode: true
@@ -746,7 +751,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Some other text'
+                                text: 'Some other text',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -810,7 +816,8 @@ describe("diff tests", () => {
                 (ReplaceElementPatch) {
                     newNode:
                     (VirtualText) {
-                        text: 'Some other text'
+                        text: 'Some other text',
+                        isVirtualText: true
                     }
                 }
             ],
@@ -876,7 +883,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Some text'
+                                text: 'Some text',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -940,7 +948,8 @@ describe("diff tests", () => {
                 (SetElementPatch) {
                     newNode:
                     (VirtualText) {
-                        text: 'Some text'
+                        text: 'Some text',
+                        isVirtualText: true
                     }
                 }
             ],
@@ -1019,7 +1028,8 @@ describe("diff tests", () => {
                                 children:
                                 [
                                     (VirtualText) {
-                                        text: 'Hello'
+                                        text: 'Hello',
+                                        isVirtualText: true
                                     }
                                 ],
                                 isVirtualNode: true
@@ -1030,7 +1040,8 @@ describe("diff tests", () => {
                                 children:
                                 [
                                     (VirtualText) {
-                                        text: 'World'
+                                        text: 'World',
+                                        isVirtualText: true
                                     }
                                 ],
                                 isVirtualNode: true
@@ -1111,7 +1122,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Some text'
+                                text: 'Some text',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -1243,7 +1255,8 @@ describe("diff tests", () => {
                                 children:
                                 [
                                     (VirtualText) {
-                                        text: 'Hello'
+                                        text: 'Hello',
+                                        isVirtualText: true
                                     }
                                 ],
                                 isVirtualNode: true
@@ -1254,7 +1267,8 @@ describe("diff tests", () => {
                                 children:
                                 [
                                     (VirtualText) {
-                                        text: 'World'
+                                        text: 'World',
+                                        isVirtualText: true
                                     }
                                 ],
                                 isVirtualNode: true
@@ -1331,7 +1345,8 @@ describe("diff tests", () => {
                 (SetElementPatch) {
                     newNode:
                     (VirtualText) {
-                        text: 'Some text'
+                        text: 'Some text',
+                        isVirtualText: true
                     }
                 }
             ],
@@ -1467,7 +1482,8 @@ describe("diff tests", () => {
                                 children:
                                 [
                                     (VirtualText) {
-                                        text: 'Hello'
+                                        text: 'Hello',
+                                        isVirtualText: true
                                     }
                                 ],
                                 isVirtualNode: true
@@ -1478,7 +1494,8 @@ describe("diff tests", () => {
                                 children:
                                 [
                                     (VirtualText) {
-                                        text: 'World'
+                                        text: 'World',
+                                        isVirtualText: true
                                     }
                                 ],
                                 isVirtualNode: true
@@ -1599,7 +1616,8 @@ describe("diff tests", () => {
                 (SetTextPatch) {
                     value:
                     (VirtualText) {
-                        text: 'Some other text'
+                        text: 'Some other text',
+                        isVirtualText: true
                     }
                 }
             ],
@@ -2372,7 +2390,8 @@ describe("diff tests", () => {
                             (SetTextPatch) {
                                 value:
                                 (VirtualText) {
-                                    text: 'Some other text'
+                                    text: 'Some other text',
+                                    isVirtualText: true
                                 }
                             }
                         ],
@@ -2513,7 +2532,8 @@ describe("diff tests", () => {
                             children:
                             [
                                 (VirtualText) {
-                                    text: 'Item1'
+                                    text: 'Item1',
+                                    isVirtualText: true
                                 }
                             ],
                             isVirtualNode: true
@@ -2524,7 +2544,8 @@ describe("diff tests", () => {
                             children:
                             [
                                 (VirtualText) {
-                                    text: 'Item2'
+                                    text: 'Item2',
+                                    isVirtualText: true
                                 }
                             ],
                             isVirtualNode: true
@@ -2535,7 +2556,8 @@ describe("diff tests", () => {
                             children:
                             [
                                 (VirtualText) {
-                                    text: 'Item3'
+                                    text: 'Item3',
+                                    isVirtualText: true
                                 }
                             ],
                             isVirtualNode: true
@@ -2608,7 +2630,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Some other text'
+                                text: 'Some other text',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -2749,7 +2772,8 @@ describe("diff tests", () => {
                                 children:
                                 [
                                     (VirtualText) {
-                                        text: 'Hello'
+                                        text: 'Hello',
+                                        isVirtualText: true
                                     }
                                 ],
                                 isVirtualNode: true
@@ -2760,7 +2784,8 @@ describe("diff tests", () => {
                                 children:
                                 [
                                     (VirtualText) {
-                                        text: 'World'
+                                        text: 'World',
+                                        isVirtualText: true
                                     }
                                 ],
                                 isVirtualNode: true
@@ -2859,7 +2884,8 @@ describe("diff tests", () => {
                                         (SetTextPatch) {
                                             value:
                                             (VirtualText) {
-                                                text: 'Hello 1'
+                                                text: 'Hello 1',
+                                                isVirtualText: true
                                             }
                                         }
                                     ],
@@ -2887,7 +2913,8 @@ describe("diff tests", () => {
                                         (SetTextPatch) {
                                             value:
                                             (VirtualText) {
-                                                text: 'World 1'
+                                                text: 'World 1',
+                                                isVirtualText: true
                                             }
                                         }
                                     ],
@@ -2999,7 +3026,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 11'
+                                text: 'Text 11',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -3027,7 +3055,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 12'
+                                text: 'Text 12',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -3055,7 +3084,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 13'
+                                text: 'Text 13',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -3360,7 +3390,8 @@ describe("diff tests", () => {
                                                     (SetTextPatch) {
                                                         value:
                                                         (VirtualText) {
-                                                            text: 'Some other text'
+                                                            text: 'Some other text',
+                                                            isVirtualText: true
                                                         }
                                                     }
                                                 ],
@@ -3491,7 +3522,8 @@ describe("diff tests", () => {
                                         (ReplaceElementPatch) {
                                             newNode:
                                             (VirtualText) {
-                                                text: 'Some other text'
+                                                text: 'Some other text',
+                                                isVirtualText: true
                                             }
                                         }
                                     ],
@@ -3600,7 +3632,8 @@ describe("diff tests", () => {
                             (ReplaceElementPatch) {
                                 newNode:
                                 (VirtualText) {
-                                    text: 'Some text'
+                                    text: 'Some text',
+                                    isVirtualText: true
                                 }
                             }
                         ],
@@ -3688,7 +3721,8 @@ describe("diff tests", () => {
                                 children:
                                 [
                                     (VirtualText) {
-                                        text: 'Some text'
+                                        text: 'Some text',
+                                        isVirtualText: true
                                     }
                                 ],
                                 isVirtualNode: true
@@ -3811,7 +3845,8 @@ describe("diff tests", () => {
                                         (SetTextPatch) {
                                             value:
                                             (VirtualText) {
-                                                text: 'Text 4'
+                                                text: 'Text 4',
+                                                isVirtualText: true
                                             }
                                         }
                                     ],
@@ -3837,7 +3872,8 @@ describe("diff tests", () => {
                                         (SetTextPatch) {
                                             value:
                                             (VirtualText) {
-                                                text: 'Text 5'
+                                                text: 'Text 5',
+                                                isVirtualText: true
                                             }
                                         }
                                     ],
@@ -3930,7 +3966,8 @@ describe("diff tests", () => {
                             children:
                             [
                                 (VirtualText) {
-                                    text: 'Text 1'
+                                    text: 'Text 1',
+                                    isVirtualText: true
                                 }
                             ],
                             isVirtualNode: true
@@ -4010,7 +4047,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 3'
+                                text: 'Text 3',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -4040,7 +4078,8 @@ describe("diff tests", () => {
                                         (SetTextPatch) {
                                             value:
                                             (VirtualText) {
-                                                text: 'Text 11'
+                                                text: 'Text 11',
+                                                isVirtualText: true
                                             }
                                         }
                                     ],
@@ -4130,7 +4169,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 3'
+                                text: 'Text 3',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -4155,7 +4195,8 @@ describe("diff tests", () => {
                                         (SetTextPatch) {
                                             value:
                                             (VirtualText) {
-                                                text: 'Text 11'
+                                                text: 'Text 11',
+                                                isVirtualText: true
                                             }
                                         }
                                     ],
@@ -4248,7 +4289,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 1'
+                                text: 'Text 1',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -4271,7 +4313,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 3'
+                                text: 'Text 3',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -4294,7 +4337,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 5'
+                                text: 'Text 5',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -4385,7 +4429,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 1'
+                                text: 'Text 1',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -4403,7 +4448,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 2'
+                                text: 'Text 2',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -4431,7 +4477,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 5'
+                                text: 'Text 5',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -4449,7 +4496,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 6'
+                                text: 'Text 6',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -4477,7 +4525,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 9'
+                                text: 'Text 9',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -4495,7 +4544,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 10'
+                                text: 'Text 10',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -5074,7 +5124,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 1'
+                                text: 'Text 1',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -5169,7 +5220,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 2'
+                                text: 'Text 2',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -5259,7 +5311,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 3'
+                                text: 'Text 3',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -5527,7 +5580,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 5'
+                                text: 'Text 5',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -5632,7 +5686,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 11'
+                                text: 'Text 11',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -5660,7 +5715,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 12'
+                                text: 'Text 12',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -5688,7 +5744,8 @@ describe("diff tests", () => {
                         children:
                         [
                             (VirtualText) {
-                                text: 'Text 13'
+                                text: 'Text 13',
+                                isVirtualText: true
                             }
                         ],
                         isVirtualNode: true
@@ -5780,7 +5837,8 @@ describe("diff tests", () => {
                             (SetTextPatch) {
                                 value:
                                 (VirtualText) {
-                                    text: 6
+                                    text: 6,
+                                    isVirtualText: true
                                 }
                             }
                         ],
