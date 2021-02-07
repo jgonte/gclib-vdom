@@ -14,7 +14,12 @@ export default function isStandardEvent(name: string): boolean {
         'onmouseout',
         'onmouseover',
         'onmouseup',
-        'onwheel'
+        'onwheel',
+
+        // Form
+        'onchange',
+        'onfocus',
+        'onblur',
 
         // More as needed
     ].indexOf(name) > -1;
