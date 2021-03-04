@@ -164,4 +164,76 @@ describe("h tests", () => {
             "text": "Increment"
         }]);
     });
+
+    it("creates a virtual node with the name of the element, props and an array of children", () => {
+
+        const renderErrors = () => ['error1', 'error2', 'error3'].map(error => h("div", null, error));
+
+        let count: number = 5;
+
+        const increment = () => ++count;
+
+        const node = h("div", null,
+            h("h4", null, "Counter"),
+            count,
+            renderErrors() as any,
+            h("button", { click: increment }, "Increment")
+        );
+
+        expect(node.name).toEqual('div');
+
+        expect(node.props).toEqual(null);
+
+        expect((node.children as VirtualNode[])!.length).toEqual(6);
+
+        let child: any = (node.children as VirtualNode[])![0];
+
+        expect(child.name).toEqual('h4');
+
+        expect(child.props).toEqual(null);
+
+        expect(child.children).toEqual([{
+            "isVirtualText": true,
+            "text": "Counter" 
+        }]);
+
+        child = (node.children as VirtualText[])![1];
+
+        expect(child).toEqual(new VirtualText(5));
+
+        child = (node.children as VirtualNode[])![2];
+
+        expect(child.name).toEqual('div');
+
+        child = (child.children as VirtualText[])![0];
+
+        expect(child).toEqual(new VirtualText('error1'));
+
+        child = (node.children as VirtualNode[])![3];
+
+        expect(child.name).toEqual('div');
+
+        child = (child.children as VirtualText[])![0];
+
+        expect(child).toEqual(new VirtualText('error2'));
+
+        child = (node.children as VirtualNode[])![4];
+
+        expect(child.name).toEqual('div');
+
+        child = (child.children as VirtualText[])![0];
+
+        expect(child).toEqual(new VirtualText('error3'));
+
+        child = (node.children as VirtualNode[])![5];
+
+        expect(child.name).toEqual('button');
+
+        expect(child.props).toEqual({ click: increment });
+
+        expect(child.children).toEqual([{
+            "isVirtualText": true,
+            "text": "Increment"
+        }]);
+    });
 });

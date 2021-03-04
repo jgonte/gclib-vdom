@@ -28,9 +28,10 @@ export default function h(
         // Do not alter the order of these tests
         if (child === null) {
 
-            // Do nothing
+            return; // Nothing to push
         }
-        else if ((child as VirtualNode).isVirtualNode) {
+
+        if ((child as VirtualNode).isVirtualNode) {
 
             childrenNodes.push(child as VirtualNode);
         }
@@ -41,7 +42,11 @@ export default function h(
         else if ((child as FragmentNode).isFragmentNode) {
 
             childrenNodes.push(child as FragmentNode);
-        }     
+        }
+        else if (Array.isArray(child)) { // Flatten out the children array
+
+            child.forEach(ch => childrenNodes.push(ch));
+        }
         else if (typeof child === 'object') {
 
             throw new Error('Invalid object');
