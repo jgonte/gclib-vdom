@@ -66,7 +66,17 @@ export default function replaceAttribute(element: HTMLElement, name: string, new
         }
         else {
 
-            element.setAttribute(name, newValue);
+            // Bypass the conversion if the newValue is an object (not a string)
+            if ((element as any).setProperty !== undefined &&
+                typeof newValue === 'object') {
+
+                (element as any).setProperty(name, newValue);
+            }
+            else {
+
+                element.setAttribute(name, newValue);
+            }
+
         }
     }
 }
