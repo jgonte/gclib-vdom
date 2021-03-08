@@ -692,6 +692,12 @@ export default function diff(
 
             if (oldText.text !== newText.text) {
 
+                //TODO: Research this. Maybe the virtual text should be removed when the text is undefined?
+                if (newText.text === undefined) {
+
+                    newText.text = '';
+                }
+
                 return new ElementPatches(
                     /*patches*/
                     [
