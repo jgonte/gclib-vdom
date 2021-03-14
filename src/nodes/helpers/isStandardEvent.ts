@@ -18,6 +18,7 @@ export default function isStandardEvent(name: string): boolean {
 
         // Form
         'onchange',
+        'oninput',
         'onfocus',
         'onblur',
 
