@@ -39,7 +39,14 @@ function diffAttributes(oldAttributes?: any | null, newAttributes?: any | null):
 
                 if (v !== oldValue) {
 
-                    patches.push(new SetAttributePatch(k, oldValue, v));
+                    if (v === 'false') { // Remove the attribute when its value is false
+
+                        patches.push(new RemoveAttributePatch(k, oldValue));
+                    }
+                    else {
+
+                        patches.push(new SetAttributePatch(k, oldValue, v));
+                    }                   
                 }
 
                 oldAttributeNames.splice(i, 1); // Remove the name of the attribute to not to create a RemoveAttributePatch for it
