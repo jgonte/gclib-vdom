@@ -18,6 +18,7 @@ export default class SetTextPatch implements Patch {
     applyPatch(options: PatchOptions): void {
 
         const {
+            parentNode,
             node,
             context
         } = options;
@@ -26,7 +27,14 @@ export default class SetTextPatch implements Patch {
 
         const newValue = this.value.text.toString();
 
-        (node as Text).textContent = newValue;
+        if (parentNode instanceof HTMLTextAreaElement) {
+
+            parentNode.value = newValue;
+        }
+        else {
+
+            (node as Text).textContent = newValue;           
+        }
 
         context!.setNodeChanges(
             node!,
@@ -37,5 +45,6 @@ export default class SetTextPatch implements Patch {
                 }
             })
         );
+
     }
 }

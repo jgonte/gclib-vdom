@@ -74,7 +74,14 @@ export default function replaceAttribute(element: HTMLElement, name: string, new
             }
             else {
 
-                element.setAttribute(name, newValue);
+                if (name === 'value' && element instanceof HTMLInputElement) {
+
+                    element.value = newValue; // Odd behavior with input
+                }
+                else {
+                    
+                    element.setAttribute(name, newValue);
+                }
             }
 
         }

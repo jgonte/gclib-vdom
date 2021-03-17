@@ -1660,6 +1660,87 @@ describe("diff tests", () => {
         }));
     });
 
+    it("diff textarea virtual text to virtual text different text", () => {
+
+        // CustomElement's render converts literals to virtual texts
+        const oldNode = h("textarea", null, 'Some text');
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.outerHTML).toEqual('<textarea>Some text</textarea>');
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h("textarea", null, 'Some other text');
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [],
+            childrenPatches:
+            [
+                (ChildElementPatches) {
+                    index: 0,
+                    patches:
+                    (ElementPatches) {
+                        patches:
+                        [
+                            (SetTextPatch) {
+                                value:
+                                (VirtualText) {
+                                    text: 'Some other text',
+                                    isVirtualText: true
+                                }
+                            }
+                        ],
+                        childrenPatches:
+                        []
+                    }
+                }
+            ]
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLTextAreaElement;
+
+        expect(child.value).toEqual('Some other text'); // Changed the text
+
+        expect(child).toEqual(element); // Kept the same node
+
+        // No mount changes but maybe onTextChanged event?
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(shadowRoot.firstChild!.childNodes[0]!, new NodeChanges({
+            text: {
+                oldValue: 'Some text',
+                newValue: 'Some other text'
+            }
+        }));
+    });
+
     it("diff same node type", () => {
 
         const oldNode = h("div", null);
