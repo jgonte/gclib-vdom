@@ -41,6 +41,11 @@ export default class FragmentNode {
         return documentFragment;
     }
 
+    prependChildNode(vNode: VirtualNode | VirtualText) {
+
+        this.children.unshift(vNode);
+    }
+
     appendChildNode(vNode: VirtualNode | VirtualText) {
 
         this.children.push(vNode);

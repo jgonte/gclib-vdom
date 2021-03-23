@@ -5,7 +5,7 @@ import ElementPatches from "../src/patches/ElementPatches";
 import VirtualNode from "../src/nodes/VirtualNode";
 import VirtualText from "../src/nodes/VirtualText";
 import { NodeChanges } from "../src/patches/Patch";
-import { FragmentNode, Fragment } from "../src/gclib-vdom";
+import { Fragment } from "../src/nodes/FragmentNode";
 
 function comparePatches(patches: ElementPatches, expected: string): void {
 
