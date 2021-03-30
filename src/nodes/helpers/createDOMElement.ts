@@ -13,7 +13,7 @@ function isSvg(name: string): boolean {
 
 export function createDOMElement(
     name: string | FunctionConstructor,
-    props: Record<string, string>): Element {
+    props: Record<string, any>): Element {
 
     if (typeof name === 'string') {
 
@@ -25,7 +25,12 @@ export function createDOMElement(
 
         for (key in props) {
 
-            setAttribute(element as HTMLElement, key, props[key]);
+            const value = props[key];
+
+            if (value !== false) {
+
+                setAttribute(element as HTMLElement, key, props[key]);
+            }
         }
 
         return element;

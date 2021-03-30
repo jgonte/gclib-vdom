@@ -44,7 +44,9 @@ export default class SetAttributePatch implements Patch {
             (parentNode as any).host :
             node
 
-        if (newValue === undefined || newValue === null) {
+        if (newValue === undefined || 
+            newValue === null ||
+            newValue === "false") { // Remove attributes that equal false
 
             removeAttribute(n as HTMLElement, name)
         }

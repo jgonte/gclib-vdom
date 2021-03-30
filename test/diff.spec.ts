@@ -1954,6 +1954,79 @@ describe("diff tests", () => {
         expect(child).toEqual(element); // Kept the same node
     });
 
+    it("diff same node type with same prop set from false to true", () => {
+
+        const oldNode = h('div', {
+            selected: false,
+        });
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        expect(element.outerHTML).toEqual('<div></div>');
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h('div', {
+            selected: true,
+        });
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        (ElementPatches) {
+            patches:
+            [
+                (SetAttributePatch) {
+                    name: 'selected',
+                    oldValue: false,
+                    newValue: true
+                }
+            ],
+            childrenPatches:
+            []
+        }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        // Track the changed attributes?
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({
+            attributes: [
+                {
+                    key: 'selected',
+                    oldValue: false,
+                    newValue: true
+                }]
+        }));
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<div selected=\"true\"></div>');
+
+        expect(child).toEqual(element); // Kept the same node
+    });
+
     it("diff same node type add event listener", () => {
 
         const oldNode = h('span', null, 'Some text');
