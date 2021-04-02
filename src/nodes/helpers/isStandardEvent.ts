@@ -22,6 +22,10 @@ export default function isStandardEvent(name: string): boolean {
         'onfocus',
         'onblur',
 
+        // Window
+        'onload',
+        'onunload'
+
         // More as needed
     ].indexOf(name) > -1;
 }
