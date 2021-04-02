@@ -50,7 +50,15 @@ export default class ElementPatches {
 
                 const patch = this.childrenPatches[i];
 
-                const childNode: ChildNode = n!.childNodes[patch.index];
+                let childNode: ChildNode = n!.childNodes[patch.index];
+
+                // Try to save the day if the childNode is undefined
+                if (childNode === undefined) {
+
+                    console.warn(`Child is undefined. Parent: ${JSON.stringify(n)}. Patch: ${JSON.stringify(patch)}`);
+
+                    childNode = n as any;
+                }
 
                 patch.patches.applyPatches(
                     n!,
@@ -70,6 +78,6 @@ export default class ElementPatches {
 
     hasPatches() {
 
-        return this.patches.length || this.childrenPatches.length;
+        return this.patches.length > 0 || this.childrenPatches.length > 0;
     }
 }

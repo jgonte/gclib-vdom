@@ -96,6 +96,23 @@ export class NodeChanges {
 
 export interface LifecycleHooks {
 
+    // Hooks that deal with the root element node
+    /**
+     * It is the first time that the component is being mounted
+     */
+    willMount?: () => void;
+
+    /**
+     * The component will be unmounted
+     */
+    willUnmount?: () => void;
+
+    /**
+     * The component will be updated
+     */
+    willUpdate?: () => void;
+
+    // Hooks that deal with all the nodes of the mounted component
     /**
      * Called when the node is about to be added to the DOM
      */

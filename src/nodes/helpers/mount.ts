@@ -11,5 +11,22 @@ export default function mount(
 
     const patches = diff(previousNode, currentNode);
 
-    patches.applyPatches(rootNode, node, hooks);
+    if (patches.hasPatches()) {
+
+        if (previousNode === undefined) {
+
+            hooks?.willMount?.();
+        }
+        else if (currentNode === undefined) {
+
+            hooks?.willUnmount?.();
+        }
+        else {
+
+            hooks?.willUpdate?.();
+        }
+
+        patches.applyPatches(rootNode, node, hooks);
+    }
+    
 }
