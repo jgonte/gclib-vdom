@@ -348,7 +348,7 @@ export default function diff(
                 []
             );
         }
-        else {
+        else { // oldNode is defined
 
             if ((oldNode as FragmentNode).isFragmentNode) {
 
@@ -371,7 +371,7 @@ export default function diff(
                     );
                 }
             }
-            else {
+            else { // oldNode is not a fragment one
 
                 return new ElementPatches(
                     /*patches*/
