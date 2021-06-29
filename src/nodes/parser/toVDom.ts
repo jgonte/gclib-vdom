@@ -17,7 +17,7 @@ export default function toVDom(node?: Node, options: any = {}): VirtualNode | Vi
 
                 if (nodeName === 'script' && !options.allowScripts) {
 
-                    return null;
+                    throw Error('Script elements are not allowed unless the allowScripts option is set to true');
                 }
 
                 const props = getProps(element.attributes);

@@ -6,6 +6,7 @@ import ElementPatches from './patches/ElementPatches';
 import setAttributes from './nodes/helpers/setAttributes';
 import diff from './diff';
 import { NodeChanges } from './patches/Patch';
+import markupToVDom from './nodes/parser/markupToVDom';
 
 export {
     VirtualNode,
@@ -16,5 +17,6 @@ export {
     ElementPatches,
     diff,
     NodeChanges,
-    setAttributes
+    setAttributes,
+    markupToVDom
 }
