@@ -46,7 +46,7 @@ function diffAttributes(oldAttributes?: any | null, newAttributes?: any | null):
                     else {
 
                         patches.push(new SetAttributePatch(k, oldValue, v));
-                    }                   
+                    }
                 }
 
                 oldAttributeNames.splice(i, 1); // Remove the name of the attribute to not to create a RemoveAttributePatch for it
@@ -298,6 +298,16 @@ function diffNonKeyedChildren(
     const setChildrenPatches: Array<Patch> = [];
 
     const childrenPatches: Array<ChildElementPatches> = [];
+
+    if (isFragmentNode(oldChildren[0])) { // If the children being passed is a single fragment, then get the children of the fragment
+
+        oldChildren = (oldChildren[0] as FragmentNode).children;
+    }
+
+    if (isFragmentNode(newChildren[0])) { // If the children being passed is a single fragment, then get the children of the fragment
+
+        newChildren = (newChildren[0] as FragmentNode).children;
+    }
 
     for (let i = 0; i < newChildren.length; ++i) {
 
