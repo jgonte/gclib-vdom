@@ -3196,11 +3196,13 @@ describe("diff tests", () => {
         }));
     });
 
-    it("diff change attribute of child of fragment node that is in turn child of a virtual node 'select/Fragment/option'", () => {
+    it("diff change attribute of nested virtual node children with fragment", () => {
 
-        const oldNode = h("select", null,
-            h(Fragment as any, null,
-                h("option", { value: '10', selected: false }, '10')
+        const oldNode = h('div', null,
+            h("select", null,
+                h(Fragment as any, null,
+                    h("option", { value: '10', selected: false }, '10')
+                )
             )
         );
 
@@ -3213,37 +3215,51 @@ describe("diff tests", () => {
 
         shadowRoot.appendChild(element);
 
-        const newNode = h("select", null,
-            h(Fragment as any, null,
-                h("option", { value: '10', selected: true }, '10')
+        const newNode = h('div', null,
+            h("select", null,
+                h(Fragment as any, null,
+                    h("option", { value: '10', selected: true }, '10')
+                )
             )
         );
 
         const patches = diff(oldNode, newNode);
 
-        comparePatches(patches, `
-        (ElementPatches)
-        {
-            patches:[],
-            childrenPatches:[
-                (ChildElementPatches)
-                {
-                    index:0,
-                    patches:(ElementPatches)
-                    {
-                        patches:[
-                            (SetAttributePatch)
-                            {
-                                name:'selected',
-                                oldValue:false,
-                                newValue:true
-                            }
-                        ],
-                        childrenPatches:[]
+        comparePatches(patches, `   
+            (ElementPatches) {
+                patches:
+                [],
+                childrenPatches:
+                [
+                    (ChildElementPatches) {
+                        index: 0,
+                        patches:
+                        (ElementPatches) {
+                            patches:
+                            [],
+                            childrenPatches:
+                            [
+                                (ChildElementPatches) {
+                                    index: 0,
+                                    patches:
+                                    (ElementPatches) {
+                                        patches:
+                                        [
+                                            (SetAttributePatch) {
+                                                name: 'selected',
+                                                oldValue: false,
+                                                newValue: true
+                                            }
+                                        ],
+                                        childrenPatches:
+                                        []
+                                    }
+                                }
+                            ]
+                        }
                     }
-                }
-            ]
-        }
+                ]
+            }
         `);
 
         const {
@@ -3260,7 +3276,7 @@ describe("diff tests", () => {
 
         const firstChild = shadowRoot.childNodes[0]! as HTMLElement;
 
-        expect(firstChild.outerHTML).toEqual('<select><option value=\"10\" selected=\"true\">10</option></select>');
+        expect(firstChild.outerHTML).toEqual('<div><select><option value=\"10\" selected=\"true\">10</option></select></div>');
 
         expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
 
@@ -3270,8 +3286,124 @@ describe("diff tests", () => {
 
         expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
 
-        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(1, firstChild.childNodes[0], new NodeChanges({
-            attributes:[
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(1, firstChild.childNodes[0].childNodes[0], new NodeChanges({
+            attributes: [
+                {
+                    key: 'selected',
+                    oldValue: false,
+                    newValue: true
+                }
+            ]
+        }));
+    });
+
+    it("diff change attribute of nested virtual node children with fragments", () => {
+
+        const oldNode = h(Fragment as any, null,
+            h('div', null,
+                h("select", null,
+                    h(Fragment as any, null,
+                        h("option", { value: '10', selected: false }, '10')
+                    )
+                )
+            )
+        );
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        //expect(element).toBeInstanceOf(DocumentFragment);
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h(Fragment as any, null,
+            h('div', null,
+                h("select", null,
+                    h(Fragment as any, null,
+                        h("option", { value: '10', selected: true }, '10')
+                    )
+                )
+            )
+        );
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `       
+            (ElementPatches) {
+                patches:
+                [],
+                childrenPatches:
+                [
+                    (ChildElementPatches) {
+                        index: 0,
+                        patches:
+                        (ElementPatches) {
+                            patches:
+                            [],
+                            childrenPatches:
+                            [
+                                (ChildElementPatches) {
+                                    index: 0,
+                                    patches:
+                                    (ElementPatches) {
+                                        patches:
+                                        [],
+                                        childrenPatches:
+                                        [
+                                            (ChildElementPatches) {
+                                                index: 0,
+                                                patches:
+                                                (ElementPatches) {
+                                                    patches:
+                                                    [
+                                                        (SetAttributePatch) {
+                                                            name: 'selected',
+                                                            oldValue: false,
+                                                            newValue: true
+                                                        }
+                                                    ],
+                                                    childrenPatches:
+                                                    []
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        `);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // The single child has been kept
+
+        const firstChild = shadowRoot.childNodes[0]! as HTMLElement;
+
+        expect(firstChild.outerHTML).toEqual('<div><select><option value=\"10\" selected=\"true\">10</option></select></div>');
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(0);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenNthCalledWith(1, firstChild.childNodes[0].childNodes[0], new NodeChanges({
+            attributes: [
                 {
                     key: 'selected',
                     oldValue: false,
