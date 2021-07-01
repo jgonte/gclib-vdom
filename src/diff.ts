@@ -299,16 +299,6 @@ function diffNonKeyedChildren(
 
     const childrenPatches: Array<ChildElementPatches> = [];
 
-    if (isFragmentNode(oldChildren[0])) { // If the children being passed is a single fragment, then get the children of the fragment
-
-        oldChildren = (oldChildren[0] as FragmentNode).children;
-    }
-
-    if (isFragmentNode(newChildren[0])) { // If the children being passed is a single fragment, then get the children of the fragment
-
-        newChildren = (newChildren[0] as FragmentNode).children;
-    }
-
     for (let i = 0; i < newChildren.length; ++i) {
 
         const oldChild = oldChildren[i];
@@ -419,9 +409,9 @@ export default function diff(
             }
             else { // Same name, diff attributes and children
 
-                const oldChildren = (oldNode as VirtualNode).children;
+                let oldChildren = (oldNode as VirtualNode).children;
 
-                const newChildren = (newNode as VirtualNode | FragmentNode).children;
+                let newChildren = (newNode as VirtualNode | FragmentNode).children;
 
                 // In certain cases with the children, it is more convenient to apply the patches to the parent
                 if (newChildren.length === 0) {
@@ -467,6 +457,16 @@ export default function diff(
                         let patches: Array<Patch>;
 
                         let childrenPatches: Array<ChildElementPatches>;
+
+                        if (isFragmentNode(oldChildren[0])) { // If the children being passed is a single fragment, then get the children of the fragment
+
+                            oldChildren = (oldChildren[0] as FragmentNode).children;
+                        }
+                    
+                        if (isFragmentNode(newChildren[0])) { // If the children being passed is a single fragment, then get the children of the fragment
+                    
+                            newChildren = (newChildren[0] as FragmentNode).children;
+                        }
 
                         if (hasKeys(newChildren)) {
 
