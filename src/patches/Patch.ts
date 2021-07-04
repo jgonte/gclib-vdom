@@ -103,12 +103,14 @@ export interface LifecycleHooks {
     nodeWillConnect?: (node: Node) => void;
 
     /**
-     * Called after the node was added to the DOM
+     * Called after the node and its siblings has been added to the DOM
      */
     nodeDidConnect?: (node: Node) => void;
 
     /**
-     * Called when the text content has changed, attributes have been added, replaced or removed and children of the parent have been added, removed or moved in the DOM
+     * Called when the text content has changed, 
+     * attributes have been added, replaced or removed 
+     * and/or children of the parent have been added, removed or moved in the DOM
      */
     nodeDidUpdate?: (node: Node, nodeChanges: NodeChanges) => void;
 

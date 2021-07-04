@@ -46,6 +46,17 @@ export default class AddChildrenPatch implements Patch {
 
             fragment.appendChild(childElement);
 
+            // Do this after all the children have been appended so their siblings can be accessed if needed
+            // if (nodeDidConnect) {
+
+            //     nodeDidConnect(childElement);
+            // }
+        });
+
+        // At this point all the children have been connected
+        // Call the nodeDidConnect so the children have access to their siblings
+        insertedChildrenElements.forEach(childElement => {
+
             if (nodeDidConnect) {
 
                 nodeDidConnect(childElement);
