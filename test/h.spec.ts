@@ -263,7 +263,7 @@ describe("h tests", () => {
                         "text": "child",
                     }
                 ],
-                "functionalComponent": fc,
+                "component": fc,
                 "isVirtualNode": true,
                 "name": "span",
                 "props": null

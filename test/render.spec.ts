@@ -392,7 +392,7 @@ describe("render tests", () => {
                         "text": "child",
                     }
                 ],
-                "functionalComponent": fc,
+                "component": fc,
                 "isVirtualNode": true,
                 "name": "span",
                 "props": null
@@ -403,7 +403,7 @@ describe("render tests", () => {
 
         expect(element.outerHTML).toEqual('<div><span>child</span></div>');
 
-        expect((element.children[0] as any).functionalComponent).toEqual(fc);
+        expect((element.children[0] as any).component).toEqual(fc);
 
         expect(element.children[0]).toEqual(node1);
 

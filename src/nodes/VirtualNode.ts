@@ -15,9 +15,9 @@ export default class VirtualNode {
     element?: Node;
 
     /**
-     * The reference to the functional component so we can call its hooks when rendering it
+     * The reference to the functional or web component so we can call its hooks when rendering it
      */
-    functionalComponent?: object;
+    component?: object;
 
     constructor(
 
@@ -49,14 +49,14 @@ export default class VirtualNode {
 
         const element = createDOMElement(name, props) as CustomElementLike;
 
-        // If this virtual node has a functionalComponet attached, transfer it to the element so it can notify its children when will disconnect
-        (element as any).functionalComponent = this.functionalComponent;
+        // If this virtual node has a componet attached, transfer it to the element so it can notify its children when will disconnect
+        (element as any).component = this.component;
         
         for (const child of children) {
 
             if (child) { // It might be null
 
-                const fc = (child as VirtualNode).functionalComponent;
+                const fc = (child as VirtualNode).component;
 
                 const node = child.render();
 

@@ -1,8 +1,8 @@
 import VirtualNode from "./nodes/VirtualNode"
 import VirtualText from "./nodes/VirtualText";
 import FragmentNode from "./nodes/FragmentNode";
-import getCSSClass from "./nodes/helpers/getCSSClass";
-import getCSSStyle from "./nodes/helpers/getCSSStyle";
+// import getCSSClass from "./nodes/helpers/getCSSClass";
+// import getCSSStyle from "./nodes/helpers/getCSSStyle";
 
 /**
  * Creates a virtual node
@@ -53,7 +53,7 @@ export default function h(
 
                 const vNode: VirtualNode = (child as any).render();
 
-                vNode.functionalComponent = child; // Set the functional component to call its hooks if any
+                vNode.component = child; // Set the functional component to call its hooks if any
 
                 childrenNodes.push(vNode);
             }
