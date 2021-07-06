@@ -13,7 +13,7 @@ import getCSSStyle from "./nodes/helpers/getCSSStyle";
 export default function h(
     name: string | FunctionConstructor,
     attributes: any = {},
-    ...children: Array<VirtualNode | VirtualText | FragmentNode | string | number | boolean>): VirtualNode {
+    ...children: Array<VirtualNode | VirtualText | FragmentNode | string | number | boolean | object>): VirtualNode {
 
     // Extract the children if an array was passed
     if (Array.isArray(children[0])) {
@@ -49,7 +49,14 @@ export default function h(
         }
         else if (typeof child === 'object') {
 
-            throw new Error('Invalid object');
+            if ((child as any).render !== undefined) { // Functional component
+
+                childrenNodes.push((child as any).render());
+            }
+            else {
+
+                throw new Error('Invalid object. It must define a render function');
+            }
         }
         else {
 

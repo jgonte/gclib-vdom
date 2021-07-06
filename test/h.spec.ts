@@ -73,7 +73,7 @@ describe("h tests", () => {
 
         expect(grandChild.children).toEqual([{
             "isVirtualText": true,
-            "text": "Some text" 
+            "text": "Some text"
         }]);
     });
 
@@ -116,7 +116,7 @@ describe("h tests", () => {
 
         expect(child.children).toEqual([{
             "isVirtualText": true,
-            "text": "Some text" 
+            "text": "Some text"
         }]);
     });
 
@@ -146,7 +146,7 @@ describe("h tests", () => {
 
         expect(child.children).toEqual([{
             "isVirtualText": true,
-            "text": "Counter" 
+            "text": "Counter"
         }]);
 
         child = (node.children as VirtualText[])![1];
@@ -194,7 +194,7 @@ describe("h tests", () => {
 
         expect(child.children).toEqual([{
             "isVirtualText": true,
-            "text": "Counter" 
+            "text": "Counter"
         }]);
 
         child = (node.children as VirtualText[])![1];
@@ -235,5 +235,36 @@ describe("h tests", () => {
             "isVirtualText": true,
             "text": "Increment"
         }]);
+    });
+
+    it("creates a virtual node from a functional component", () => {
+
+        class FC {
+
+            render() {
+
+                return h('span', null, 'child')
+            }
+        }
+
+        const node = h('div', null, new FC());
+
+        expect(node.name).toEqual('div');
+
+        expect(node.props).toEqual(null);
+
+        expect(node.children).toEqual([
+            {
+                "children": [
+                    {
+                        "isVirtualText": true,
+                        "text": "child",
+                    }
+                ],
+                "isVirtualNode": true,
+                "name": "span",
+                "props": null
+            }
+        ]);
     });
 });
