@@ -7,6 +7,7 @@ import setAttributes from './nodes/helpers/setAttributes';
 import diff from './diff';
 import { NodeChanges } from './patches/Patch';
 import markupToVDom from './nodes/parser/markupToVDom';
+import notifyNodeWillDisconnect from './notifyNodeWillDisconnect';
 
 export {
     VirtualNode,
@@ -18,5 +19,6 @@ export {
     diff,
     NodeChanges,
     setAttributes,
-    markupToVDom
+    markupToVDom,
+    notifyNodeWillDisconnect
 }

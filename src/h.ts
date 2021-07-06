@@ -51,7 +51,11 @@ export default function h(
 
             if ((child as any).render !== undefined) { // Functional component
 
-                childrenNodes.push((child as any).render());
+                const vNode: VirtualNode = (child as any).render();
+
+                vNode.functionalComponent = child; // Set the functional component to call its hooks if any
+
+                childrenNodes.push(vNode);
             }
             else {
 

@@ -1,7 +1,7 @@
 import { createDOMElement } from "./helpers/createDOMElement";
 import VirtualText from "./VirtualText";
 import { LifecycleHooks } from "../patches/Patch";
-import { FragmentNode } from "../gclib-vdom";
+import FragmentNode from "./FragmentNode";
 
 export type CustomElementLike = Element & LifecycleHooks; 
 
@@ -13,6 +13,11 @@ export default class VirtualNode {
     isVirtualNode: boolean = true;
 
     element?: Node;
+
+    /**
+     * The reference to the functional component so we can call its hooks when rendering it
+     */
+    functionalComponent?: object;
 
     constructor(
 
@@ -43,12 +48,29 @@ export default class VirtualNode {
         const { name, props, children} = this;
 
         const element = createDOMElement(name, props) as CustomElementLike;
+
+        // If this virtual node has a functionalComponet attached, transfer it to the element so it can notify its children when will disconnect
+        (element as any).functionalComponent = this.functionalComponent;
         
         for (const child of children) {
 
             if (child) { // It might be null
 
-                element.appendChild(child.render());
+                const fc = (child as VirtualNode).functionalComponent;
+
+                const node = child.render();
+
+                if (fc !== undefined && (fc as any).nodeWillConnect !== undefined) {
+
+                    (fc as any).nodeWillConnect(node);
+                }
+
+                element.appendChild(node);
+
+                if (fc !== undefined && (fc as any).nodeDidConnect !== undefined) {
+
+                    (fc as any).nodeDidConnect(node);
+                }
             }
         }
 

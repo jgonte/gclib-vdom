@@ -247,7 +247,9 @@ describe("h tests", () => {
             }
         }
 
-        const node = h('div', null, new FC());
+        const fc = new FC();
+
+        const node = h('div', null, fc);
 
         expect(node.name).toEqual('div');
 
@@ -261,10 +263,12 @@ describe("h tests", () => {
                         "text": "child",
                     }
                 ],
+                "functionalComponent": fc,
                 "isVirtualNode": true,
                 "name": "span",
                 "props": null
             }
         ]);
     });
+    
 });

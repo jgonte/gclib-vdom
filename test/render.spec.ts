@@ -1,6 +1,6 @@
 import h from "../src/h";
 import { Fragment } from "../src/nodes/FragmentNode";
-import { VirtualNode, VirtualText } from "../src/gclib-vdom";
+import { NodeChanges, VirtualNode, VirtualText } from "../src/gclib-vdom";
 
 describe("render tests", () => {
 
@@ -350,5 +350,63 @@ describe("render tests", () => {
         const element = node.render();
 
         expect(element.outerHTML).toEqual('<span aria-hidden=\"true\" class=\"todo-list\" style=\"width:1px;height:1px;background-color:red;transform:rotateZ(45deg);\">Some text</span>');
+    });
+
+    it("creates a virtual node from a functional component", () => {
+
+        let node1;
+
+        let node2;
+
+        class FC {
+
+            render() {
+
+                return h('span', null, 'child')
+            }
+
+            nodeWillConnect(node: Node) {
+
+                node1 = node;
+            }
+
+            nodeDidConnect(node: Node) {
+
+                node2 = node;
+            }
+        }
+
+        const fc = new FC();
+
+        const node = h('div', null, fc);
+
+        expect(node.name).toEqual('div');
+
+        expect(node.props).toEqual(null);
+
+        expect(node.children).toEqual([
+            {
+                "children": [
+                    {
+                        "isVirtualText": true,
+                        "text": "child",
+                    }
+                ],
+                "functionalComponent": fc,
+                "isVirtualNode": true,
+                "name": "span",
+                "props": null
+            }
+        ]);
+
+        const element = node.render();
+
+        expect(element.outerHTML).toEqual('<div><span>child</span></div>');
+
+        expect((element.children[0] as any).functionalComponent).toEqual(fc);
+
+        expect(element.children[0]).toEqual(node1);
+
+        expect(element.children[0]).toEqual(node2);
     });
 });
