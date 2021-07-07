@@ -13,7 +13,7 @@ export default class AddChildrenPatch implements Patch {
         /**
          * The new children to add
          */
-        public children: Array<VirtualNode | VirtualText | FragmentNode>
+        public children: Array<VirtualNode | VirtualText | FragmentNode | null>
     ) { }
 
     applyPatch(options: PatchOptions): void {
@@ -34,6 +34,11 @@ export default class AddChildrenPatch implements Patch {
         const fragment = document.createDocumentFragment();
 
         this.children.forEach(child => {
+
+            if (child === null) {
+
+                return;
+            }
 
             const childElement = child.render();
 

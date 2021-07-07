@@ -87,7 +87,7 @@ function isFragmentNode(node: VirtualNode | VirtualText | FragmentNode): boolean
     return (node as FragmentNode).isFragmentNode;
 }
 
-function hasKeys(children: Array<VirtualNode | VirtualText | FragmentNode> = []): boolean {
+function hasKeys(children: Array<VirtualNode | VirtualText | FragmentNode | null> = []): boolean {
 
     const keys: Set<string> = new Set<string>();
 
@@ -96,6 +96,11 @@ function hasKeys(children: Array<VirtualNode | VirtualText | FragmentNode> = [])
     for (let i = 0; i < children.length; ++i) {
 
         const child = children[i];
+
+        if (child === null) {
+
+            return false;
+        }
 
         if (isVirtualNode(child)) {
 
@@ -292,8 +297,8 @@ function diffKeyedChildren(
 }
 
 function diffNonKeyedChildren(
-    oldChildren: Array<VirtualNode | VirtualText | FragmentNode>,
-    newChildren: Array<VirtualNode | VirtualText | FragmentNode>): [Array<Patch>, Array<ChildElementPatches>] {
+    oldChildren: Array<VirtualNode | VirtualText | FragmentNode | null>,
+    newChildren: Array<VirtualNode | VirtualText | FragmentNode | null>): [Array<Patch>, Array<ChildElementPatches>] {
 
     const setChildrenPatches: Array<Patch> = [];
 
@@ -313,7 +318,7 @@ function diffNonKeyedChildren(
         }
         else {
 
-            const childPatches = diff(oldChild, newChild);
+            const childPatches = diff(oldChild!, newChild!);
 
             if (childPatches.hasPatches()) {
 
@@ -409,7 +414,7 @@ export default function diff(
             }
             else { // Same name, diff attributes and children
 
-                let oldChildren = (oldNode as VirtualNode).children;
+                let oldChildren: (VirtualNode | VirtualText | FragmentNode | null)[] = (oldNode as VirtualNode).children;
 
                 let newChildren = (newNode as VirtualNode | FragmentNode).children;
 
@@ -458,13 +463,13 @@ export default function diff(
 
                         let childrenPatches: Array<ChildElementPatches>;
 
-                        if (isFragmentNode(oldChildren[0])) { // If the children being passed is a single fragment, then get the children of the fragment
+                        if (isFragmentNode(oldChildren[0]!)) { // If the children being passed is a single fragment, then get the children of the fragment
 
                             oldChildren = (oldChildren[0] as FragmentNode).children;
                         }
-                    
-                        if (isFragmentNode(newChildren[0])) { // If the children being passed is a single fragment, then get the children of the fragment
-                    
+
+                        if (isFragmentNode(newChildren[0]!)) { // If the children being passed is a single fragment, then get the children of the fragment
+
                             newChildren = (newChildren[0] as FragmentNode).children;
                         }
 

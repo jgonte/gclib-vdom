@@ -19,7 +19,7 @@ export default class FragmentNode {
         /**
          * The children of the element
          */
-        public children: (VirtualNode | VirtualText)[]
+        public children: (VirtualNode | VirtualText | FragmentNode | null)[]
     ) { }
 
     render(): DocumentFragment {

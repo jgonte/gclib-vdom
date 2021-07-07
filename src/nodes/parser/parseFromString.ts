@@ -1,4 +1,4 @@
-export default function parseFromString(markup: string, type: 'html' | 'xml' = 'xml') : Node | null {
+export default function parseFromString(markup: string, type: 'html' | 'xml' = 'xml') : NodeListOf<ChildNode> {
 
     const mime = type === 'html' ? 'text/html' : 'application/xml';
 
@@ -11,5 +11,5 @@ export default function parseFromString(markup: string, type: 'html' | 'xml' = '
     const tag = type === 'html' ? 'body' : 'xml';
 
     // Extract the inner node
-    return doc.getElementsByTagName(tag)[0].firstChild;
+    return doc.getElementsByTagName(tag)[0].childNodes;
 }
