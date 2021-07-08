@@ -4,14 +4,20 @@ import VirtualText from "../../nodes/VirtualText";
 
 export function renderNode(vnode: VirtualNode | VirtualText | FragmentNode): Node {
 
-    let node = vnode.render();
+    if ((vnode as any).isComponent) {
 
-    if (node instanceof VirtualNode) { // Rendered by a component
+        let node = vnode.render();
 
-        node = node.render();
+        node = (node as any).render();
+
+        (vnode as any).mountedNode = node;
 
         (node as any).component = vnode;
-    }
 
-    return node;
+        return node;
+    }
+    else {
+
+        return vnode.render();
+    }
 }
