@@ -1,5 +1,5 @@
 import { Patch, PatchOptions, NodeChanges } from "../Patch";
-import VirtualText from "../../nodes/VirtualText";
+import TextNode from "../../nodes/TextNode";
 
 /**
  * Patch to replace a text in the DOM element
@@ -11,7 +11,7 @@ export default class SetTextPatch implements Patch {
         /**
         * The new value of the text
         */
-        public value: VirtualText
+        public value: TextNode
 
     ) { }
 

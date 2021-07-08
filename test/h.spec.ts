@@ -1,6 +1,7 @@
 import h from '../src/h';
-import VirtualNode from '../src/nodes/VirtualNode';
-import VirtualText from '../src/nodes/VirtualText';
+import ElementNode from '../src/nodes/ElementNode';
+import TextNode from '../src/nodes/TextNode';
+
 
 describe("h tests", () => {
 
@@ -45,9 +46,9 @@ describe("h tests", () => {
 
         expect(node.props).toEqual(null);
 
-        expect((node.children as VirtualNode[])!.length).toEqual(2);
+        expect((node.children as ElementNode[])!.length).toEqual(2);
 
-        let child = (node.children as VirtualNode[])![0];
+        let child = (node.children as ElementNode[])![0];
 
         expect(child.name).toEqual('img');
 
@@ -57,22 +58,22 @@ describe("h tests", () => {
 
         expect(child.children).toEqual([]);
 
-        child = (node.children as VirtualNode[])![1];
+        child = (node.children as ElementNode[])![1];
 
         expect(child.name).toEqual('div');
 
         expect(child.props).toEqual(null);
 
-        expect((child.children as VirtualNode[])!.length).toEqual(1);
+        expect((child.children as ElementNode[])!.length).toEqual(1);
 
-        const grandChild = (child.children as VirtualNode[])![0];
+        const grandChild = (child.children as ElementNode[])![0];
 
         expect(grandChild.name).toEqual('span');
 
         expect(grandChild.props).toEqual(null);
 
         expect(grandChild.children).toEqual([{
-            "isVirtualText": true,
+            "isText": true,
             "text": "Some text"
         }]);
     });
@@ -96,9 +97,9 @@ describe("h tests", () => {
             id: 'myElement'
         });
 
-        expect((node.children as VirtualNode[])!.length).toEqual(2);
+        expect((node.children as ElementNode[])!.length).toEqual(2);
 
-        let child = (node.children as VirtualNode[])![0];
+        let child = (node.children as ElementNode[])![0];
 
         expect(child.name).toEqual('img');
 
@@ -108,14 +109,14 @@ describe("h tests", () => {
 
         expect(child.children).toEqual([]);
 
-        child = (node.children as VirtualNode[])![1];
+        child = (node.children as ElementNode[])![1];
 
         expect(child.name).toEqual('span');
 
         expect(child.props).toEqual(null);
 
         expect(child.children).toEqual([{
-            "isVirtualText": true,
+            "isText": true,
             "text": "Some text"
         }]);
     });
@@ -136,31 +137,31 @@ describe("h tests", () => {
 
         expect(node.props).toEqual(null);
 
-        expect((node.children as VirtualNode[])!.length).toEqual(3);
+        expect((node.children as ElementNode[])!.length).toEqual(3);
 
-        let child: any = (node.children as VirtualNode[])![0];
+        let child: any = (node.children as ElementNode[])![0];
 
         expect(child.name).toEqual('h4');
 
         expect(child.props).toEqual(null);
 
         expect(child.children).toEqual([{
-            "isVirtualText": true,
+            "isText": true,
             "text": "Counter"
         }]);
 
-        child = (node.children as VirtualText[])![1];
+        child = (node.children as TextNode[])![1];
 
-        expect(child).toEqual(new VirtualText(5));
+        expect(child).toEqual(new TextNode(5));
 
-        child = (node.children as VirtualNode[])![2];
+        child = (node.children as ElementNode[])![2];
 
         expect(child.name).toEqual('button');
 
         expect(child.props).toEqual({ click: increment });
 
         expect(child.children).toEqual([{
-            "isVirtualText": true,
+            "isText": true,
             "text": "Increment"
         }]);
     });
@@ -184,55 +185,55 @@ describe("h tests", () => {
 
         expect(node.props).toEqual(null);
 
-        expect((node.children as VirtualNode[])!.length).toEqual(6);
+        expect((node.children as ElementNode[])!.length).toEqual(6);
 
-        let child: any = (node.children as VirtualNode[])![0];
+        let child: any = (node.children as ElementNode[])![0];
 
         expect(child.name).toEqual('h4');
 
         expect(child.props).toEqual(null);
 
         expect(child.children).toEqual([{
-            "isVirtualText": true,
+            "isText": true,
             "text": "Counter"
         }]);
 
-        child = (node.children as VirtualText[])![1];
+        child = (node.children as TextNode[])![1];
 
-        expect(child).toEqual(new VirtualText(5));
+        expect(child).toEqual(new TextNode(5));
 
-        child = (node.children as VirtualNode[])![2];
-
-        expect(child.name).toEqual('div');
-
-        child = (child.children as VirtualText[])![0];
-
-        expect(child).toEqual(new VirtualText('error1'));
-
-        child = (node.children as VirtualNode[])![3];
+        child = (node.children as ElementNode[])![2];
 
         expect(child.name).toEqual('div');
 
-        child = (child.children as VirtualText[])![0];
+        child = (child.children as TextNode[])![0];
 
-        expect(child).toEqual(new VirtualText('error2'));
+        expect(child).toEqual(new TextNode('error1'));
 
-        child = (node.children as VirtualNode[])![4];
+        child = (node.children as ElementNode[])![3];
 
         expect(child.name).toEqual('div');
 
-        child = (child.children as VirtualText[])![0];
+        child = (child.children as TextNode[])![0];
 
-        expect(child).toEqual(new VirtualText('error3'));
+        expect(child).toEqual(new TextNode('error2'));
 
-        child = (node.children as VirtualNode[])![5];
+        child = (node.children as ElementNode[])![4];
+
+        expect(child.name).toEqual('div');
+
+        child = (child.children as TextNode[])![0];
+
+        expect(child).toEqual(new TextNode('error3'));
+
+        child = (node.children as ElementNode[])![5];
 
         expect(child.name).toEqual('button');
 
         expect(child.props).toEqual({ click: increment });
 
         expect(child.children).toEqual([{
-            "isVirtualText": true,
+            "isText": true,
             "text": "Increment"
         }]);
     });
@@ -259,12 +260,12 @@ describe("h tests", () => {
             {
                 "children": [
                     {
-                        "isVirtualText": true,
+                        "isText": true,
                         "text": "child",
                     }
                 ],
                 "component": fc,
-                "isVirtualNode": true,
+                "isElement": true,
                 "name": "span",
                 "props": null
             }

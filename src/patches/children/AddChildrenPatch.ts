@@ -1,6 +1,6 @@
 import { Patch, PatchOptions, NodeChanges } from '../Patch';
-import VirtualNode from '../../nodes/VirtualNode';
-import VirtualText from '../../nodes/VirtualText';
+import ElementNode from '../../nodes/ElementNode';
+import TextNode from '../../nodes/TextNode';
 import { FragmentNode } from '../../gclib-vdom';
 import callHook from '../helpers/callHook';
 import { renderNode } from '../helpers/renderNode';
@@ -15,7 +15,7 @@ export default class AddChildrenPatch implements Patch {
         /**
          * The new children to add
          */
-        public children: Array<VirtualNode | VirtualText | FragmentNode | null>
+        public children: Array<ElementNode | TextNode | FragmentNode | null>
     ) { }
 
     applyPatch(options: PatchOptions): void {

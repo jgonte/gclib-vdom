@@ -1,5 +1,5 @@
-import VirtualNode from "./nodes/VirtualNode";
-import VirtualText from "./nodes/VirtualText";
+import ElementNode from "./nodes/ElementNode";
+import TextNode from "./nodes/TextNode";
 import ElementPatches from "./patches/ElementPatches";
 import ChildElementPatches from "./patches/ChildElementPatches";
 import { Patch } from "./patches/Patch";
@@ -77,17 +77,17 @@ function isUndefinedOrNull(o?: object | null): boolean {
     return typeof o === 'undefined' || o === null;
 }
 
-function isVirtualNode(node: VirtualNode | VirtualText | FragmentNode): boolean {
+function isVirtualNode(node: ElementNode | TextNode | FragmentNode): boolean {
 
-    return (node as VirtualNode).isVirtualNode;
+    return (node as ElementNode).isElement;
 }
 
-function isFragmentNode(node: VirtualNode | VirtualText | FragmentNode): boolean {
+function isFragmentNode(node: ElementNode | TextNode | FragmentNode): boolean {
 
-    return (node as FragmentNode).isFragmentNode;
+    return (node as FragmentNode).isFragment;
 }
 
-function hasKeys(children: Array<VirtualNode | VirtualText | FragmentNode | null> = []): boolean {
+function hasKeys(children: Array<ElementNode | TextNode | FragmentNode | null> = []): boolean {
 
     const keys: Set<string> = new Set<string>();
 
@@ -104,7 +104,7 @@ function hasKeys(children: Array<VirtualNode | VirtualText | FragmentNode | null
 
         if (isVirtualNode(child)) {
 
-            const key = (child as VirtualNode).key;
+            const key = (child as ElementNode).key;
 
             if (key) {
 
@@ -150,14 +150,14 @@ function hasKeys(children: Array<VirtualNode | VirtualText | FragmentNode | null
 
 interface IndexedVirtualNode {
 
-    node: VirtualNode,
+    node: ElementNode,
 
     index: number
 }
 
 function diffKeyedChildren(
-    oldChildren: Array<VirtualNode>,
-    newChildren: Array<VirtualNode>
+    oldChildren: Array<ElementNode>,
+    newChildren: Array<ElementNode>
 ): [Array<Patch>, Array<ChildElementPatches>] {
 
     const setOrMovedChildrenPatches: Array<Patch> = [];
@@ -297,8 +297,8 @@ function diffKeyedChildren(
 }
 
 function diffNonKeyedChildren(
-    oldChildren: Array<VirtualNode | VirtualText | FragmentNode | null>,
-    newChildren: Array<VirtualNode | VirtualText | FragmentNode | null>): [Array<Patch>, Array<ChildElementPatches>] {
+    oldChildren: Array<ElementNode | TextNode | FragmentNode | null>,
+    newChildren: Array<ElementNode | TextNode | FragmentNode | null>): [Array<Patch>, Array<ChildElementPatches>] {
 
     const setChildrenPatches: Array<Patch> = [];
 
@@ -313,7 +313,7 @@ function diffNonKeyedChildren(
         if (isUndefinedOrNull(oldChild)) { // Add a child at that index
 
             setChildrenPatches.push(
-                new SetChildPatch(i, newChild as VirtualNode | VirtualText) // Set it at the new index
+                new SetChildPatch(i, newChild as ElementNode | TextNode) // Set it at the new index
             );
         }
         else {
@@ -338,8 +338,8 @@ function diffNonKeyedChildren(
 }
 
 export default function diff(
-    oldNode?: VirtualNode | VirtualText | FragmentNode,
-    newNode?: VirtualNode | VirtualText | FragmentNode
+    oldNode?: ElementNode | TextNode | FragmentNode,
+    newNode?: ElementNode | TextNode | FragmentNode
 ): ElementPatches {
 
     if (isUndefinedOrNull(newNode)) {
@@ -355,7 +355,7 @@ export default function diff(
         }
         else { // oldNode is defined
 
-            if ((oldNode as FragmentNode).isFragmentNode) {
+            if ((oldNode as FragmentNode).isFragment) {
 
                 if ((oldNode as FragmentNode).children.length === 0) { // Nothing to remove
 
@@ -403,20 +403,20 @@ export default function diff(
 
         if (isVirtualNode(oldNode!)) {
 
-            if ((oldNode as VirtualNode).name !== (newNode as VirtualNode).name) {
+            if ((oldNode as ElementNode).name !== (newNode as ElementNode).name) {
 
                 return new ElementPatches(
                     /*patches*/
-                    [new ReplaceElementPatch((newNode as VirtualNode | VirtualText)!)],
+                    [new ReplaceElementPatch((newNode as ElementNode | TextNode)!)],
                     /*childrenPatches*/
                     []
                 );
             }
             else { // Same name, diff attributes and children
 
-                let oldChildren: (VirtualNode | VirtualText | FragmentNode | null)[] = (oldNode as VirtualNode).children;
+                let oldChildren: (ElementNode | TextNode | FragmentNode | null)[] = (oldNode as ElementNode).children;
 
-                let newChildren = (newNode as VirtualNode | FragmentNode).children;
+                let newChildren = (newNode as ElementNode | FragmentNode).children;
 
                 // In certain cases with the children, it is more convenient to apply the patches to the parent
                 if (newChildren.length === 0) {
@@ -425,7 +425,7 @@ export default function diff(
 
                         return new ElementPatches(
                             /*patches*/
-                            [...diffAttributes((oldNode as VirtualNode).props, (newNode as VirtualNode).props)],
+                            [...diffAttributes((oldNode as ElementNode).props, (newNode as ElementNode).props)],
                             /*childrenPatches*/
                             [] // No children to diff
                         );
@@ -435,7 +435,7 @@ export default function diff(
                         return new ElementPatches(
                             /*patches*/
                             [
-                                ...diffAttributes((oldNode as VirtualNode).props, (newNode as VirtualNode).props),
+                                ...diffAttributes((oldNode as ElementNode).props, (newNode as ElementNode).props),
                                 new RemoveChildrenPatch() // Remove all the old children
                             ],
                             /*childrenPatches*/
@@ -450,7 +450,7 @@ export default function diff(
                         return new ElementPatches(
                             /*patches*/
                             [
-                                ...diffAttributes((oldNode as VirtualNode).props, (newNode as VirtualNode).props),
+                                ...diffAttributes((oldNode as ElementNode).props, (newNode as ElementNode).props),
                                 new AddChildrenPatch(newChildren) // Add all the old children
                             ],
                             /*childrenPatches*/
@@ -475,7 +475,7 @@ export default function diff(
 
                         if (hasKeys(newChildren)) {
 
-                            [patches, childrenPatches] = diffKeyedChildren(oldChildren as Array<VirtualNode>, newChildren as Array<VirtualNode>);
+                            [patches, childrenPatches] = diffKeyedChildren(oldChildren as Array<ElementNode>, newChildren as Array<ElementNode>);
                         }
                         else {
 
@@ -497,7 +497,7 @@ export default function diff(
                         return new ElementPatches(
                             /*patches*/
                             [
-                                ...diffAttributes((oldNode as VirtualNode).props, (newNode as VirtualNode).props),
+                                ...diffAttributes((oldNode as ElementNode).props, (newNode as ElementNode).props),
                                 ...patches,
                                 ...removeChildrenPatches
                             ],
@@ -536,7 +536,7 @@ export default function diff(
 
             return new ElementPatches(
                 /*patches*/
-                [new ReplaceElementPatch((newNode as VirtualNode | VirtualText)!)],
+                [new ReplaceElementPatch((newNode as ElementNode | TextNode)!)],
                 /*childrenPatches*/
                 []
             );
@@ -677,7 +677,7 @@ export default function diff(
 
             return new ElementPatches(
                 /*patches*/
-                [new ReplaceElementPatch((newNode as VirtualNode | VirtualText)!)],
+                [new ReplaceElementPatch((newNode as ElementNode | TextNode)!)],
                 /*childrenPatches*/
                 []
             );
@@ -708,9 +708,9 @@ export default function diff(
         }
         else { // Old node is a virtual text
 
-            const oldText = oldNode as VirtualText;
+            const oldText = oldNode as TextNode;
 
-            const newText = newNode as VirtualText;
+            const newText = newNode as TextNode;
 
             if (oldText.text !== newText.text) {
 

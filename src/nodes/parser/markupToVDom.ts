@@ -1,11 +1,11 @@
 import FragmentNode from "../FragmentNode";
-import VirtualNode from "../VirtualNode";
-import VirtualText from "../VirtualText";
+import ElementNode from "../ElementNode";
+import TextNode from "../TextNode";
 import parseFromString from "./parseFromString";
 import toVDom from "./toVDom";
 
 export default function markupToVDom(markup: string, type: 'html' | 'xml' = 'xml', options: any = {})
-    : VirtualNode | VirtualText | FragmentNode | null {
+    : ElementNode | TextNode | FragmentNode | null {
 
     const nodes = parseFromString(markup, type);
 

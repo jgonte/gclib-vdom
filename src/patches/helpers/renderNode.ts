@@ -1,12 +1,12 @@
 import FragmentNode from "../../nodes/FragmentNode";
-import VirtualNode from "../../nodes/VirtualNode";
-import VirtualText from "../../nodes/VirtualText";
+import ElementNode from "../../nodes/ElementNode";
+import TextNode from "../../nodes/TextNode";
 
-export function renderNode(vnode: VirtualNode | VirtualText | FragmentNode): Node {
+export function renderNode(vnode: ElementNode | TextNode | FragmentNode): Node {
 
     if ((vnode as any).isComponent) {
 
-        let node = vnode.render();
+        let node = vnode.renderDom();
 
         node = (node as any).render();
 
@@ -18,6 +18,6 @@ export function renderNode(vnode: VirtualNode | VirtualText | FragmentNode): Nod
     }
     else {
 
-        return vnode.render();
+        return vnode.renderDom();
     }
 }

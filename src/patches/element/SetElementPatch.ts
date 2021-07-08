@@ -1,6 +1,6 @@
 import { Patch, PatchOptions, NodeChanges } from "../Patch";
-import VirtualNode from "../../nodes/VirtualNode";
-import VirtualText from "../../nodes/VirtualText";
+import ElementNode from "../../nodes/ElementNode";
+import TextNode from "../../nodes/TextNode";
 import FragmentNode from "../../nodes/FragmentNode";
 import setAttributes from "../../nodes/helpers/setAttributes";
 import callHook from "../helpers/callHook";
@@ -16,7 +16,7 @@ export default class SetElementPatch implements Patch {
         /**
          * The new node to set in an empty one
          */
-        public newNode: VirtualNode | VirtualText | FragmentNode
+        public newNode: ElementNode | TextNode | FragmentNode
     ) { }
 
     applyPatch(options: PatchOptions): void {

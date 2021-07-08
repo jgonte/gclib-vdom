@@ -2,10 +2,11 @@ import h from "../src/h";
 import diff from "../src/diff";
 import displayObject from "../src/utils/displayObject";
 import ElementPatches from "../src/patches/ElementPatches";
-import VirtualNode from "../src/nodes/VirtualNode";
-import VirtualText from "../src/nodes/VirtualText";
+import ElementNode from "../src/nodes/ElementNode";
+import TextNode from "../src/nodes/TextNode";
 import { NodeChanges } from "../src/patches/Patch";
 import { Fragment } from "../src/nodes/FragmentNode";
+import ComponentNode from "../src/nodes/ComponentNode";
 
 function comparePatches(patches: ElementPatches, expected: string): void {
 
@@ -63,7 +64,7 @@ describe("diff tests", () => {
 
         const newNode = null;
 
-        const patches = diff(oldNode as unknown as VirtualNode, newNode as unknown as VirtualNode);
+        const patches = diff(oldNode as unknown as ElementNode, newNode as unknown as ElementNode);
 
         comparePatches(patches, `
         (ElementPatches) {
@@ -80,10 +81,10 @@ describe("diff tests", () => {
 
     it("diff virtual text to undefined", () => {
 
-        const oldNode = new VirtualText('someText');
+        const oldNode = new TextNode('someText');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.textContent).toEqual('someText');
 
@@ -135,7 +136,7 @@ describe("diff tests", () => {
 
         const oldNode = undefined;
 
-        const newNode = new VirtualText('someText');
+        const newNode = new TextNode('someText');
 
         const patches = diff(oldNode, newNode);
 
@@ -145,9 +146,9 @@ describe("diff tests", () => {
             [
                 (SetElementPatch) {
                     newNode:
-                    (VirtualText) {
+                    (TextNode) {
                         text: 'someText',
-                        isVirtualText: true
+                        isText: true
                     }
                 }
             ],
@@ -190,7 +191,7 @@ describe("diff tests", () => {
         const oldNode = h('div', null);
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<div></div>');
 
@@ -252,11 +253,11 @@ describe("diff tests", () => {
             [
                 (SetElementPatch) {
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'div',
                         props: null,
                         children: [],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 }
             ],
@@ -298,11 +299,11 @@ describe("diff tests", () => {
 
         const oldNode = undefined;
 
-        class MyComponent {
+        class MyComponent extends ComponentNode {
 
             value: string = "Some text"
 
-            render(): VirtualNode | VirtualText {
+            render(): ElementNode | TextNode {
 
                 return h('span', null, this.value);
             }
@@ -318,17 +319,17 @@ describe("diff tests", () => {
             [
                 (SetElementPatch) {
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'span',
                         props: null,
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Some text',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 }
             ],
@@ -372,7 +373,7 @@ describe("diff tests", () => {
         const oldNode = h(Fragment as any, null);
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element).toBeInstanceOf(DocumentFragment);
 
@@ -429,7 +430,7 @@ describe("diff tests", () => {
                         props: null,
                         children:
                         [],
-                        isFragmentNode: true
+                        isFragment: true
                     }
                 }
             ],
@@ -469,7 +470,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const children = Array.from(element.childNodes);
 
@@ -531,7 +532,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const children = Array.from(element.childNodes);
 
@@ -636,44 +637,44 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualNode) {
+                            (ElementNode) {
                                 name: 'td',
                                 props: null,
                                 children:
                                 [
-                                    (VirtualText) {
+                                    (TextNode) {
                                         text: 'Hello',
-                                        isVirtualText: true
+                                        isText: true
                                     }
                                 ],
-                                isVirtualNode: true
+                                isElement: true
                             },
-                            (VirtualNode) {
+                            (ElementNode) {
                                 name: 'td',
                                 props: null,
                                 children:
                                 [
-                                    (VirtualText) {
+                                    (TextNode) {
                                         text: 'World',
-                                        isVirtualText: true
+                                        isText: true
                                     }
                                 ],
-                                isVirtualNode: true
+                                isElement: true
                             },
-                            (VirtualNode) {
+                            (ElementNode) {
                                 name: 'style',
                                 props: null,
                                 children:
                                 [
-                                    (VirtualText) {
+                                    (TextNode) {
                                         text: '@import './import1.css'',
-                                        isVirtualText: true
+                                        isText: true
                                     }
                                 ],
-                                isVirtualNode: true
+                                isElement: true
                             }
                         ],
-                        isFragmentNode: true
+                        isFragment: true
                     }
                 }
             ],
@@ -724,10 +725,10 @@ describe("diff tests", () => {
 
     it("diff virtual text to virtual node", () => {
 
-        const oldNode = new VirtualText('some text');
+        const oldNode = new TextNode('some text');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.textContent).toEqual('some text');
 
@@ -735,7 +736,7 @@ describe("diff tests", () => {
 
         shadowRoot.appendChild(element);
 
-        const newNode = new VirtualNode('span', null, [new VirtualText('Some other text')]);
+        const newNode = new ElementNode('span', null, [new TextNode('Some other text')]);
 
         const patches = diff(oldNode, newNode);
 
@@ -745,17 +746,17 @@ describe("diff tests", () => {
             [
                 (ReplaceElementPatch) {
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'span',
                         props: null,
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Some other text',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 }
             ],
@@ -794,10 +795,10 @@ describe("diff tests", () => {
 
     it("diff virtual node to virtual text", () => {
 
-        const oldNode = new VirtualNode('span', null, [new VirtualText('Some text')]);
+        const oldNode = new ElementNode('span', null, [new TextNode('Some text')]);
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.textContent).toEqual('Some text');
 
@@ -805,7 +806,7 @@ describe("diff tests", () => {
 
         shadowRoot.appendChild(element);
 
-        const newNode = new VirtualText('Some other text');
+        const newNode = new TextNode('Some other text');
 
         const patches = diff(oldNode, newNode);
 
@@ -815,9 +816,9 @@ describe("diff tests", () => {
             [
                 (ReplaceElementPatch) {
                     newNode:
-                    (VirtualText) {
+                    (TextNode) {
                         text: 'Some other text',
-                        isVirtualText: true
+                        isText: true
                     }
                 }
             ],
@@ -859,7 +860,7 @@ describe("diff tests", () => {
         const oldNode = h(Fragment as any, null);
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element).toBeInstanceOf(DocumentFragment);
 
@@ -867,7 +868,7 @@ describe("diff tests", () => {
 
         shadowRoot.appendChild(element);
 
-        const newNode = new VirtualNode('span', null, [new VirtualText('Some text')]);
+        const newNode = new ElementNode('span', null, [new TextNode('Some text')]);
 
         const patches = diff(oldNode, newNode);
 
@@ -877,17 +878,17 @@ describe("diff tests", () => {
             [
                 (SetElementPatch) {
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'span',
                         props: null,
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Some text',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 }
             ],
@@ -929,7 +930,7 @@ describe("diff tests", () => {
         const oldNode = h(Fragment as any, null);
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element).toBeInstanceOf(DocumentFragment);
 
@@ -937,7 +938,7 @@ describe("diff tests", () => {
 
         shadowRoot.appendChild(element);
 
-        const newNode = new VirtualText('Some text');
+        const newNode = new TextNode('Some text');
 
         const patches = diff(oldNode, newNode);
 
@@ -947,9 +948,9 @@ describe("diff tests", () => {
             [
                 (SetElementPatch) {
                     newNode:
-                    (VirtualText) {
+                    (TextNode) {
                         text: 'Some text',
-                        isVirtualText: true
+                        isText: true
                     }
                 }
             ],
@@ -991,7 +992,7 @@ describe("diff tests", () => {
         const oldNode = h(Fragment as any, null);
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element).toBeInstanceOf(DocumentFragment);
 
@@ -1022,32 +1023,32 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualNode) {
+                            (ElementNode) {
                                 name: 'td',
                                 props: null,
                                 children:
                                 [
-                                    (VirtualText) {
+                                    (TextNode) {
                                         text: 'Hello',
-                                        isVirtualText: true
+                                        isText: true
                                     }
                                 ],
-                                isVirtualNode: true
+                                isElement: true
                             },
-                            (VirtualNode) {
+                            (ElementNode) {
                                 name: 'td',
                                 props: null,
                                 children:
                                 [
-                                    (VirtualText) {
+                                    (TextNode) {
                                         text: 'World',
-                                        isVirtualText: true
+                                        isText: true
                                     }
                                 ],
-                                isVirtualNode: true
+                                isElement: true
                             }
                         ],
-                        isFragmentNode: true
+                        isFragment: true
                     }
                 }
             ],
@@ -1095,7 +1096,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const children = Array.from(element.childNodes);
 
@@ -1105,7 +1106,7 @@ describe("diff tests", () => {
 
         shadowRoot.appendChild(element);
 
-        const newNode = new VirtualNode('span', null, [new VirtualText('Some text')]);
+        const newNode = new ElementNode('span', null, [new TextNode('Some text')]);
 
         const patches = diff(oldNode, newNode);
 
@@ -1116,17 +1117,17 @@ describe("diff tests", () => {
                 (RemoveChildrenPatch) {},
                 (SetElementPatch) {
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'span',
                         props: null,
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Some text',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 }
             ],
@@ -1166,10 +1167,10 @@ describe("diff tests", () => {
 
     it("diff virtual node to empty fragment node", () => {
 
-        const oldNode = new VirtualNode('span', null, [new VirtualText('Some text')]);
+        const oldNode = new ElementNode('span', null, [new TextNode('Some text')]);
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const shadowRoot = createShadowRoot();
 
@@ -1216,10 +1217,10 @@ describe("diff tests", () => {
 
     it("diff virtual node to fragment node", () => {
 
-        const oldNode = new VirtualNode('span', null, [new VirtualText('Some text')]);
+        const oldNode = new ElementNode('span', null, [new TextNode('Some text')]);
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const shadowRoot = createShadowRoot();
 
@@ -1249,32 +1250,32 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualNode) {
+                            (ElementNode) {
                                 name: 'td',
                                 props: null,
                                 children:
                                 [
-                                    (VirtualText) {
+                                    (TextNode) {
                                         text: 'Hello',
-                                        isVirtualText: true
+                                        isText: true
                                     }
                                 ],
-                                isVirtualNode: true
+                                isElement: true
                             },
-                            (VirtualNode) {
+                            (ElementNode) {
                                 name: 'td',
                                 props: null,
                                 children:
                                 [
-                                    (VirtualText) {
+                                    (TextNode) {
                                         text: 'World',
-                                        isVirtualText: true
+                                        isText: true
                                     }
                                 ],
-                                isVirtualNode: true
+                                isElement: true
                             }
                         ],
-                        isFragmentNode: true
+                        isFragment: true
                     }
                 }
             ],
@@ -1323,7 +1324,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const children = Array.from(element.childNodes);
 
@@ -1333,7 +1334,7 @@ describe("diff tests", () => {
 
         shadowRoot.appendChild(element);
 
-        const newNode = new VirtualText('Some text');
+        const newNode = new TextNode('Some text');
 
         const patches = diff(oldNode, newNode);
 
@@ -1344,9 +1345,9 @@ describe("diff tests", () => {
                 (RemoveChildrenPatch) {},
                 (SetElementPatch) {
                     newNode:
-                    (VirtualText) {
+                    (TextNode) {
                         text: 'Some text',
-                        isVirtualText: true
+                        isText: true
                     }
                 }
             ],
@@ -1386,10 +1387,10 @@ describe("diff tests", () => {
 
     it("diff virtual text to empty fragment node", () => {
 
-        const oldNode = new VirtualText('Some text');
+        const oldNode = new TextNode('Some text');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const shadowRoot = createShadowRoot();
 
@@ -1436,10 +1437,10 @@ describe("diff tests", () => {
 
     it("diff virtual text to fragment node", () => {
 
-        const oldNode = new VirtualText('Some text');
+        const oldNode = new TextNode('Some text');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const shadowRoot = createShadowRoot();
 
@@ -1476,32 +1477,32 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualNode) {
+                            (ElementNode) {
                                 name: 'td',
                                 props: null,
                                 children:
                                 [
-                                    (VirtualText) {
+                                    (TextNode) {
                                         text: 'Hello',
-                                        isVirtualText: true
+                                        isText: true
                                     }
                                 ],
-                                isVirtualNode: true
+                                isElement: true
                             },
-                            (VirtualNode) {
+                            (ElementNode) {
                                 name: 'td',
                                 props: null,
                                 children:
                                 [
-                                    (VirtualText) {
+                                    (TextNode) {
                                         text: 'World',
-                                        isVirtualText: true
+                                        isText: true
                                     }
                                 ],
-                                isVirtualNode: true
+                                isElement: true
                             }
                         ],
-                        isFragmentNode: true
+                        isFragment: true
                     }
                 }
             ],
@@ -1543,10 +1544,10 @@ describe("diff tests", () => {
 
     it("diff virtual text to virtual text same text", () => {
 
-        const oldNode = new VirtualText('Some text');
+        const oldNode = new TextNode('Some text');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.textContent).toEqual('Some text');
 
@@ -1554,7 +1555,7 @@ describe("diff tests", () => {
 
         shadowRoot.appendChild(element);
 
-        const newNode = new VirtualText('Some text');
+        const newNode = new TextNode('Some text');
 
         const patches = diff(oldNode, newNode);
 
@@ -1593,11 +1594,10 @@ describe("diff tests", () => {
 
     it("diff virtual text to virtual text different text", () => {
 
-        // CustomElement's render converts literals to virtual texts
-        const oldNode = new VirtualText('Some text');
+        const oldNode = new TextNode('Some text');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.textContent).toEqual('Some text');
 
@@ -1605,7 +1605,7 @@ describe("diff tests", () => {
 
         shadowRoot.appendChild(element);
 
-        const newNode = new VirtualText('Some other text');
+        const newNode = new TextNode('Some other text');
 
         const patches = diff(oldNode, newNode);
 
@@ -1615,9 +1615,9 @@ describe("diff tests", () => {
             [
                 (SetTextPatch) {
                     value:
-                    (VirtualText) {
+                    (TextNode) {
                         text: 'Some other text',
-                        isVirtualText: true
+                        isText: true
                     }
                 }
             ],
@@ -1662,11 +1662,10 @@ describe("diff tests", () => {
 
     it("diff textarea virtual text to virtual text different text", () => {
 
-        // CustomElement's render converts literals to virtual texts
         const oldNode = h("textarea", null, 'Some text');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<textarea>Some text</textarea>');
 
@@ -1692,9 +1691,9 @@ describe("diff tests", () => {
                         [
                             (SetTextPatch) {
                                 value:
-                                (VirtualText) {
+                                (TextNode) {
                                     text: 'Some other text',
-                                    isVirtualText: true
+                                    isText: true
                                 }
                             }
                         ],
@@ -1746,7 +1745,7 @@ describe("diff tests", () => {
         const oldNode = h("div", null);
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<div></div>');
 
@@ -1799,7 +1798,7 @@ describe("diff tests", () => {
         });
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<div id=\"myElement1\" class=\"class1 class2\"></div>');
 
@@ -1890,7 +1889,7 @@ describe("diff tests", () => {
         });
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<div selected=\"true\"></div>');
 
@@ -1961,7 +1960,7 @@ describe("diff tests", () => {
         });
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<div></div>');
 
@@ -2032,7 +2031,7 @@ describe("diff tests", () => {
         const oldNode = h('span', null, 'Some text');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<span>Some text</span>');
 
@@ -2112,7 +2111,7 @@ describe("diff tests", () => {
         const oldNode = h('span', null, 'Some text');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<span>Some text</span>');
 
@@ -2192,7 +2191,7 @@ describe("diff tests", () => {
         const oldNode = h('span', null, 'Some text');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<span>Some text</span>');
 
@@ -2269,7 +2268,7 @@ describe("diff tests", () => {
         const oldNode = h('span', { onClick }, 'Some text');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<span>Some text</span>');
 
@@ -2343,7 +2342,7 @@ describe("diff tests", () => {
         const oldNode = h('span', { onClick_capture: onClick }, 'Some text');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<span>Some text</span>');
 
@@ -2417,7 +2416,7 @@ describe("diff tests", () => {
         const oldNode = h('span', { onClick }, 'Some text');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<span>Some text</span>');
 
@@ -2493,7 +2492,7 @@ describe("diff tests", () => {
         const oldNode = h('span', { onClick: onOldClick }, 'Some text');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<span>Some text</span>');
 
@@ -2589,7 +2588,7 @@ describe("diff tests", () => {
         const oldNode = h('span', null, 'Some text');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<span>Some text</span>');
 
@@ -2614,9 +2613,9 @@ describe("diff tests", () => {
                         [
                             (SetTextPatch) {
                                 value:
-                                (VirtualText) {
+                                (TextNode) {
                                     text: 'Some other text',
-                                    isVirtualText: true
+                                    isText: true
                                 }
                             }
                         ],
@@ -2669,7 +2668,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<ul><li>Item1</li><li>Item2</li><li>Item3</li></ul>');
 
@@ -2728,7 +2727,7 @@ describe("diff tests", () => {
         const oldNode = h("ul", null);
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<ul></ul>');
 
@@ -2751,41 +2750,41 @@ describe("diff tests", () => {
                 (AddChildrenPatch) {
                     children:
                     [
-                        (VirtualNode) {
+                        (ElementNode) {
                             name: 'li',
                             props: null,
                             children:
                             [
-                                (VirtualText) {
+                                (TextNode) {
                                     text: 'Item1',
-                                    isVirtualText: true
+                                    isText: true
                                 }
                             ],
-                            isVirtualNode: true
+                            isElement: true
                         },
-                        (VirtualNode) {
+                        (ElementNode) {
                             name: 'li',
                             props: null,
                             children:
                             [
-                                (VirtualText) {
+                                (TextNode) {
                                     text: 'Item2',
-                                    isVirtualText: true
+                                    isText: true
                                 }
                             ],
-                            isVirtualNode: true
+                            isElement: true
                         },
-                        (VirtualNode) {
+                        (ElementNode) {
                             name: 'li',
                             props: null,
                             children:
                             [
-                                (VirtualText) {
+                                (TextNode) {
                                     text: 'Item3',
-                                    isVirtualText: true
+                                    isText: true
                                 }
                             ],
-                            isVirtualNode: true
+                            isElement: true
                         }
                     ]
                 }
@@ -2828,10 +2827,10 @@ describe("diff tests", () => {
 
     it("diff virtual node to virtual node with different name", () => {
 
-        const oldNode = new VirtualNode('div', null, [new VirtualText('Some text')]);
+        const oldNode = new ElementNode('div', null, [new TextNode('Some text')]);
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<div>Some text</div>');
 
@@ -2839,7 +2838,7 @@ describe("diff tests", () => {
 
         shadowRoot.appendChild(element);
 
-        const newNode = new VirtualNode('span', null, [new VirtualText('Some other text')]);
+        const newNode = new ElementNode('span', null, [new TextNode('Some other text')]);
 
         const patches = diff(oldNode, newNode);
 
@@ -2849,17 +2848,17 @@ describe("diff tests", () => {
             [
                 (ReplaceElementPatch) {
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'span',
                         props: null,
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Some other text',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 }
             ],
@@ -2903,7 +2902,7 @@ describe("diff tests", () => {
         const oldNode = h(Fragment as any, null);
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const children = Array.from(element.childNodes);
 
@@ -2951,7 +2950,7 @@ describe("diff tests", () => {
         const oldNode = h(Fragment as any, null);
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const children = Array.from(element.childNodes);
 
@@ -2991,32 +2990,32 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualNode) {
+                            (ElementNode) {
                                 name: 'td',
                                 props: null,
                                 children:
                                 [
-                                    (VirtualText) {
+                                    (TextNode) {
                                         text: 'Hello',
-                                        isVirtualText: true
+                                        isText: true
                                     }
                                 ],
-                                isVirtualNode: true
+                                isElement: true
                             },
-                            (VirtualNode) {
+                            (ElementNode) {
                                 name: 'td',
                                 props: null,
                                 children:
                                 [
-                                    (VirtualText) {
+                                    (TextNode) {
                                         text: 'World',
-                                        isVirtualText: true
+                                        isText: true
                                     }
                                 ],
-                                isVirtualNode: true
+                                isElement: true
                             }
                         ],
-                        isFragmentNode: true
+                        isFragment: true
                     }
                 }
             ],
@@ -3068,7 +3067,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const children = Array.from(element.childNodes);
 
@@ -3108,9 +3107,9 @@ describe("diff tests", () => {
                                     [
                                         (SetTextPatch) {
                                             value:
-                                            (VirtualText) {
+                                            (TextNode) {
                                                 text: 'Hello 1',
-                                                isVirtualText: true
+                                                isText: true
                                             }
                                         }
                                     ],
@@ -3137,9 +3136,9 @@ describe("diff tests", () => {
                                     [
                                         (SetTextPatch) {
                                             value:
-                                            (VirtualText) {
+                                            (TextNode) {
                                                 text: 'World 1',
-                                                isVirtualText: true
+                                                isText: true
                                             }
                                         }
                                     ],
@@ -3207,7 +3206,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         //expect(element).toBeInstanceOf(DocumentFragment);
 
@@ -3310,7 +3309,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         //expect(element).toBeInstanceOf(DocumentFragment);
 
@@ -3422,7 +3421,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         //expect(element).toBeInstanceOf(DocumentFragment);
 
@@ -3514,7 +3513,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const oldChildren = Array.from(element.childNodes);
 
@@ -3544,7 +3543,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 0,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -3552,12 +3551,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 11',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (MoveChildPatch) {
@@ -3573,7 +3572,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 3,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -3581,12 +3580,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 12',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (MoveChildPatch) {
@@ -3602,7 +3601,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 6,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -3610,12 +3609,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 13',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (RemoveChildrenRangePatch) {
@@ -3668,7 +3667,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element).toBeInstanceOf(DocumentFragment);
 
@@ -3770,7 +3769,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element).toBeInstanceOf(DocumentFragment);
 
@@ -3850,7 +3849,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"/><div><span>Some text</span></div></div>');
 
@@ -3916,9 +3915,9 @@ describe("diff tests", () => {
                                                 [
                                                     (SetTextPatch) {
                                                         value:
-                                                        (VirtualText) {
+                                                        (TextNode) {
                                                             text: 'Some other text',
-                                                            isVirtualText: true
+                                                            isText: true
                                                         }
                                                     }
                                                 ],
@@ -3990,7 +3989,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const spanToRemove = element.childNodes[1].childNodes[0];
 
@@ -4048,9 +4047,9 @@ describe("diff tests", () => {
                                     [
                                         (ReplaceElementPatch) {
                                             newNode:
-                                            (VirtualText) {
+                                            (TextNode) {
                                                 text: 'Some other text',
-                                                isVirtualText: true
+                                                isText: true
                                             }
                                         }
                                     ],
@@ -4123,7 +4122,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const oldImg = element.childNodes[0];
 
@@ -4158,9 +4157,9 @@ describe("diff tests", () => {
                         [
                             (ReplaceElementPatch) {
                                 newNode:
-                                (VirtualText) {
+                                (TextNode) {
                                     text: 'Some text',
-                                    isVirtualText: true
+                                    isText: true
                                 }
                             }
                         ],
@@ -4207,7 +4206,7 @@ describe("diff tests", () => {
         const oldNode = h('div', null, 'Some text');
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<div>Some text</div>');
 
@@ -4237,25 +4236,25 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 1,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'div',
                         props: null,
                         children:
                         [
-                            (VirtualNode) {
+                            (ElementNode) {
                                 name: 'span',
                                 props: null,
                                 children:
                                 [
-                                    (VirtualText) {
+                                    (TextNode) {
                                         text: 'Some text',
-                                        isVirtualText: true
+                                        isText: true
                                     }
                                 ],
-                                isVirtualNode: true
+                                isElement: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 }
             ],
@@ -4269,7 +4268,7 @@ describe("diff tests", () => {
                         [
                             (ReplaceElementPatch) {
                                 newNode:
-                                (VirtualNode) {
+                                (ElementNode) {
                                     name: 'img',
                                     props:
                                     {
@@ -4277,7 +4276,7 @@ describe("diff tests", () => {
                                     },
                                     children:
                                     [],
-                                    isVirtualNode: true
+                                    isElement: true
                                 }
                             }
                         ],
@@ -4328,7 +4327,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<ul><li>Text 1</li><li>Text 2</li><li>Text 3</li></ul>');
 
@@ -4371,9 +4370,9 @@ describe("diff tests", () => {
                                     [
                                         (SetTextPatch) {
                                             value:
-                                            (VirtualText) {
+                                            (TextNode) {
                                                 text: 'Text 4',
-                                                isVirtualText: true
+                                                isText: true
                                             }
                                         }
                                     ],
@@ -4398,9 +4397,9 @@ describe("diff tests", () => {
                                     [
                                         (SetTextPatch) {
                                             value:
-                                            (VirtualText) {
+                                            (TextNode) {
                                                 text: 'Text 5',
-                                                isVirtualText: true
+                                                isText: true
                                             }
                                         }
                                     ],
@@ -4463,7 +4462,7 @@ describe("diff tests", () => {
         const oldNode = h('ul', null);
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<ul></ul>');
 
@@ -4484,7 +4483,7 @@ describe("diff tests", () => {
                 (AddChildrenPatch) {
                     children:
                     [
-                        (VirtualNode) {
+                        (ElementNode) {
                             name: 'li',
                             props:
                             {
@@ -4492,12 +4491,12 @@ describe("diff tests", () => {
                             },
                             children:
                             [
-                                (VirtualText) {
+                                (TextNode) {
                                     text: 'Text 1',
-                                    isVirtualText: true
+                                    isText: true
                                 }
                             ],
-                            isVirtualNode: true
+                            isElement: true
                         }
                     ]
                 }
@@ -4543,7 +4542,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li></ul>');
 
@@ -4565,7 +4564,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 0,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -4573,12 +4572,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 3',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (MoveChildPatch) {
@@ -4604,9 +4603,9 @@ describe("diff tests", () => {
                                     [
                                         (SetTextPatch) {
                                             value:
-                                            (VirtualText) {
+                                            (TextNode) {
                                                 text: 'Text 11',
-                                                isVirtualText: true
+                                                isText: true
                                             }
                                         }
                                     ],
@@ -4665,7 +4664,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li></ul>');
 
@@ -4687,7 +4686,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 1,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -4695,12 +4694,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 3',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 }
             ],
@@ -4721,9 +4720,9 @@ describe("diff tests", () => {
                                     [
                                         (SetTextPatch) {
                                             value:
-                                            (VirtualText) {
+                                            (TextNode) {
                                                 text: 'Text 11',
-                                                isVirtualText: true
+                                                isText: true
                                             }
                                         }
                                     ],
@@ -4782,7 +4781,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"2\">Text 2</li><li key=\"4\">Text 4</li></ul>');
 
@@ -4807,7 +4806,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 0,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -4815,12 +4814,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 1',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (MoveChildPatch) {
@@ -4831,7 +4830,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 2,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -4839,12 +4838,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 3',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (MoveChildPatch) {
@@ -4855,7 +4854,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 4,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -4863,12 +4862,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 5',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 }
             ],
@@ -4917,7 +4916,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"3\">Text 3</li><li key=\"4\">Text 4</li><li key=\"7\">Text 7</li><li key=\"8\">Text 8</li></ul>');
 
@@ -4947,7 +4946,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 0,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -4955,18 +4954,18 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 1',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (SetChildPatch) {
                     index: 1,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -4974,12 +4973,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 2',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (MoveChildPatch) {
@@ -4995,7 +4994,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 4,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -5003,18 +5002,18 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 5',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (SetChildPatch) {
                     index: 5,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -5022,12 +5021,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 6',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (MoveChildPatch) {
@@ -5043,7 +5042,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 8,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -5051,18 +5050,18 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 9',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (SetChildPatch) {
                     index: 9,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -5070,12 +5069,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 10',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 }
             ],
@@ -5122,7 +5121,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<ul><li key=\"1\">Text 1</li><li key=\"2\">Text 2</li></ul>');
 
@@ -5198,7 +5197,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const lastNode = element.childNodes[1];
 
@@ -5267,7 +5266,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const middleChild = element.childNodes[1];
 
@@ -5347,7 +5346,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const oldChildren = Array.from(element.childNodes);
 
@@ -5437,7 +5436,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const oldChildren = Array.from(element.childNodes);
 
@@ -5540,7 +5539,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const oldChildren = Array.from(element.childNodes);
 
@@ -5617,7 +5616,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const oldChildren = Array.from(element.childNodes);
 
@@ -5642,7 +5641,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 0,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -5650,12 +5649,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 1',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (MoveChildPatch) {
@@ -5708,7 +5707,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const oldChildren = Array.from(element.childNodes);
 
@@ -5738,7 +5737,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 1,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -5746,12 +5745,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 2',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 }
             ],
@@ -5799,7 +5798,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const oldChildren = Array.from(element.childNodes);
 
@@ -5829,7 +5828,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 1,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -5837,12 +5836,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 3',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (MoveChildPatch) {
@@ -5895,7 +5894,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const oldChildren = Array.from(element.childNodes);
 
@@ -5978,7 +5977,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const oldChildren = Array.from(element.childNodes);
 
@@ -6067,7 +6066,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const oldChildren = Array.from(element.childNodes);
 
@@ -6098,7 +6097,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 1,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -6106,12 +6105,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 5',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (MoveChildPatch) {
@@ -6175,7 +6174,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const oldChildren = Array.from(element.childNodes);
 
@@ -6204,7 +6203,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 0,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -6212,12 +6211,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 11',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (MoveChildPatch) {
@@ -6233,7 +6232,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 3,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -6241,12 +6240,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 12',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (MoveChildPatch) {
@@ -6262,7 +6261,7 @@ describe("diff tests", () => {
                 (SetChildPatch) {
                     index: 6,
                     newNode:
-                    (VirtualNode) {
+                    (ElementNode) {
                         name: 'li',
                         props:
                         {
@@ -6270,12 +6269,12 @@ describe("diff tests", () => {
                         },
                         children:
                         [
-                            (VirtualText) {
+                            (TextNode) {
                                 text: 'Text 13',
-                                isVirtualText: true
+                                isText: true
                             }
                         ],
-                        isVirtualNode: true
+                        isElement: true
                     }
                 },
                 (RemoveChildrenRangePatch) {
@@ -6332,7 +6331,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         expect(element.outerHTML).toEqual('<div><h4>Counter</h4>5<button>Increment</button></div>');
 
@@ -6363,9 +6362,9 @@ describe("diff tests", () => {
                         [
                             (SetTextPatch) {
                                 value:
-                                (VirtualText) {
+                                (TextNode) {
                                     text: 6,
-                                    isVirtualText: true
+                                    isText: true
                                 }
                             }
                         ],
@@ -6424,7 +6423,7 @@ describe("diff tests", () => {
         );
 
         // Get the element to get patched
-        const element = oldNode.render();
+        const element = oldNode.renderDom();
 
         const oldChildren = Array.from(element.childNodes);
 
@@ -6450,7 +6449,7 @@ describe("diff tests", () => {
             (SetChildPatch) {
                 index: 1,
                 newNode:
-                (VirtualNode) {
+                (ElementNode) {
                     name: 'li',
                     props:
                     {
@@ -6458,18 +6457,18 @@ describe("diff tests", () => {
                     },
                     children:
                     [
-                        (VirtualText) {
+                        (TextNode) {
                             text: '2',
-                            isVirtualText: true
+                            isText: true
                         }
                     ],
-                    isVirtualNode: true
+                    isElement: true
                 }
             },
             (SetChildPatch) {
                 index: 2,
                 newNode:
-                (VirtualNode) {
+                (ElementNode) {
                     name: 'li',
                     props:
                     {
@@ -6477,12 +6476,12 @@ describe("diff tests", () => {
                     },
                     children:
                     [
-                        (VirtualText) {
+                        (TextNode) {
                             text: '3',
-                            isVirtualText: true
+                            isText: true
                         }
                     ],
-                    isVirtualNode: true
+                    isElement: true
                 }
             }
         ],
@@ -6496,7 +6495,7 @@ describe("diff tests", () => {
                     [
                         (ReplaceElementPatch) {
                             newNode:
-                            (VirtualNode) {
+                            (ElementNode) {
                                 name: 'li',
                                 props:
                                 {
@@ -6504,12 +6503,12 @@ describe("diff tests", () => {
                                 },
                                 children:
                                 [
-                                    (VirtualText) {
+                                    (TextNode) {
                                         text: '1',
-                                        isVirtualText: true
+                                        isText: true
                                     }
                                 ],
-                                isVirtualNode: true
+                                isElement: true
                             }
                         }
                     ],

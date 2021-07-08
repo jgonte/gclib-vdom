@@ -1,7 +1,7 @@
-import VirtualNode from "../VirtualNode";
-import VirtualText from "../VirtualText";
+import ElementNode from "../ElementNode";
+import TextNode from "../TextNode";
 
-export default function toVDom(node?: Node, options: any = {}): VirtualNode | VirtualText | null {
+export default function toVDom(node?: Node, options: any = {}): ElementNode | TextNode | null {
 
     if (node === null) {
 
@@ -24,7 +24,7 @@ export default function toVDom(node?: Node, options: any = {}): VirtualNode | Vi
 
                 const children = getChildren(element.childNodes, options);
 
-                return new VirtualNode(nodeName, props, children);
+                return new ElementNode(nodeName, props, children);
             }
         case 3: // text
             {
@@ -39,7 +39,7 @@ export default function toVDom(node?: Node, options: any = {}): VirtualNode | Vi
                     return null;
                 }
 
-                return new VirtualText(content);
+                return new TextNode(content);
             }
         default: return null; // Node type is ignored
     }
@@ -75,9 +75,9 @@ function getProps(attributes: NamedNodeMap) {
     return props;
 }
 
-function getChildren(childNodes: NodeListOf<ChildNode>, options: any): (VirtualNode | VirtualText)[] {
+function getChildren(childNodes: NodeListOf<ChildNode>, options: any): (ElementNode | TextNode)[] {
 
-    var vnodes: (VirtualNode | VirtualText)[] = [];
+    var vnodes: (ElementNode | TextNode)[] = [];
 
     childNodes.forEach(childNode => {
 

@@ -1,14 +1,16 @@
-import h from "../src/h";
-import { Fragment } from "../src/nodes/FragmentNode";
-import { NodeChanges, VirtualNode, VirtualText } from "../src/gclib-vdom";
+import h from '../src/h';
+import { Fragment } from '../src/nodes/FragmentNode';
+import ComponentNode from '../src/nodes/ComponentNode';
+import ElementNode from '../src/nodes/ElementNode';
+import TextNode from '../src/nodes/TextNode';
 
-describe("render tests", () => {
+describe("renderDom tests", () => {
 
     it("creates an element from a virtual node with the name of the element", () => {
 
         const node = h('div', null);
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<div></div>');
     });
@@ -21,7 +23,7 @@ describe("render tests", () => {
             style: "color: red;"
         });
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<div id=\"myElement\" class=\"class1 class2\" style=\"color: red;\"></div>');
     });
@@ -38,7 +40,7 @@ describe("render tests", () => {
             )
         );
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<div><img src=\"http://images/image.gif\"/><div><span>Some text</span></div></div>');
     });
@@ -54,7 +56,7 @@ describe("render tests", () => {
             h('span', null, 'Some text')
         );
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<div id=\"myElement\"><img src=\"http://images/image.gif\"/><span>Some text</span></div>');
     });
@@ -68,7 +70,7 @@ describe("render tests", () => {
             })
         );
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<svg><use href=\"http://icons/icons.svg#my-icon\"/></svg>');
     });
@@ -79,7 +81,7 @@ describe("render tests", () => {
             class: undefined
         }, 'Some text');
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<div>Some text</div>');
     });
@@ -90,7 +92,7 @@ describe("render tests", () => {
             class: null
         }, 'Some text');
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<div>Some text</div>');
     });
@@ -109,7 +111,7 @@ describe("render tests", () => {
             }
         }, 'Some text');
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<div class=\"visible four\">Some text</div>');
     });
@@ -120,7 +122,7 @@ describe("render tests", () => {
             style: undefined
         }, 'Some text');
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<div>Some text</div>');
     });
@@ -131,7 +133,7 @@ describe("render tests", () => {
             style: null
         }, 'Some text');
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<div>Some text</div>');
     });
@@ -149,7 +151,7 @@ describe("render tests", () => {
             style
         }, 'Some text');
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<div style=\"width:1px;height:1px;background-color:red;transform:rotateZ(45deg);\">Some text</div>');
     });
@@ -160,10 +162,10 @@ describe("render tests", () => {
 
         const node = h("div", { child: childNode });
 
-        const element = node.render();
+        const element = node.renderDom();
 
         // Property is an object so it is serialized to JSON
-        expect(element.outerHTML).toEqual('<div child=\"{&#x22;name&#x22;:&#x22;span&#x22;,&#x22;props&#x22;:null,&#x22;children&#x22;:[{&#x22;text&#x22;:&#x22;My title&#x22;,&#x22;isVirtualText&#x22;:true}],&#x22;isVirtualNode&#x22;:true}\"></div>'); 
+        expect(element.outerHTML).toEqual('<div child=\"{&#x22;name&#x22;:&#x22;span&#x22;,&#x22;props&#x22;:null,&#x22;children&#x22;:[{&#x22;text&#x22;:&#x22;My title&#x22;,&#x22;isText&#x22;:true}],&#x22;isElement&#x22;:true}\"></div>'); 
     });
 
     it("creates an element with event no capture", () => {
@@ -172,7 +174,7 @@ describe("render tests", () => {
 
         const node = h("div", { onClick });
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<div></div>');
 
@@ -210,7 +212,7 @@ describe("render tests", () => {
 
         const node = h("div", { onClick_capture: onClick });
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<div></div>');
 
@@ -265,7 +267,7 @@ describe("render tests", () => {
             h("td", null, "World")
         );
 
-        const element = node.render();
+        const element = node.renderDom();
 
         var div = document.createElement('div');
 
@@ -287,7 +289,7 @@ describe("render tests", () => {
             )
         );
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<div><td>Hello</td><td>World</td></div>');
     });
@@ -314,7 +316,7 @@ describe("render tests", () => {
             )
         );
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<thead><tr><th>Title 1</th><th>Title 2</th><th>Title 3</th></tr></thead>');
     });
@@ -327,7 +329,7 @@ describe("render tests", () => {
 
             open: boolean = false;
 
-            render(): VirtualNode | VirtualText {
+            render(): ElementNode | TextNode {
 
                 return h('span', {
                     'aria-hidden': this.open ? 'false' : 'true',
@@ -347,7 +349,7 @@ describe("render tests", () => {
 
         const node = h(MyComponent as any, null);
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<span aria-hidden=\"true\" class=\"todo-list\" style=\"width:1px;height:1px;background-color:red;transform:rotateZ(45deg);\">Some text</span>');
     });
@@ -358,7 +360,7 @@ describe("render tests", () => {
 
         let node2;
 
-        class FC {
+        class MyComponent extends ComponentNode {
 
             render() {
 
@@ -376,7 +378,7 @@ describe("render tests", () => {
             }
         }
 
-        const fc = new FC();
+        const fc = new MyComponent(null, undefined);
 
         const node = h('div', null, fc);
 
@@ -388,18 +390,18 @@ describe("render tests", () => {
             {
                 "children": [
                     {
-                        "isVirtualText": true,
+                        "isText": true,
                         "text": "child",
                     }
                 ],
                 "component": fc,
-                "isVirtualNode": true,
+                "isElement": true,
                 "name": "span",
                 "props": null
             }
         ]);
 
-        const element = node.render();
+        const element = node.renderDom();
 
         expect(element.outerHTML).toEqual('<div><span>child</span></div>');
 

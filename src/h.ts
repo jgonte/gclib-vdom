@@ -1,5 +1,5 @@
-import VirtualNode from "./nodes/VirtualNode"
-import VirtualText from "./nodes/VirtualText";
+import ElementNode from "./nodes/ElementNode"
+import TextNode from "./nodes/TextNode";
 import FragmentNode from "./nodes/FragmentNode";
 // import getCSSClass from "./nodes/helpers/getCSSClass";
 // import getCSSStyle from "./nodes/helpers/getCSSStyle";
@@ -13,7 +13,7 @@ import FragmentNode from "./nodes/FragmentNode";
 export default function h(
     name: string | FunctionConstructor,
     attributes: any = {},
-    ...children: Array<VirtualNode | VirtualText | FragmentNode | string | number | boolean | object>): VirtualNode {
+    ...children: Array<ElementNode | TextNode | FragmentNode | string | number | boolean | object>): ElementNode {
 
     // Extract the children if an array was passed
     if (Array.isArray(children[0])) {
@@ -21,7 +21,7 @@ export default function h(
         children = children[0];
     }
 
-    const childrenNodes: Array<VirtualNode | FragmentNode | VirtualText> = [];
+    const childrenNodes: Array<ElementNode | FragmentNode | TextNode> = [];
 
     children.forEach(child => {
 
@@ -31,15 +31,15 @@ export default function h(
             return; // Nothing to push
         }
 
-        if ((child as VirtualNode).isVirtualNode) {
+        if ((child as ElementNode).isElement) {
 
-            childrenNodes.push(child as VirtualNode);
+            childrenNodes.push(child as ElementNode);
         }
-        else if ((child as VirtualText).isVirtualText) {
+        else if ((child as TextNode).isText) {
 
-            childrenNodes.push(child as VirtualText);
+            childrenNodes.push(child as TextNode);
         }
-        else if ((child as FragmentNode).isFragmentNode) {
+        else if ((child as FragmentNode).isFragment) {
 
             childrenNodes.push(child as FragmentNode);
         }
@@ -51,7 +51,7 @@ export default function h(
 
             if ((child as any).render !== undefined) { // Functional component
 
-                const vNode: VirtualNode = (child as any).render();
+                const vNode: ElementNode = (child as any).render();
 
                 vNode.component = child; // Set the functional component to call its hooks if any
 
@@ -64,13 +64,13 @@ export default function h(
         }
         else {
 
-            childrenNodes.push(new VirtualText(child));
+            childrenNodes.push(new TextNode(child));
         }
     });
 
     if (typeof name === 'string') {
 
-        return new VirtualNode(name, attributes, childrenNodes);
+        return new ElementNode(name, attributes, childrenNodes);
     }
     else {
 

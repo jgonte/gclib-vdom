@@ -1,11 +1,11 @@
-import VirtualNode from "./VirtualNode";
-import VirtualText from "./VirtualText";
+import ElementNode from "./ElementNode";
+import TextNode from "./TextNode";
 
 export class Fragment {}
 
 export default class FragmentNode {
 
-    isFragmentNode: boolean = true;
+    isFragment: boolean = true;
 
     element?: Node;
 
@@ -19,34 +19,34 @@ export default class FragmentNode {
         /**
          * The children of the element
          */
-        public children: (VirtualNode | VirtualText | FragmentNode | null)[]
+        public children: (ElementNode | TextNode | FragmentNode | null)[]
     ) { }
 
-    render(): DocumentFragment {
+    renderDom(): DocumentFragment {
 
         const { children } = this;
 
-        const documentFragment = document.createDocumentFragment();
+        const dom = document.createDocumentFragment();
 
         for (const child of children) {
 
             if (child) { // It might be null
 
-                documentFragment.appendChild(child.render());
+                dom.appendChild(child.renderDom());
             }
         }
 
-        this.element = documentFragment;
+        this.element = dom;
 
-        return documentFragment;
+        return dom;
     }
 
-    prependChildNode(vNode: VirtualNode | VirtualText) {
+    prependChildNode(vNode: ElementNode | TextNode) {
 
         this.children.unshift(vNode);
     }
 
-    appendChildNode(vNode: VirtualNode | VirtualText) {
+    appendChildNode(vNode: ElementNode | TextNode) {
 
         this.children.push(vNode);
     }

@@ -1,16 +1,14 @@
 import { createDOMElement } from "./helpers/createDOMElement";
-import VirtualText from "./VirtualText";
-import { LifecycleHooks } from "../patches/Patch";
+import TextNode from "./TextNode";
 import FragmentNode from "./FragmentNode";
-
-export type CustomElementLike = Element & LifecycleHooks; 
+import { CustomElementLike } from "./Definitions";
 
 /**
- * Defines a virtual node
+ * Defines an element node
  */
-export default class VirtualNode {
+export default class ElementNode {
 
-    isVirtualNode: boolean = true;
+    isElement: boolean = true;
 
     element?: Node;
 
@@ -34,7 +32,7 @@ export default class VirtualNode {
         /**
          * The children of the element or the text
          */
-        public children: (VirtualNode | VirtualText | FragmentNode)[]
+        public children: (ElementNode | TextNode | FragmentNode)[]
 
     ) { }
 
@@ -43,29 +41,29 @@ export default class VirtualNode {
         return this.props ? this.props.key : undefined;
     }
 
-    render(): CustomElementLike {
+    renderDom(): CustomElementLike {
 
         const { name, props, children} = this;
 
-        const element = createDOMElement(name, props) as CustomElementLike;
+        const dom = createDOMElement(name, props) as CustomElementLike;
 
         // If this virtual node has a component attached, transfer it to the element so it can notify its children when will disconnect
-        (element as any).component = this.component;
+        (dom as any).component = this.component;
         
         for (const child of children) {
 
             if (child) { // It might be null
 
-                const c = (child as VirtualNode).component;
+                const c = (child as ElementNode).component;
 
-                const node = child.render();
+                const node = child.renderDom();
 
                 if (c !== undefined && (c as any).nodeWillConnect !== undefined) {
 
                     (c as any).nodeWillConnect(node);
                 }
 
-                element.appendChild(node);
+                dom.appendChild(node);
 
                 if (c !== undefined && (c as any).nodeDidConnect !== undefined) {
 
@@ -74,8 +72,8 @@ export default class VirtualNode {
             }
         }
 
-        this.element = element;
+        this.element = dom;
 
-        return element;
+        return dom;
     }
 }

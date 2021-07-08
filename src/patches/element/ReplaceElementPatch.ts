@@ -1,6 +1,6 @@
 import { Patch, PatchOptions, NodeChanges } from "../Patch";
-import VirtualNode from "../../nodes/VirtualNode";
-import VirtualText from "../../nodes/VirtualText";
+import ElementNode from "../../nodes/ElementNode";
+import TextNode from "../../nodes/TextNode";
 import callHook from "../helpers/callHook";
 import { renderNode } from "../helpers/renderNode";
 
@@ -14,7 +14,7 @@ export default class ReplaceElementPatch implements Patch {
         /**
          * The new node to replace the element
          */
-        public newNode: VirtualNode | VirtualText
+        public newNode: ElementNode | TextNode
     ) { }
 
     applyPatch(options: PatchOptions): void {
