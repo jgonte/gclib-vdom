@@ -1,3 +1,4 @@
+import callHook from "../helpers/callHook";
 import { Patch, PatchOptions, NodeChanges } from "../Patch";
 
 /**
@@ -14,14 +15,7 @@ export default class RemoveElementPatch implements Patch {
             hooks
         } = options;
 
-        const {
-            nodeWillDisconnect
-        } = hooks || {};
-
-        if (nodeWillDisconnect) {
-
-            nodeWillDisconnect(node!);
-        }
+        callHook(node!, 'nodeWillDisconnect', hooks!);
 
         parentNode.removeChild(node!);
 

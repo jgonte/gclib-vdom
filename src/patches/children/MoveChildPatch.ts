@@ -1,3 +1,4 @@
+import callHook from "../helpers/callHook";
 import { Patch, PatchOptions, NodeChanges } from "../Patch";
 
 /**
@@ -33,12 +34,6 @@ export default class MoveChildPatch implements Patch {
             hooks 
         } = options;
 
-        const {
-            nodeWillDisconnect,
-            nodeWillConnect,
-            nodeDidConnect
-        } = hooks || {};
-
         const movedChildrenElements: Array<Node> = [];
 
         const { from, to, offset } = this;
@@ -62,38 +57,23 @@ export default class MoveChildPatch implements Patch {
             // Save the original element in the context
             context!.setOriginalElement(originalElement, to);
 
-            if (nodeWillDisconnect) {
+            callHook(originalElement!, 'nodeWillDisconnect', hooks);
 
-                nodeWillDisconnect(originalElement);
-            }
-
-            if (nodeWillConnect) {
-
-                nodeWillConnect(movingChild);
-            }
-
+            callHook(movingChild!, 'nodeWillConnect', hooks);
+            
             (n as HTMLElement).replaceChild(movingChild, originalElement);
 
-            if (nodeDidConnect) {
-
-                nodeDidConnect(movingChild);
-            }
+            callHook(movingChild!, 'nodeDidConnect', hooks);
 
             movedChildrenElements.push(movingChild);
         }
         else {
 
-            if (nodeWillConnect) {
-
-                nodeWillConnect(movingChild);
-            }
+            callHook(movingChild!, 'nodeWillConnect', hooks);
 
             (n as HTMLElement).appendChild(movingChild);
 
-            if (nodeDidConnect) {
-
-                nodeDidConnect(movingChild);
-            }
+            callHook(movingChild!, 'nodeDidConnect', hooks);
 
             movedChildrenElements.push(movingChild);
         }

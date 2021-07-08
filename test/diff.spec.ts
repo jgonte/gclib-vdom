@@ -6409,4 +6409,146 @@ describe("diff tests", () => {
         }));
     });
 
+    /**
+     <ul>
+        <li class="hoverable" size="medium" value="1">1</li>
+        <li class="hoverable" size="medium" value="2">2</li>
+        <li class="hoverable" size="medium" value="3">3</li>
+    </ul>
+     */
+
+    it("diff a node from list of slot to list with items", () => {
+
+        const oldNode = h('ul', null,
+            h('slot', null)
+        );
+
+        // Get the element to get patched
+        const element = oldNode.render();
+
+        const oldChildren = Array.from(element.childNodes);
+
+        expect(element.outerHTML).toEqual('<ul><slot></slot></ul>');
+
+        const shadowRoot = createShadowRoot();
+
+        shadowRoot.appendChild(element);
+
+        const newNode = h('ul', null,
+            h('li', { value: '1' }, '1'),
+            h('li', { value: '2' }, '2'),
+            h('li', { value: '3' }, '3')
+        );
+
+        const patches = diff(oldNode, newNode);
+
+        comparePatches(patches, `
+        
+    (ElementPatches) {
+        patches:
+        [
+            (SetChildPatch) {
+                index: 1,
+                newNode:
+                (VirtualNode) {
+                    name: 'li',
+                    props:
+                    {
+                        value: '2'
+                    },
+                    children:
+                    [
+                        (VirtualText) {
+                            text: '2',
+                            isVirtualText: true
+                        }
+                    ],
+                    isVirtualNode: true
+                }
+            },
+            (SetChildPatch) {
+                index: 2,
+                newNode:
+                (VirtualNode) {
+                    name: 'li',
+                    props:
+                    {
+                        value: '3'
+                    },
+                    children:
+                    [
+                        (VirtualText) {
+                            text: '3',
+                            isVirtualText: true
+                        }
+                    ],
+                    isVirtualNode: true
+                }
+            }
+        ],
+        childrenPatches:
+        [
+            (ChildElementPatches) {
+                index: 0,
+                patches:
+                (ElementPatches) {
+                    patches:
+                    [
+                        (ReplaceElementPatch) {
+                            newNode:
+                            (VirtualNode) {
+                                name: 'li',
+                                props:
+                                {
+                                    value: '1'
+                                },
+                                children:
+                                [
+                                    (VirtualText) {
+                                        text: '1',
+                                        isVirtualText: true
+                                    }
+                                ],
+                                isVirtualNode: true
+                            }
+                        }
+                    ],
+                    childrenPatches:
+                    []
+                }
+            }
+        ]
+    }`);
+
+        const {
+            hooks,
+            spyNodeWillConnect,
+            spyNodeDidConnect,
+            spyNodeWillDisconnect,
+            spyNodeDidUpdate
+        } = setupLifecycleHooks();
+
+        patches.applyPatches(shadowRoot, element, hooks);
+
+        expect(shadowRoot.childNodes.length).toEqual(1); // No children added or removed
+
+        const child = shadowRoot.firstChild! as HTMLElement;
+
+        expect(child.outerHTML).toEqual('<ul><li value=\"1\">1</li><li value=\"2\">2</li><li value=\"3\">3</li></ul>');
+
+        expect(child).toEqual(element); // Kept the node
+
+        expect(spyNodeWillConnect).toHaveBeenCalledTimes(3);
+
+        expect(spyNodeDidConnect).toHaveBeenCalledTimes(3);
+
+        expect(spyNodeWillDisconnect).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledTimes(1);
+
+        expect(spyNodeDidUpdate).toHaveBeenCalledWith(element, new NodeChanges({ // ul
+            inserted: [element.childNodes[1], element.childNodes[2], element.childNodes[0]],
+            removed: [oldChildren[0]]
+        }));
+    });
 });

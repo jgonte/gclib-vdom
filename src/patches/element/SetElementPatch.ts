@@ -3,6 +3,8 @@ import VirtualNode from "../../nodes/VirtualNode";
 import VirtualText from "../../nodes/VirtualText";
 import FragmentNode from "../../nodes/FragmentNode";
 import setAttributes from "../../nodes/helpers/setAttributes";
+import callHook from "../helpers/callHook";
+import { renderNode } from "../helpers/renderNode";
 
 /**
  * Patch to set a new child when the parent node is empty
@@ -25,14 +27,9 @@ export default class SetElementPatch implements Patch {
             hooks
         } = options;
 
-        const {
-            nodeWillConnect,
-            nodeDidConnect
-        } = hooks || {};
-
         const { props } = (this.newNode as FragmentNode);
 
-        const newNode = this.newNode.render();
+        const newNode = renderNode(this.newNode);
 
         // If it is a fragment node, then call the will connect event for each of the child nodes of the fragment
         if (newNode instanceof DocumentFragment) {
@@ -59,22 +56,16 @@ export default class SetElementPatch implements Patch {
 
             if (childNodes.length > 0) {
 
-                if (nodeWillConnect) {
+                for (let i = 0; i < childNodes.length; ++i) {
 
-                    for (let i = 0; i < childNodes.length; ++i) {
-
-                        nodeWillConnect(childNodes[i]);
-                    }
+                    callHook(childNodes[i]!, 'nodeWillConnect', hooks);
                 }
 
                 parentNode.appendChild(newNode);
 
-                if (nodeDidConnect) {
+                for (let i = 0; i < childNodes.length; ++i) {
 
-                    for (let i = 0; i < childNodes.length; ++i) {
-
-                        nodeDidConnect(childNodes[i]);
-                    }
+                    callHook(childNodes[i]!, 'nodeDidConnect', hooks);
                 }
 
                 context!.setNodeChanges(
@@ -87,17 +78,11 @@ export default class SetElementPatch implements Patch {
         }
         else {
 
-            if (nodeWillConnect) {
-
-                nodeWillConnect(newNode);
-            }
+            callHook(newNode!, 'nodeWillConnect', hooks);
 
             parentNode.appendChild(newNode);
 
-            if (nodeDidConnect) {
-
-                nodeDidConnect(newNode);
-            }
+            callHook(newNode!, 'nodeDidConnect', hooks);
 
             context!.setNodeChanges(
                 parentNode,

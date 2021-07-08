@@ -1,6 +1,6 @@
 {
   "name": "gclib-vdom",
-  "version": "2.0.8",
+  "version": "2.1.3",
   "description": "Virtual DOM library",
   "main": "dist/gclib-vdom.umd.js",
   "module": "dist/gclib-vdom.es5.js",

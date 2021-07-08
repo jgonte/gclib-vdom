@@ -1,6 +1,8 @@
 import { Patch, PatchOptions, NodeChanges } from "../Patch";
 import VirtualNode from "../../nodes/VirtualNode";
 import VirtualText from "../../nodes/VirtualText";
+import callHook from "../helpers/callHook";
+import { renderNode } from "../helpers/renderNode";
 
 /**
  * Patch to set a new child at a given index
@@ -29,19 +31,16 @@ export default class SetChildPatch implements Patch {
             hooks
         } = options;
 
-        const {
-            nodeWillDisconnect,
-            nodeWillConnect,
-            nodeDidConnect
-        } = hooks || {};
-
         const insertedChildrenElements: Array<Node> = [];
 
         const removedChildrenElements: Array<Node> = [];
 
-        const { index } = this;
+        const { 
+            index,
+            newNode
+        } = this;
 
-        const newChild = this.newNode.render();
+        const newChild = renderNode(newNode);
 
         const n = node instanceof DocumentFragment ?
             parentNode :
@@ -54,22 +53,13 @@ export default class SetChildPatch implements Patch {
             // Save the original element in the context
             context!.setOriginalElement(oldChild, index);
 
-            if (nodeWillDisconnect) {
+            callHook(oldChild!, 'nodeWillDisconnect', hooks);
 
-                nodeWillDisconnect(oldChild);
-            }
-
-            if (nodeWillConnect) {
-
-                nodeWillConnect(newChild);
-            }
+            callHook(newChild!, 'nodeWillConnect', hooks);
 
             (n as HTMLElement).replaceChild(newChild, oldChild);
 
-            if (nodeDidConnect) {
-
-                nodeDidConnect(newChild);
-            }
+            callHook(newChild!, 'nodeDidConnect', hooks);
 
             removedChildrenElements.push(oldChild);
 
@@ -77,17 +67,11 @@ export default class SetChildPatch implements Patch {
         }
         else {
 
-            if (nodeWillConnect) {
-
-                nodeWillConnect(newChild);
-            }
+            callHook(newChild!, 'nodeWillConnect', hooks);
 
             (n as HTMLElement).appendChild(newChild);
 
-            if (nodeDidConnect) {
-
-                nodeDidConnect(newChild);
-            }
+            callHook(newChild!, 'nodeDidConnect', hooks);
 
             insertedChildrenElements.push(newChild);
         }

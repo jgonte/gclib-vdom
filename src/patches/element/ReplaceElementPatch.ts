@@ -1,6 +1,8 @@
 import { Patch, PatchOptions, NodeChanges } from "../Patch";
 import VirtualNode from "../../nodes/VirtualNode";
 import VirtualText from "../../nodes/VirtualText";
+import callHook from "../helpers/callHook";
+import { renderNode } from "../helpers/renderNode";
 
 /**
  * Patch to replace the element in the DOM
@@ -13,42 +15,27 @@ export default class ReplaceElementPatch implements Patch {
          * The new node to replace the element
          */
         public newNode: VirtualNode | VirtualText
-    ) {}
+    ) { }
 
     applyPatch(options: PatchOptions): void {
 
-        const { 
+        const {
             parentNode,
-            node, 
+            node,
             parentContext,
             context,
-            hooks 
+            hooks
         } = options;
 
-        const {
-            nodeWillDisconnect,
-            nodeWillConnect,
-            nodeDidConnect
-        } = hooks || {};
+        const newNode = renderNode(this.newNode);
 
-        const newNode = this.newNode.render();
+        callHook(node!, 'nodeWillDisconnect', hooks);
 
-        if (nodeWillDisconnect) {
-
-            nodeWillDisconnect(node!);
-        }
-
-        if (nodeWillConnect) {
-
-            nodeWillConnect(newNode!);
-        }
+        callHook(newNode!, 'nodeWillConnect', hooks);
 
         (node as HTMLElement).replaceWith(newNode);
 
-        if (nodeDidConnect) {
-
-            nodeDidConnect(newNode);
-        }
+        callHook(newNode!, 'nodeDidConnect', hooks);
 
         (parentContext || context)!.setNodeChanges(
             parentNode,

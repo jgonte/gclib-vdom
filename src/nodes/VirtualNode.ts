@@ -49,27 +49,27 @@ export default class VirtualNode {
 
         const element = createDOMElement(name, props) as CustomElementLike;
 
-        // If this virtual node has a componet attached, transfer it to the element so it can notify its children when will disconnect
+        // If this virtual node has a component attached, transfer it to the element so it can notify its children when will disconnect
         (element as any).component = this.component;
         
         for (const child of children) {
 
             if (child) { // It might be null
 
-                const fc = (child as VirtualNode).component;
+                const c = (child as VirtualNode).component;
 
                 const node = child.render();
 
-                if (fc !== undefined && (fc as any).nodeWillConnect !== undefined) {
+                if (c !== undefined && (c as any).nodeWillConnect !== undefined) {
 
-                    (fc as any).nodeWillConnect(node);
+                    (c as any).nodeWillConnect(node);
                 }
 
                 element.appendChild(node);
 
-                if (fc !== undefined && (fc as any).nodeDidConnect !== undefined) {
+                if (c !== undefined && (c as any).nodeDidConnect !== undefined) {
 
-                    (fc as any).nodeDidConnect(node);
+                    (c as any).nodeDidConnect(node);
                 }
             }
         }

@@ -103,7 +103,7 @@ export interface LifecycleHooks {
     nodeWillConnect?: (node: Node) => void;
 
     /**
-     * Called after the node and its siblings has been added to the DOM
+     * Called after the node and its siblings have been added to the DOM
      */
     nodeDidConnect?: (node: Node) => void;
 
