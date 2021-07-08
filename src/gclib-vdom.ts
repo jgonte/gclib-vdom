@@ -11,11 +11,11 @@ import markupToVDom from './nodes/parser/markupToVDom';
 import notifyNodeWillDisconnect from './notifyNodeWillDisconnect';
 
 export {
-    ElementNode as VirtualNode,
-    TextNode as VirtualText,
+    ElementNode,
+    TextNode,
     FragmentNode,
     Fragment,
-    ComponentNode as Component,
+    ComponentNode,
     h,
     ElementPatches,
     diff,
