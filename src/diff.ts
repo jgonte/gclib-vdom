@@ -17,6 +17,7 @@ import OffsetManager from "./patches/helpers/OffsetManager";
 import ReplaceElementPatch from "./patches/element/ReplaceElementPatch";
 import SetElementPatch from "./patches/element/SetElementPatch";
 import { FragmentNode, Fragment } from "./gclib-vdom";
+import { AnyVirtualNode } from "./nodes/Definitions";
 
 function diffAttributes(oldAttributes?: any | null, newAttributes?: any | null): Patch[] {
 
@@ -77,17 +78,17 @@ function isUndefinedOrNull(o?: object | null): boolean {
     return typeof o === 'undefined' || o === null;
 }
 
-function isVirtualNode(node: ElementNode | TextNode | FragmentNode): boolean {
+function isVirtualNode(node: AnyVirtualNode): boolean {
 
     return (node as ElementNode).isElement;
 }
 
-function isFragmentNode(node: ElementNode | TextNode | FragmentNode): boolean {
+function isFragmentNode(node: AnyVirtualNode): boolean {
 
     return (node as FragmentNode).isFragment;
 }
 
-function hasKeys(children: Array<ElementNode | TextNode | FragmentNode | null> = []): boolean {
+function hasKeys(children: AnyVirtualNode[] = []): boolean {
 
     const keys: Set<string> = new Set<string>();
 
@@ -296,9 +297,7 @@ function diffKeyedChildren(
     return [setOrMovedChildrenPatches, childrenPatches];
 }
 
-function diffNonKeyedChildren(
-    oldChildren: Array<ElementNode | TextNode | FragmentNode | null>,
-    newChildren: Array<ElementNode | TextNode | FragmentNode | null>): [Array<Patch>, Array<ChildElementPatches>] {
+function diffNonKeyedChildren(oldChildren: AnyVirtualNode[], newChildren: AnyVirtualNode[]): [Array<Patch>, Array<ChildElementPatches>] {
 
     const setChildrenPatches: Array<Patch> = [];
 
@@ -338,8 +337,8 @@ function diffNonKeyedChildren(
 }
 
 export default function diff(
-    oldNode?: ElementNode | TextNode | FragmentNode,
-    newNode?: ElementNode | TextNode | FragmentNode
+    oldNode?: AnyVirtualNode,
+    newNode?: AnyVirtualNode
 ): ElementPatches {
 
     if (isUndefinedOrNull(newNode)) {
@@ -414,7 +413,10 @@ export default function diff(
             }
             else { // Same name, diff attributes and children
 
-                let oldChildren: (ElementNode | TextNode | FragmentNode | null)[] = (oldNode as ElementNode).children;
+                // Assign the old node's element so we can keep track of the parent
+                newNode!.dom = oldNode!.dom;
+                
+                let oldChildren: AnyVirtualNode[] = (oldNode as ElementNode).children;
 
                 let newChildren = (newNode as ElementNode | FragmentNode).children;
 
@@ -616,7 +618,7 @@ export default function diff(
                 else { // The old node fragment and the new one both has children: compare their children
 
                     // Assign the old node's element so we can keep track of the parent
-                    newNode!.element = oldNode!.element;
+                    newNode!.dom = oldNode!.dom;
 
                     const newChildren = (newNode as FragmentNode).children;
 

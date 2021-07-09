@@ -1,4 +1,5 @@
 import h from '../src/h';
+import ComponentNode from '../src/nodes/ComponentNode';
 import ElementNode from '../src/nodes/ElementNode';
 import TextNode from '../src/nodes/TextNode';
 
@@ -240,7 +241,7 @@ describe("h tests", () => {
 
     it("creates a virtual node from a functional component", () => {
 
-        class FC {
+        class MyComponent extends ComponentNode {
 
             render() {
 
@@ -248,7 +249,7 @@ describe("h tests", () => {
             }
         }
 
-        const fc = new FC();
+        const fc = new MyComponent(null, undefined);
 
         const node = h('div', null, fc);
 

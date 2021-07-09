@@ -1,7 +1,8 @@
+import { AnyVirtualNode } from "../Definitions";
 import ElementNode from "../ElementNode";
 import TextNode from "../TextNode";
 
-export default function toVDom(node?: Node, options: any = {}): ElementNode | TextNode | null {
+export default function toVDom(node?: Node, options: any = {}): AnyVirtualNode | null {
 
     if (node === null) {
 
@@ -75,9 +76,9 @@ function getProps(attributes: NamedNodeMap) {
     return props;
 }
 
-function getChildren(childNodes: NodeListOf<ChildNode>, options: any): (ElementNode | TextNode)[] {
+function getChildren(childNodes: NodeListOf<ChildNode>, options: any): AnyVirtualNode[] {
 
-    var vnodes: (ElementNode | TextNode)[] = [];
+    var vnodes: AnyVirtualNode[] = [];
 
     childNodes.forEach(childNode => {
 

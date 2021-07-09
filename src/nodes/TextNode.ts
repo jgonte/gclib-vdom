@@ -1,8 +1,8 @@
-export default class TextNode {
+import VirtualNode from "./VirtualNode";
+
+export default class TextNode extends VirtualNode{
 
     isText: boolean = true;
-
-    element?: Node;
 
     constructor(
 
@@ -11,13 +11,15 @@ export default class TextNode {
          */
         public text: string | number | boolean
 
-    ) { }
+    ) { 
+        super();
+    }
 
     renderDom(): Text {
 
         const dom = document.createTextNode(this.text.toString());
 
-        this.element = dom;
+        this.dom = dom;
 
         return dom;
     }

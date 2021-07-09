@@ -2,7 +2,6 @@ import { Patch, PatchOptions, NodeChanges } from "../Patch";
 import ElementNode from "../../nodes/ElementNode";
 import TextNode from "../../nodes/TextNode";
 import callHook from "../helpers/callHook";
-import { renderNode } from "../helpers/renderNode";
 
 /**
  * Patch to replace the element in the DOM
@@ -27,7 +26,7 @@ export default class ReplaceElementPatch implements Patch {
             hooks
         } = options;
 
-        const newNode = renderNode(this.newNode);
+        const newNode = this.newNode.renderDom();
 
         callHook(node!, 'nodeWillDisconnect', hooks);
 

@@ -2,7 +2,6 @@ import { Patch, PatchOptions, NodeChanges } from "../Patch";
 import ElementNode from "../../nodes/ElementNode";
 import TextNode from "../../nodes/TextNode";
 import callHook from "../helpers/callHook";
-import { renderNode } from "../helpers/renderNode";
 
 /**
  * Patch to set a new child at a given index
@@ -40,7 +39,7 @@ export default class SetChildPatch implements Patch {
             newNode
         } = this;
 
-        const newChild = renderNode(newNode);
+        const newChild = newNode.renderDom();
 
         const n = node instanceof DocumentFragment ?
             parentNode :

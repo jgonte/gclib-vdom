@@ -7,9 +7,9 @@ import TextNode from './TextNode';
 /**
  * The virtual nodes
  */
-export type AnyVirtualNode = ComponentNode | FragmentNode | ElementNode | TextNode ;
+export type AnyVirtualNode = ComponentNode | FragmentNode | ElementNode | TextNode | null;
 
 /**
  * The DOM nodes
  */
-export type CustomElementLike = Element & LifecycleHooks; 
+export type CustomElementLike = Element & LifecycleHooks;

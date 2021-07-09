@@ -1,9 +1,6 @@
 import { Patch, PatchOptions, NodeChanges } from '../Patch';
-import ElementNode from '../../nodes/ElementNode';
-import TextNode from '../../nodes/TextNode';
-import { FragmentNode } from '../../gclib-vdom';
 import callHook from '../helpers/callHook';
-import { renderNode } from '../helpers/renderNode';
+import { AnyVirtualNode } from '../../nodes/Definitions';
 
 /**
  * Patch to add children to the DOM
@@ -15,7 +12,7 @@ export default class AddChildrenPatch implements Patch {
         /**
          * The new children to add
          */
-        public children: Array<ElementNode | TextNode | FragmentNode | null>
+        public children: AnyVirtualNode[]
     ) { }
 
     applyPatch(options: PatchOptions): void {
@@ -26,7 +23,7 @@ export default class AddChildrenPatch implements Patch {
             hooks 
         } = options;
 
-        const insertedChildrenElements: Array<Node> = [];
+        const insertedChildrenElements: Node[] = [];
 
         const fragment = document.createDocumentFragment();
 
@@ -37,13 +34,13 @@ export default class AddChildrenPatch implements Patch {
                 return;
             }
 
-            const childElement = renderNode(child);
+            const childElement = child.renderDom();
 
-            insertedChildrenElements.push(childElement);
+            insertedChildrenElements.push(childElement as Node);
 
             callHook(childElement!, 'nodeWillConnect', hooks);
 
-            fragment.appendChild(childElement);
+            fragment.appendChild(childElement as Node);
 
             // Do this after all the children have been appended so their siblings can be accessed if needed
             // if (nodeDidConnect) {

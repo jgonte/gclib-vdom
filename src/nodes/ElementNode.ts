@@ -1,21 +1,13 @@
 import { createDOMElement } from "./helpers/createDOMElement";
-import TextNode from "./TextNode";
-import FragmentNode from "./FragmentNode";
-import { CustomElementLike } from "./Definitions";
+import { AnyVirtualNode, CustomElementLike } from "./Definitions";
+import VirtualNode from "./VirtualNode";
 
 /**
  * Defines an element node
  */
-export default class ElementNode {
+export default class ElementNode extends VirtualNode {
 
     isElement: boolean = true;
-
-    element?: Node;
-
-    /**
-     * The reference to the functional or web component so we can call its hooks when rendering it
-     */
-    component?: object;
 
     constructor(
 
@@ -32,9 +24,11 @@ export default class ElementNode {
         /**
          * The children of the element or the text
          */
-        public children: (ElementNode | TextNode | FragmentNode)[]
+        public children: AnyVirtualNode[]
 
-    ) { }
+    ) {
+        super();
+    }
 
     get key(): string {
 
@@ -43,18 +37,18 @@ export default class ElementNode {
 
     renderDom(): CustomElementLike {
 
-        const { name, props, children} = this;
+        const { name, props, children } = this;
 
         const dom = createDOMElement(name, props) as CustomElementLike;
 
         // If this virtual node has a component attached, transfer it to the element so it can notify its children when will disconnect
         (dom as any).component = this.component;
-        
+
         for (const child of children) {
 
-            if (child) { // It might be null
+            if (child !== null) { // It might be null
 
-                const c = (child as ElementNode).component;
+                const c = child.component;
 
                 const node = child.renderDom();
 
@@ -63,7 +57,7 @@ export default class ElementNode {
                     (c as any).nodeWillConnect(node);
                 }
 
-                dom.appendChild(node);
+                dom.appendChild(node as Node);
 
                 if (c !== undefined && (c as any).nodeDidConnect !== undefined) {
 
@@ -72,7 +66,7 @@ export default class ElementNode {
             }
         }
 
-        this.element = dom;
+        this.dom = dom;
 
         return dom;
     }

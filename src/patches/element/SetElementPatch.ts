@@ -1,10 +1,8 @@
 import { Patch, PatchOptions, NodeChanges } from "../Patch";
-import ElementNode from "../../nodes/ElementNode";
-import TextNode from "../../nodes/TextNode";
 import FragmentNode from "../../nodes/FragmentNode";
 import setAttributes from "../../nodes/helpers/setAttributes";
 import callHook from "../helpers/callHook";
-import { renderNode } from "../helpers/renderNode";
+import { AnyVirtualNode } from "../../nodes/Definitions";
 
 /**
  * Patch to set a new child when the parent node is empty
@@ -16,7 +14,7 @@ export default class SetElementPatch implements Patch {
         /**
          * The new node to set in an empty one
          */
-        public newNode: ElementNode | TextNode | FragmentNode
+        public newNode: AnyVirtualNode
     ) { }
 
     applyPatch(options: PatchOptions): void {
@@ -29,7 +27,7 @@ export default class SetElementPatch implements Patch {
 
         const { props } = (this.newNode as FragmentNode);
 
-        const newNode = renderNode(this.newNode);
+        const newNode = this.newNode!.renderDom();
 
         // If it is a fragment node, then call the will connect event for each of the child nodes of the fragment
         if (newNode instanceof DocumentFragment) {
@@ -80,7 +78,7 @@ export default class SetElementPatch implements Patch {
 
             callHook(newNode!, 'nodeWillConnect', hooks);
 
-            parentNode.appendChild(newNode);
+            parentNode.appendChild(newNode as Node);
 
             callHook(newNode!, 'nodeDidConnect', hooks);
 

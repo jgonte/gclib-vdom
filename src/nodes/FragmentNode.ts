@@ -1,13 +1,13 @@
+import { AnyVirtualNode } from "./Definitions";
 import ElementNode from "./ElementNode";
 import TextNode from "./TextNode";
+import VirtualNode from "./VirtualNode";
 
 export class Fragment {}
 
-export default class FragmentNode {
+export default class FragmentNode extends VirtualNode {
 
     isFragment: boolean = true;
-
-    element?: Node;
 
     constructor(
 
@@ -19,8 +19,10 @@ export default class FragmentNode {
         /**
          * The children of the element
          */
-        public children: (ElementNode | TextNode | FragmentNode | null)[]
-    ) { }
+        public children: AnyVirtualNode[]
+    ) {
+        super();
+     }
 
     renderDom(): DocumentFragment {
 
@@ -30,13 +32,13 @@ export default class FragmentNode {
 
         for (const child of children) {
 
-            if (child) { // It might be null
+            if (child !== null) { // It might be null
 
-                dom.appendChild(child.renderDom());
+                dom.appendChild(child.renderDom() as Node);
             }
         }
 
-        this.element = dom;
+        this.dom = dom;
 
         return dom;
     }

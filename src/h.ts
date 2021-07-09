@@ -1,6 +1,8 @@
 import ElementNode from "./nodes/ElementNode"
 import TextNode from "./nodes/TextNode";
 import FragmentNode from "./nodes/FragmentNode";
+import ComponentNode from "./nodes/ComponentNode";
+import { AnyVirtualNode } from "./nodes/Definitions";
 // import getCSSClass from "./nodes/helpers/getCSSClass";
 // import getCSSStyle from "./nodes/helpers/getCSSStyle";
 
@@ -13,7 +15,7 @@ import FragmentNode from "./nodes/FragmentNode";
 export default function h(
     name: string | FunctionConstructor,
     attributes: any = {},
-    ...children: Array<ElementNode | TextNode | FragmentNode | string | number | boolean | object>): ElementNode {
+    ...children: Array<AnyVirtualNode | string | number | boolean | object>): ElementNode {
 
     // Extract the children if an array was passed
     if (Array.isArray(children[0])) {
@@ -21,7 +23,7 @@ export default function h(
         children = children[0];
     }
 
-    const childrenNodes: Array<ElementNode | FragmentNode | TextNode> = [];
+    const childrenNodes: AnyVirtualNode[] = [];
 
     children.forEach(child => {
 
@@ -49,17 +51,20 @@ export default function h(
         }
         else if (typeof child === 'object') {
 
-            if ((child as any).render !== undefined) { // Functional component
+            if ((child as ComponentNode).isComponent) {
 
-                const vNode: ElementNode = (child as any).render();
+                const vNode = (child as ComponentNode).render();
 
-                vNode.component = child; // Set the functional component to call its hooks if any
+                if (vNode !== null) {
+
+                    vNode.component = child as ComponentNode; // Set the functional component to call its hooks if any
+                }
 
                 childrenNodes.push(vNode);
             }
             else {
 
-                throw new Error('Invalid object. It must define a render function');
+                throw new Error('Invalid object. It must extend ComponentNode');
             }
         }
         else {
