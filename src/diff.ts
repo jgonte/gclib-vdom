@@ -107,7 +107,7 @@ function hasKeys(children: AnyVirtualNode[] = []): boolean {
 
             const key = (child as ElementNode).key;
 
-            if (key) {
+            if (key !== undefined) {
 
                 if (missingFirstKey) {
 

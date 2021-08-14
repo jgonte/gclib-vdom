@@ -1,6 +1,6 @@
 {
   "name": "gclib-vdom",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "Virtual DOM library",
   "main": "dist/gclib-vdom.umd.js",
   "module": "dist/gclib-vdom.es5.js",
@@ -54,9 +54,9 @@
   },
   "homepage": "https://github.com/jgonte/gclib-vdom#readme",
   "devDependencies": {
-    "@happy-dom/jest-environment": "^2.21.0",
-    "@types/jest": "^26.0.23",
-    "happy-dom": "^2.21.0",
+    "@happy-dom/jest-environment": "^2.22.0",
+    "@types/jest": "^26.0.24",
+    "happy-dom": "^2.22.0",
     "jest": "^26.6.3",
     "rimraf": "^2.6.2",
     "rollup": "^0.67.0",
@@ -66,7 +66,7 @@
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-typescript2": "^0.27.3",
     "ts-jest": "^26.5.6",
-    "typedoc": "^0.21.0",
+    "typedoc": "^0.21.5",
     "typescript": "^3.9.10"
   },
   "directories": {
