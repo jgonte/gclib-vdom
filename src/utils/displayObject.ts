@@ -1,3 +1,12 @@
+
+function isPrimitive(o: any): boolean {
+    
+    return (typeof o === 'string' ||
+        typeof o === 'number' ||
+        typeof o === 'bigint' ||
+        typeof o === 'boolean');
+}
+
 function indent(depth: number): string {
 
     return ' '.repeat(depth * 4);
@@ -29,10 +38,7 @@ function displayAttributes(o: object, depth: number): string {
 
             attrs.push(`${indent(depth)}${k}: '${v.toString()}'`); //TODO: review
         }
-        else if (typeof v === 'string' ||
-            typeof v === 'number' ||
-            typeof v === 'bigint' ||
-            typeof v === 'boolean') {
+        else if (isPrimitive(v)) {
 
             attrs.push(`${indent(depth)}${k}: ${v}`);
         }
@@ -76,10 +82,7 @@ function displayArray(array: any[], depth: number): string {
 
             items.push(`${indent(depth + 1)}'${v.toString()}'`); //TODO: review
         }
-        else if (typeof v === 'string' ||
-            typeof v === 'number' ||
-            typeof v === 'bigint' ||
-            typeof v === 'boolean') {
+        else if (isPrimitive(v)) {
 
             items.push(`${indent(depth + 1)}${v}`);
         }
@@ -141,10 +144,7 @@ export default function displayObject(o?: any | null, depth: number = 0): string
 
         return `'${o.toString()}'`; //TODO: review
     }
-    else if (typeof o === 'string' ||
-        typeof o === 'number' ||
-        typeof o === 'bigint' ||
-        typeof o === 'boolean') {
+    else if (isPrimitive(o)) {
 
         return `${o}`;
     }
@@ -193,3 +193,4 @@ ${indent(depth)}{}`;
     }
 
 }
+

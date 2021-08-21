@@ -1,6 +1,6 @@
 {
   "name": "gclib-vdom",
-  "version": "2.2.4",
+  "version": "2.2.6",
   "description": "Virtual DOM library",
   "main": "dist/gclib-vdom.umd.js",
   "module": "dist/gclib-vdom.es5.js",
@@ -66,7 +66,7 @@
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-typescript2": "^0.27.3",
     "ts-jest": "^26.5.6",
-    "typedoc": "^0.21.5",
+    "typedoc": "^0.21.6",
     "typescript": "^3.9.10"
   },
   "directories": {
